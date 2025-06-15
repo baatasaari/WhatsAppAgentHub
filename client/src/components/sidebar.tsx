@@ -1,12 +1,13 @@
 import { useLocation } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "My Agents", href: "/agents", icon: Bot },
   { name: "Create Agent", href: "/create", icon: Plus },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Widget Preview", href: "/preview", icon: Eye },
   { name: "Embed Code", href: "/embed", icon: Code },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
 
 export default function Sidebar() {

@@ -8,6 +8,7 @@ import Agents from "@/pages/agents";
 import CreateAgent from "@/pages/create-agent";
 import Analytics from "@/pages/analytics";
 import EmbedCode from "@/pages/embed-code";
+import WidgetPreview from "@/pages/widget-preview";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
@@ -25,6 +26,7 @@ function Router() {
             <Route path="/create" component={CreateAgent} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/embed" component={EmbedCode} />
+            <Route path="/preview" component={WidgetPreview} />
             <Route component={NotFound} />
           </Switch>
         </main>
