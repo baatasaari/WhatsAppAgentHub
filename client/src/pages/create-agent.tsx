@@ -420,7 +420,7 @@ export default function CreateAgent() {
                   <Button
                     type="submit"
                     disabled={createAgentMutation.isPending}
-                    className="bg-primary hover:bg-primary-700"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Rocket className="w-4 h-4 mr-2" />
                     Create & Deploy Agent

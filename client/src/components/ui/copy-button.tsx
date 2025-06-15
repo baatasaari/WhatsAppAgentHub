@@ -23,7 +23,7 @@ export default function CopyButton({ text, className = "" }: CopyButtonProps) {
   return (
     <Button
       onClick={handleCopy}
-      className={`bg-primary hover:bg-primary-700 ${copied ? 'bg-green-600 hover:bg-green-700' : ''} ${className}`}
+      className={`bg-blue-600 hover:bg-blue-700 ${copied ? 'bg-green-600 hover:bg-green-700' : ''} ${className}`}
     >
       {copied ? (
         <>

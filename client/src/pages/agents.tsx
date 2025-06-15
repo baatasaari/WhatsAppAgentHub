@@ -133,8 +133,8 @@ export default function Agents() {
                   <tr key={agent.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                          <Bot className="w-5 h-5 text-primary-600" />
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <Bot className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">{agent.name}</p>
@@ -167,7 +167,7 @@ export default function Agents() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-primary-600 hover:text-primary-900"
+                          className="text-blue-600 hover:text-blue-900"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>

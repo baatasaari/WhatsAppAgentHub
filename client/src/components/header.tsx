@@ -40,7 +40,7 @@ export default function Header() {
         <div className="flex items-center space-x-3">
           <Button 
             onClick={() => setLocation("/create")}
-            className="bg-primary hover:bg-primary-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Agent
