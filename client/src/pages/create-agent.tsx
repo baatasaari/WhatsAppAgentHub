@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Rocket, Plus, Phone } from "lucide-react";
+import { Rocket, Plus, Phone, MessageCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -26,6 +26,8 @@ const createAgentSchema = z.object({
   widgetPosition: z.string().default("bottom-right"),
   widgetColor: z.string().default("#25D366"),
   welcomeMessage: z.string().default("Hi! How can I help you today?"),
+  whatsappNumber: z.string().optional(),
+  whatsappMode: z.string().default("web"),
   status: z.string().default("active"),
 });
 

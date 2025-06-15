@@ -78,6 +78,8 @@ export class DatabaseStorage implements IStorage {
           widgetPosition: insertAgent.widgetPosition || 'bottom-right',
           widgetColor: insertAgent.widgetColor || '#25D366',
           welcomeMessage: insertAgent.welcomeMessage || 'Hi! How can I help you today?',
+          whatsappNumber: insertAgent.whatsappNumber || null,
+          whatsappMode: insertAgent.whatsappMode || 'web',
           status: insertAgent.status || 'active',
           apiKey
         } as any)
