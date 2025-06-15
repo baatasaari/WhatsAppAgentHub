@@ -1,9 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
-import { Bot, CheckCircle, MessageCircle, TrendingUp, ArrowUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bot, CheckCircle, MessageCircle, TrendingUp, ArrowUp, Plus, Eye, BarChart3, Zap, Globe, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
@@ -28,44 +33,77 @@ export default function Dashboard() {
     );
   }
 
-  const recentAgents = (agents || []).slice(0, 3);
+  const recentAgents = Array.isArray(agents) ? agents.slice(0, 3) : [];
+  const activeAgents = Array.isArray(agents) ? agents.filter((agent: any) => agent.status === 'active') : [];
+  const statsData = stats as any || {};
 
   return (
     <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome to AgentFlow</h1>
+            <p className="text-blue-100 mt-1">Your WhatsApp Business integration platform</p>
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setLocation('/create')}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Agent
+            </Button>
+            <Button 
+              onClick={() => setLocation('/preview')}
+              variant="outline"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Preview
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="stats-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Total Agents</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalAgents || 0}</p>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Total Agents</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{statsData?.totalAgents || 0}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Bot className="w-6 h-6 text-blue-600" />
+            <div className="mt-4 flex items-center text-sm">
+              <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+              <span className="text-green-600 font-medium">+23%</span>
+              <span className="text-gray-500 ml-2">from last month</span>
             </div>
-          </div>
-          <div className="mt-4 flex items-center text-sm">
-            <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-            <span className="text-green-600 font-medium">+23%</span>
-            <span className="text-gray-500 ml-2">from last month</span>
-          </div>
+          </CardContent>
         </Card>
         
-        <Card className="stats-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Active Agents</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.activeAgents || 0}</p>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Active Agents</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{(stats as any)?.activeAgents || 0}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="mt-4 flex items-center text-sm">
+              <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+              <span className="text-green-600 font-medium">+12%</span>
+              <span className="text-gray-500 ml-2">from last week</span>
             </div>
-          </div>
-          <div className="mt-4 flex items-center text-sm">
-            <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-            <span className="text-green-600 font-medium">+12%</span>
-            <span className="text-gray-500 ml-2">from last week</span>
-          </div>
+          </CardContent>
         </Card>
         
         <Card className="stats-card">

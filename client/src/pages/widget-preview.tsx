@@ -350,11 +350,12 @@ export default function WidgetPreview() {
               <TabsContent value="embed-code">
                 <div className="space-y-4">
                   <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <pre>{embedData.secureEmbedCode}</pre>
+                    <pre>{embedData?.secureEmbedCode || 'Loading embed code...'}</pre>
                   </div>
                   <Button 
-                    onClick={() => navigator.clipboard.writeText(embedData.secureEmbedCode)}
+                    onClick={() => navigator.clipboard.writeText(embedData?.secureEmbedCode || '')}
                     className="w-full"
+                    disabled={!embedData?.secureEmbedCode}
                   >
                     Copy Embed Code
                   </Button>
