@@ -6,6 +6,91 @@ import { generateChatResponse, qualifyLead } from "./services/openai";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 
+// WhatsApp Business API integration
+async function sendWhatsAppMessage(phoneNumber: string, message: string, accessToken: string) {
+  const url = `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: phoneNumber,
+      type: 'text',
+      text: { body: message }
+    })
+  });
+  
+  return response.json();
+}
+
+async function processWhatsAppMessage(agent: any, message: any, messageData: any) {
+  const userPhone = message.from;
+  const userMessage = message.text.body;
+  
+  // Get or create conversation
+  let conversation = await storage.getConversationBySession(`whatsapp_${userPhone}_${agent.id}`);
+  if (!conversation) {
+    conversation = await storage.createConversation({
+      agentId: agent.id,
+      sessionId: `whatsapp_${userPhone}_${agent.id}`,
+      messages: [],
+      leadData: { phone: userPhone },
+    });
+  }
+
+  // Add user message to conversation
+  const userChatMessage = {
+    role: 'user' as const,
+    content: userMessage,
+    timestamp: new Date().toISOString(),
+  };
+
+  const updatedMessages = [...(conversation.messages || []), userChatMessage];
+
+  // Generate LLM response
+  const chatMessages = [
+    { role: 'system' as const, content: agent.systemPrompt },
+    ...updatedMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+  ];
+
+  const aiResponse = await generateChatResponse(chatMessages, agent.llmProvider);
+  
+  // Add AI response to conversation
+  const aiChatMessage = {
+    role: 'assistant' as const,
+    content: aiResponse,
+    timestamp: new Date().toISOString(),
+  };
+
+  const finalMessages = [...updatedMessages, aiChatMessage];
+
+  // Update conversation in database
+  await storage.updateConversation(conversation.id, {
+    messages: finalMessages,
+  });
+
+  // Send LLM response back to WhatsApp
+  if (agent.whatsappAccessToken) {
+    await sendWhatsAppMessage(userPhone, aiResponse, agent.whatsappAccessToken);
+  }
+
+  // Lead qualification after multiple exchanges
+  if (finalMessages.length >= 4) {
+    const conversationText = finalMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+    const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || []);
+    
+    await storage.updateConversation(conversation.id, {
+      leadData: { ...conversation.leadData, ...qualification.extractedData, phone: userPhone },
+      conversionScore: qualification.score,
+      callScheduled: qualification.recommendation === 'call',
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Agent routes
@@ -95,7 +180,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // LLM-powered chat endpoint for WhatsApp integration
+  // WhatsApp Business webhook for incoming messages
+  app.post("/api/whatsapp/webhook/:apiKey", async (req, res) => {
+    try {
+      const { apiKey } = req.params;
+      const webhookData = req.body;
+      
+      // Verify webhook (WhatsApp Business API format)
+      if (webhookData.object === 'whatsapp_business_account') {
+        const agent = await storage.getAgentByApiKey(apiKey);
+        if (!agent || agent.status !== 'active') {
+          return res.status(404).json({ message: "Agent not found or inactive" });
+        }
+
+        // Process incoming WhatsApp messages
+        for (const entry of webhookData.entry || []) {
+          for (const change of entry.changes || []) {
+            if (change.field === 'messages') {
+              const messages = change.value.messages || [];
+              
+              for (const message of messages) {
+                if (message.type === 'text') {
+                  await processWhatsAppMessage(agent, message, change.value);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      res.status(200).json({ status: 'success' });
+    } catch (error) {
+      console.error("WhatsApp webhook error:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
+  // WhatsApp webhook verification (GET request)
+  app.get("/api/whatsapp/webhook/:apiKey", (req, res) => {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+    
+    // Verify the webhook
+    if (mode === 'subscribe' && token === 'agentflow_verify_token') {
+      res.status(200).send(challenge);
+    } else {
+      res.status(403).send('Forbidden');
+    }
+  });
+
+  // LLM-powered chat endpoint for web chat (backup)
   app.post("/api/widget/chat", async (req, res) => {
     try {
       const { apiKey, message, sessionId } = req.body;
@@ -189,6 +324,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Chat error:", error);
       res.status(500).json({ message: "Failed to process chat message" });
+    }
+  });
+
+  // Widget tracking endpoint
+  app.post("/api/widget/track", async (req, res) => {
+    try {
+      const { apiKey, action, timestamp } = req.body;
+      
+      if (!apiKey || !action) {
+        return res.status(400).json({ message: "API key and action are required" });
+      }
+
+      const agent = await storage.getAgentByApiKey(apiKey);
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      // Create analytics entry for tracking
+      const today = new Date().toISOString().split('T')[0];
+      await storage.createOrUpdateAnalytics({
+        agentId: agent.id,
+        date: today,
+        totalInteractions: 1,
+        whatsappRedirects: action === 'whatsapp_redirect' ? 1 : 0,
+        conversions: 0,
+        avgResponseTime: 0,
+      });
+
+      res.status(200).json({ status: 'tracked' });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to track interaction" });
     }
   });
 
