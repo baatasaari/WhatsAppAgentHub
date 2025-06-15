@@ -35,11 +35,11 @@ The application uses three main entities:
 - Voice integration with ElevenLabs for AI phone calls
 - Widget customization (position, colors, welcome messages)
 
-### Chat Widget System
+### WhatsApp Business Widget System
 - Embeddable JavaScript widget for websites
-- WhatsApp-style chat interface
-- Real-time messaging with AI responses
-- Lead qualification and data collection
+- Direct WhatsApp Business integration
+- Encrypted configuration for security
+- Customizable appearance and positioning
 
 ### Analytics Dashboard
 - Performance metrics tracking
@@ -54,12 +54,12 @@ The application uses three main entities:
 
 ## Data Flow
 
-1. **Agent Creation**: Users configure AI agents through the React frontend, sending data to the Express API
-2. **Widget Deployment**: Generated embed codes are placed on client websites
-3. **Chat Interactions**: Website visitors interact with the chat widget, which communicates with the backend API
-4. **AI Processing**: User messages are processed by the configured LLM provider (OpenAI API)
-5. **Lead Qualification**: Conversations are analyzed and scored for conversion potential
-6. **Analytics Collection**: Interaction data is aggregated for reporting and insights
+1. **Agent Creation**: Users configure WhatsApp Business agents through the React frontend, sending data to the Express API
+2. **Widget Deployment**: Generated embed codes with encrypted WhatsApp configurations are placed on client websites
+3. **WhatsApp Integration**: Website visitors click the widget and are redirected to WhatsApp Business with pre-filled messages
+4. **Direct Communication**: All conversations happen directly in WhatsApp Business, eliminating web chat complexity
+5. **Lead Qualification**: Potential for future WhatsApp Business API integration for automated lead scoring
+6. **Analytics Collection**: Widget click data and engagement metrics are tracked for reporting
 
 ## External Dependencies
 
@@ -103,6 +103,8 @@ Changelog:
 - June 15, 2025. Platform is now running with full functionality
 - June 15, 2025. Implemented encrypted widget security system with base64 encoding
 - June 15, 2025. Added secure embed code generation with dual format support (encrypted/legacy)
+- June 15, 2025. Removed web chat functionality and simplified to WhatsApp Business only integration
+- June 15, 2025. Streamlined widget to direct WhatsApp redirects with encrypted configuration support
 ```
 
 ## User Preferences
