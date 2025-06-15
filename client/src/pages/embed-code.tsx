@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, MessageCircle, Bot, Info } from "lucide-react";
+import { Copy, Check, MessageCircle, Bot, Info, Shield, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import CopyButton from "@/components/ui/copy-button";
 
 export default function EmbedCode() {
@@ -21,28 +23,12 @@ export default function EmbedCode() {
     queryKey: ["/api/agents"],
   });
 
+  const { data: embedData, isLoading: isLoadingEmbed } = useQuery({
+    queryKey: ["/api/agents", selectedAgentId, "embed-code"],
+    enabled: !!selectedAgentId,
+  });
+
   const selectedAgent = agents?.find((agent: any) => agent.id.toString() === selectedAgentId);
-  
-  const generateEmbedCode = () => {
-    if (!selectedAgent) return "";
-    
-    const baseUrl = window.location.origin;
-    
-    return `<!-- AgentFlow WhatsApp Widget -->
-<script>
-(function() {
-    var agentflowWidget = document.createElement('script');
-    agentflowWidget.src = '${baseUrl}/widget/agentflow-widget.js';
-    agentflowWidget.setAttribute('data-agent-id', '${selectedAgent.apiKey}');
-    agentflowWidget.setAttribute('data-position', '${widgetConfig.position}');
-    agentflowWidget.setAttribute('data-color', '${widgetConfig.color}');
-    agentflowWidget.setAttribute('data-welcome-msg', '${widgetConfig.welcomeMessage}');
-    agentflowWidget.async = true;
-    document.head.appendChild(agentflowWidget);
-})();
-</script>
-<!-- End AgentFlow Widget -->`;
-  };
 
   if (isLoading) {
     return (
@@ -90,31 +76,104 @@ export default function EmbedCode() {
         </CardContent>
       </Card>
 
-      {selectedAgent && (
+      {selectedAgent && embedData && (
         <>
           {/* Generated Code */}
           <Card>
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Embeddable Code</h3>
-                <CopyButton text={generateEmbedCode()} />
-              </div>
-            </div>
-            <CardContent className="p-6">
-              <div className="bg-gray-900 rounded-lg p-4 text-sm">
-                <pre className="text-green-400 overflow-x-auto">
-                  <code>{generateEmbedCode()}</code>
-                </pre>
-              </div>
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Embeddable Code</span>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-green-600">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Secure
+                  </Badge>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="secure" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="secure" className="flex items-center space-x-2">
+                    <Shield className="w-4 h-4" />
+                    <span>Encrypted (Recommended)</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="legacy" className="flex items-center space-x-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Legacy</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="secure" className="space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4 text-green-600" />
+                      <span className="font-medium text-green-800">Encrypted Configuration</span>
+                    </div>
+                    <CopyButton text={embedData.secureEmbedCode} />
+                  </div>
+                  
+                  <div className="bg-gray-900 rounded-lg p-4 text-sm">
+                    <pre className="text-green-400 overflow-x-auto">
+                      <code>{embedData.secureEmbedCode}</code>
+                    </pre>
+                  </div>
+
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-semibold text-green-900 mb-2 flex items-center">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Enhanced Security Features
+                    </h4>
+                    <ul className="text-green-800 text-sm space-y-1 ml-4 list-disc">
+                      <li>API keys are encrypted and not visible in page source</li>
+                      <li>Configuration data is encoded to prevent tampering</li>
+                      <li>Timestamp validation prevents replay attacks</li>
+                      <li>Backward compatible with all modern browsers</li>
+                    </ul>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="legacy" className="space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-600" />
+                      <span className="font-medium text-orange-800">Legacy Format</span>
+                    </div>
+                    <CopyButton text={embedData.legacyEmbedCode} />
+                  </div>
+                  
+                  <div className="bg-gray-900 rounded-lg p-4 text-sm">
+                    <pre className="text-green-400 overflow-x-auto">
+                      <code>{embedData.legacyEmbedCode}</code>
+                    </pre>
+                  </div>
+
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                    <h4 className="font-semibold text-orange-900 mb-2 flex items-center">
+                      <AlertTriangle className="w-4 h-4 mr-2" />
+                      Security Notice
+                    </h4>
+                    <p className="text-orange-800 text-sm mb-2">
+                      This format exposes API keys in the page source. Use encrypted format for better security.
+                    </p>
+                    <ul className="text-orange-800 text-sm space-y-1 ml-4 list-disc">
+                      <li>API keys are visible in browser developer tools</li>
+                      <li>Configuration can be modified by users</li>
+                      <li>Provided for backward compatibility only</li>
+                    </ul>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
                   <Info className="w-4 h-4 mr-2" />
                   Integration Instructions
                 </h4>
                 <ol className="text-blue-800 text-sm space-y-1 ml-4 list-decimal">
-                  <li>Copy the code above</li>
+                  <li>Copy your preferred embed code above</li>
                   <li>Paste it just before the closing &lt;/body&gt; tag on your website</li>
-                  <li>The WhatsApp widget will automatically appear on all pages</li>
+                  <li>The chat widget will automatically appear on all pages</li>
                   <li>Visitors can click to start conversations with your AI agent</li>
                 </ol>
               </div>

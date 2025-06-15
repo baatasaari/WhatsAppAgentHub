@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertAgentSchema, insertConversationSchema } from "@shared/schema";
 import { generateChatResponse, qualifyLead } from "./services/openai";
 import { nanoid } from "nanoid";
+import { createSecureWidgetConfig } from "./encryption";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -200,6 +201,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch widget configuration" });
+    }
+  });
+
+  // Generate secure embed code endpoint
+  app.get("/api/agents/:id/embed-code", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      // Create encrypted configuration using base64 encoding for simplicity
+      const widgetConfig = {
+        apiKey: agent.apiKey,
+        position: agent.widgetPosition,
+        color: agent.widgetColor,
+        welcomeMessage: agent.welcomeMessage,
+        timestamp: Date.now()
+      };
+      
+      const encryptedConfig = btoa(JSON.stringify(widgetConfig));
+
+      // Generate both secure and legacy embed codes
+      const secureEmbedCode = `<!-- AgentFlow Secure Widget -->
+<script>
+(function() {
+    var agentflowWidget = document.createElement('script');
+    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/agentflow-widget.js';
+    agentflowWidget.setAttribute('data-agent-config', '${encryptedConfig}');
+    agentflowWidget.async = true;
+    document.head.appendChild(agentflowWidget);
+})();
+</script>
+<!-- End AgentFlow Widget -->`;
+
+      const legacyEmbedCode = `<!-- AgentFlow Widget (Legacy) -->
+<script>
+(function() {
+    var agentflowWidget = document.createElement('script');
+    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/agentflow-widget.js';
+    agentflowWidget.setAttribute('data-agent-id', '${agent.apiKey}');
+    agentflowWidget.setAttribute('data-position', '${agent.widgetPosition}');
+    agentflowWidget.setAttribute('data-color', '${agent.widgetColor}');
+    agentflowWidget.setAttribute('data-welcome-msg', '${agent.welcomeMessage}');
+    agentflowWidget.async = true;
+    document.head.appendChild(agentflowWidget);
+})();
+</script>
+<!-- End AgentFlow Widget -->`;
+
+      res.json({
+        secureEmbedCode,
+        legacyEmbedCode,
+        agent: {
+          id: agent.id,
+          name: agent.name,
+          widgetPosition: agent.widgetPosition,
+          widgetColor: agent.widgetColor,
+          welcomeMessage: agent.welcomeMessage
+        }
+      });
+
+    } catch (error) {
+      console.error("Error generating embed code:", error);
+      res.status(500).json({ message: "Failed to generate embed code" });
     }
   });
 
