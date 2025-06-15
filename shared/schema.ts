@@ -39,11 +39,14 @@ export const analytics = pgTable("analytics", {
   id: serial("id").primaryKey(),
   agentId: integer("agent_id").references(() => agents.id).notNull(),
   date: text("date").notNull(), // YYYY-MM-DD format
+  totalInteractions: integer("total_interactions").default(0),
+  whatsappRedirects: integer("whatsapp_redirects").default(0),
   totalConversations: integer("total_conversations").default(0),
   qualifiedLeads: integer("qualified_leads").default(0),
   conversions: integer("conversions").default(0),
   aiCalls: integer("ai_calls").default(0),
   conversionRate: integer("conversion_rate").default(0), // percentage * 100
+  avgResponseTime: integer("avg_response_time").default(0), // milliseconds
 });
 
 export const insertAgentSchema = createInsertSchema(agents).omit({

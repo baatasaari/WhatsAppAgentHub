@@ -93,6 +93,8 @@ export default function CreateAgent() {
   };
 
   const onSubmit = (data: CreateAgentForm) => {
+    console.log('Form submission data:', data);
+    console.log('Form errors:', form.formState.errors);
     const filteredQuestions = qualificationQuestions.filter(q => q.trim());
     createAgentMutation.mutate({
       ...data,
