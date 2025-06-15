@@ -101,6 +101,8 @@ Changelog:
 - June 15, 2025. Initial setup complete
 - June 15, 2025. Fixed CSS color classes and integrated OpenAI API
 - June 15, 2025. Platform is now running with full functionality
+- June 15, 2025. Implemented encrypted widget security system with base64 encoding
+- June 15, 2025. Added secure embed code generation with dual format support (encrypted/legacy)
 ```
 
 ## User Preferences
