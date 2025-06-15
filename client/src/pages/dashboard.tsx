@@ -92,7 +92,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Active Agents</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{(stats as any)?.activeAgents || 0}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{statsData?.activeAgents || 0}</p>
               </div>
               <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-white" />
@@ -110,7 +110,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Conversations</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalConversations || 0}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{statsData?.totalConversations || 0}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-purple-600" />
@@ -127,7 +127,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Conversion Rate</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.averageConversionRate || 0}%</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{statsData?.averageConversionRate || 0}%</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-orange-600" />

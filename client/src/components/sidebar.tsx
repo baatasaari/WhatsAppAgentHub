@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -8,6 +8,7 @@ const navigation = [
   { name: "Widget Preview", href: "/preview", icon: Eye },
   { name: "Embed Code", href: "/embed", icon: Code },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Platform Test", href: "/test", icon: TestTube },
 ];
 
 export default function Sidebar() {
