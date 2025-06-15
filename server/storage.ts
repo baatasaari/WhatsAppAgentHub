@@ -1,4 +1,6 @@
 import { agents, conversations, analytics, type Agent, type InsertAgent, type Conversation, type InsertConversation, type Analytics, type InsertAnalytics } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -29,116 +31,124 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private agents: Map<number, Agent>;
-  private conversations: Map<number, Conversation>;
-  private analytics: Map<string, Analytics>; // key: agentId-date
-  private currentAgentId: number;
-  private currentConversationId: number;
-  private currentAnalyticsId: number;
-
-  constructor() {
-    this.agents = new Map();
-    this.conversations = new Map();
-    this.analytics = new Map();
-    this.currentAgentId = 1;
-    this.currentConversationId = 1;
-    this.currentAnalyticsId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getAgent(id: number): Promise<Agent | undefined> {
-    return this.agents.get(id);
+    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    return agent || undefined;
   }
 
   async getAgentByApiKey(apiKey: string): Promise<Agent | undefined> {
-    return Array.from(this.agents.values()).find(agent => agent.apiKey === apiKey);
+    const [agent] = await db.select().from(agents).where(eq(agents.apiKey, apiKey));
+    return agent || undefined;
   }
 
   async getAllAgents(): Promise<Agent[]> {
-    return Array.from(this.agents.values());
+    return await db.select().from(agents);
   }
 
   async createAgent(insertAgent: InsertAgent): Promise<Agent> {
-    const id = this.currentAgentId++;
     const apiKey = `af_${nanoid(20)}`;
-    const agent: Agent = {
-      ...insertAgent,
-      id,
-      apiKey,
-      createdAt: new Date(),
-    };
-    this.agents.set(id, agent);
+    const [agent] = await db
+      .insert(agents)
+      .values({
+        name: insertAgent.name,
+        businessCategory: insertAgent.businessCategory || null,
+        llmProvider: insertAgent.llmProvider,
+        systemPrompt: insertAgent.systemPrompt,
+        leadQualificationQuestions: insertAgent.leadQualificationQuestions || [],
+        voiceProvider: insertAgent.voiceProvider || 'elevenlabs',
+        voiceModel: insertAgent.voiceModel || 'professional-male',
+        callScript: insertAgent.callScript || null,
+        widgetPosition: insertAgent.widgetPosition || 'bottom-right',
+        widgetColor: insertAgent.widgetColor || '#25D366',
+        welcomeMessage: insertAgent.welcomeMessage || 'Hi! How can I help you today?',
+        status: insertAgent.status || 'active',
+        apiKey
+      })
+      .returning();
     return agent;
   }
 
   async updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined> {
-    const agent = this.agents.get(id);
-    if (!agent) return undefined;
-    
-    const updatedAgent = { ...agent, ...updates };
-    this.agents.set(id, updatedAgent);
-    return updatedAgent;
+    const [agent] = await db
+      .update(agents)
+      .set(updates)
+      .where(eq(agents.id, id))
+      .returning();
+    return agent || undefined;
   }
 
   async deleteAgent(id: number): Promise<boolean> {
-    return this.agents.delete(id);
+    const result = await db.delete(agents).where(eq(agents.id, id));
+    return (result as any).rowCount > 0;
   }
 
   async getConversation(id: number): Promise<Conversation | undefined> {
-    return this.conversations.get(id);
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conversation || undefined;
   }
 
   async getConversationBySession(sessionId: string): Promise<Conversation | undefined> {
-    return Array.from(this.conversations.values()).find(conv => conv.sessionId === sessionId);
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.sessionId, sessionId));
+    return conversation || undefined;
   }
 
   async getConversationsByAgent(agentId: number): Promise<Conversation[]> {
-    return Array.from(this.conversations.values()).filter(conv => conv.agentId === agentId);
+    return await db.select().from(conversations).where(eq(conversations.agentId, agentId));
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
-    const id = this.currentConversationId++;
-    const now = new Date();
-    const conversation: Conversation = {
-      ...insertConversation,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.conversations.set(id, conversation);
+    const [conversation] = await db
+      .insert(conversations)
+      .values({
+        agentId: insertConversation.agentId,
+        sessionId: insertConversation.sessionId,
+        messages: insertConversation.messages || [],
+        leadData: insertConversation.leadData || {},
+        status: insertConversation.status || 'active',
+        conversionScore: insertConversation.conversionScore || 0,
+        callScheduled: insertConversation.callScheduled || false
+      })
+      .returning();
     return conversation;
   }
 
   async updateConversation(id: number, updates: Partial<InsertConversation>): Promise<Conversation | undefined> {
-    const conversation = this.conversations.get(id);
-    if (!conversation) return undefined;
-    
-    const updatedConversation = { ...conversation, ...updates, updatedAt: new Date() };
-    this.conversations.set(id, updatedConversation);
-    return updatedConversation;
+    const [conversation] = await db
+      .update(conversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+    return conversation || undefined;
   }
 
   async getAnalyticsByAgent(agentId: number): Promise<Analytics[]> {
-    return Array.from(this.analytics.values()).filter(analytics => analytics.agentId === agentId);
+    return await db.select().from(analytics).where(eq(analytics.agentId, agentId));
   }
 
   async getAnalyticsByDate(date: string): Promise<Analytics[]> {
-    return Array.from(this.analytics.values()).filter(analytics => analytics.date === date);
+    return await db.select().from(analytics).where(eq(analytics.date, date));
   }
 
   async createOrUpdateAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
-    const key = `${insertAnalytics.agentId}-${insertAnalytics.date}`;
-    const existing = this.analytics.get(key);
-    
-    if (existing) {
-      const updated = { ...existing, ...insertAnalytics };
-      this.analytics.set(key, updated);
+    const existing = await db
+      .select()
+      .from(analytics)
+      .where(and(eq(analytics.agentId, insertAnalytics.agentId), eq(analytics.date, insertAnalytics.date)));
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(analytics)
+        .set(insertAnalytics)
+        .where(eq(analytics.id, existing[0].id))
+        .returning();
       return updated;
     } else {
-      const id = this.currentAnalyticsId++;
-      const analytics: Analytics = { ...insertAnalytics, id };
-      this.analytics.set(key, analytics);
-      return analytics;
+      const [created] = await db
+        .insert(analytics)
+        .values(insertAnalytics)
+        .returning();
+      return created;
     }
   }
 
@@ -148,12 +158,14 @@ export class MemStorage implements IStorage {
     totalConversations: number;
     averageConversionRate: number;
   }> {
-    const allAgents = Array.from(this.agents.values());
+    const allAgents = await db.select().from(agents);
     const totalAgents = allAgents.length;
     const activeAgents = allAgents.filter(agent => agent.status === 'active').length;
-    const totalConversations = this.conversations.size;
     
-    const allAnalytics = Array.from(this.analytics.values());
+    const allConversations = await db.select().from(conversations);
+    const totalConversations = allConversations.length;
+    
+    const allAnalytics = await db.select().from(analytics);
     const totalConversions = allAnalytics.reduce((sum, a) => sum + (a.conversions || 0), 0);
     const totalConvs = allAnalytics.reduce((sum, a) => sum + (a.totalConversations || 0), 0);
     const averageConversionRate = totalConvs > 0 ? Math.round((totalConversions / totalConvs) * 100) : 0;
@@ -167,4 +179,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
