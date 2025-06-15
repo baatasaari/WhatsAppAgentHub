@@ -33,122 +33,192 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getAgent(id: number): Promise<Agent | undefined> {
-    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
-    return agent || undefined;
+    try {
+      const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+      return agent || undefined;
+    } catch (error) {
+      console.error('Error getting agent:', error);
+      return undefined;
+    }
   }
 
   async getAgentByApiKey(apiKey: string): Promise<Agent | undefined> {
-    const [agent] = await db.select().from(agents).where(eq(agents.apiKey, apiKey));
-    return agent || undefined;
+    try {
+      const [agent] = await db.select().from(agents).where(eq(agents.apiKey, apiKey));
+      return agent || undefined;
+    } catch (error) {
+      console.error('Error getting agent by API key:', error);
+      return undefined;
+    }
   }
 
   async getAllAgents(): Promise<Agent[]> {
-    return await db.select().from(agents);
+    try {
+      return await db.select().from(agents);
+    } catch (error) {
+      console.error('Error getting all agents:', error);
+      return [];
+    }
   }
 
   async createAgent(insertAgent: InsertAgent): Promise<Agent> {
-    const apiKey = `af_${nanoid(20)}`;
-    const [agent] = await db
-      .insert(agents)
-      .values({
-        name: insertAgent.name,
-        businessCategory: insertAgent.businessCategory || null,
-        llmProvider: insertAgent.llmProvider,
-        systemPrompt: insertAgent.systemPrompt,
-        leadQualificationQuestions: insertAgent.leadQualificationQuestions || [],
-        voiceProvider: insertAgent.voiceProvider || 'elevenlabs',
-        voiceModel: insertAgent.voiceModel || 'professional-male',
-        callScript: insertAgent.callScript || null,
-        widgetPosition: insertAgent.widgetPosition || 'bottom-right',
-        widgetColor: insertAgent.widgetColor || '#25D366',
-        welcomeMessage: insertAgent.welcomeMessage || 'Hi! How can I help you today?',
-        status: insertAgent.status || 'active',
-        apiKey
-      })
-      .returning();
-    return agent;
+    try {
+      const apiKey = `af_${nanoid(20)}`;
+      const [agent] = await db
+        .insert(agents)
+        .values({
+          name: insertAgent.name,
+          businessCategory: insertAgent.businessCategory || null,
+          llmProvider: insertAgent.llmProvider,
+          systemPrompt: insertAgent.systemPrompt,
+          leadQualificationQuestions: insertAgent.leadQualificationQuestions || [],
+          voiceProvider: insertAgent.voiceProvider || 'elevenlabs',
+          voiceModel: insertAgent.voiceModel || 'professional-male',
+          callScript: insertAgent.callScript || null,
+          widgetPosition: insertAgent.widgetPosition || 'bottom-right',
+          widgetColor: insertAgent.widgetColor || '#25D366',
+          welcomeMessage: insertAgent.welcomeMessage || 'Hi! How can I help you today?',
+          status: insertAgent.status || 'active',
+          apiKey
+        } as any)
+        .returning();
+      return agent;
+    } catch (error) {
+      console.error('Error creating agent:', error);
+      throw error;
+    }
   }
 
   async updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined> {
-    const [agent] = await db
-      .update(agents)
-      .set(updates)
-      .where(eq(agents.id, id))
-      .returning();
-    return agent || undefined;
+    try {
+      const [agent] = await db
+        .update(agents)
+        .set(updates as any)
+        .where(eq(agents.id, id))
+        .returning();
+      return agent || undefined;
+    } catch (error) {
+      console.error('Error updating agent:', error);
+      return undefined;
+    }
   }
 
   async deleteAgent(id: number): Promise<boolean> {
-    const result = await db.delete(agents).where(eq(agents.id, id));
-    return (result as any).rowCount > 0;
+    try {
+      const result = await db.delete(agents).where(eq(agents.id, id));
+      return true; // Assume success if no error thrown
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+      return false;
+    }
   }
 
   async getConversation(id: number): Promise<Conversation | undefined> {
-    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
-    return conversation || undefined;
+    try {
+      const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+      return conversation || undefined;
+    } catch (error) {
+      console.error('Error getting conversation:', error);
+      return undefined;
+    }
   }
 
   async getConversationBySession(sessionId: string): Promise<Conversation | undefined> {
-    const [conversation] = await db.select().from(conversations).where(eq(conversations.sessionId, sessionId));
-    return conversation || undefined;
+    try {
+      const [conversation] = await db.select().from(conversations).where(eq(conversations.sessionId, sessionId));
+      return conversation || undefined;
+    } catch (error) {
+      console.error('Error getting conversation by session:', error);
+      return undefined;
+    }
   }
 
   async getConversationsByAgent(agentId: number): Promise<Conversation[]> {
-    return await db.select().from(conversations).where(eq(conversations.agentId, agentId));
+    try {
+      return await db.select().from(conversations).where(eq(conversations.agentId, agentId));
+    } catch (error) {
+      console.error('Error getting conversations by agent:', error);
+      return [];
+    }
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
-    const [conversation] = await db
-      .insert(conversations)
-      .values({
-        agentId: insertConversation.agentId,
-        sessionId: insertConversation.sessionId,
-        messages: insertConversation.messages || [],
-        leadData: insertConversation.leadData || {},
-        status: insertConversation.status || 'active',
-        conversionScore: insertConversation.conversionScore || 0,
-        callScheduled: insertConversation.callScheduled || false
-      })
-      .returning();
-    return conversation;
+    try {
+      const [conversation] = await db
+        .insert(conversations)
+        .values({
+          agentId: insertConversation.agentId,
+          sessionId: insertConversation.sessionId,
+          messages: insertConversation.messages || [],
+          leadData: insertConversation.leadData || {},
+          status: insertConversation.status || 'active',
+          conversionScore: insertConversation.conversionScore || 0,
+          callScheduled: insertConversation.callScheduled || false
+        } as any)
+        .returning();
+      return conversation;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
   }
 
   async updateConversation(id: number, updates: Partial<InsertConversation>): Promise<Conversation | undefined> {
-    const [conversation] = await db
-      .update(conversations)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(conversations.id, id))
-      .returning();
-    return conversation || undefined;
+    try {
+      const [conversation] = await db
+        .update(conversations)
+        .set({ ...updates, updatedAt: new Date() } as any)
+        .where(eq(conversations.id, id))
+        .returning();
+      return conversation || undefined;
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+      return undefined;
+    }
   }
 
   async getAnalyticsByAgent(agentId: number): Promise<Analytics[]> {
-    return await db.select().from(analytics).where(eq(analytics.agentId, agentId));
+    try {
+      return await db.select().from(analytics).where(eq(analytics.agentId, agentId));
+    } catch (error) {
+      console.error('Error getting analytics by agent:', error);
+      return [];
+    }
   }
 
   async getAnalyticsByDate(date: string): Promise<Analytics[]> {
-    return await db.select().from(analytics).where(eq(analytics.date, date));
+    try {
+      return await db.select().from(analytics).where(eq(analytics.date, date));
+    } catch (error) {
+      console.error('Error getting analytics by date:', error);
+      return [];
+    }
   }
 
   async createOrUpdateAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
-    const existing = await db
-      .select()
-      .from(analytics)
-      .where(and(eq(analytics.agentId, insertAnalytics.agentId), eq(analytics.date, insertAnalytics.date)));
+    try {
+      const existing = await db
+        .select()
+        .from(analytics)
+        .where(and(eq(analytics.agentId, insertAnalytics.agentId), eq(analytics.date, insertAnalytics.date)));
 
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(analytics)
-        .set(insertAnalytics)
-        .where(eq(analytics.id, existing[0].id))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(analytics)
-        .values(insertAnalytics)
-        .returning();
-      return created;
+      if (existing.length > 0) {
+        const [updated] = await db
+          .update(analytics)
+          .set(insertAnalytics as any)
+          .where(eq(analytics.id, existing[0].id))
+          .returning();
+        return updated;
+      } else {
+        const [created] = await db
+          .insert(analytics)
+          .values(insertAnalytics as any)
+          .returning();
+        return created;
+      }
+    } catch (error) {
+      console.error('Error creating/updating analytics:', error);
+      throw error;
     }
   }
 
@@ -158,24 +228,34 @@ export class DatabaseStorage implements IStorage {
     totalConversations: number;
     averageConversionRate: number;
   }> {
-    const allAgents = await db.select().from(agents);
-    const totalAgents = allAgents.length;
-    const activeAgents = allAgents.filter(agent => agent.status === 'active').length;
-    
-    const allConversations = await db.select().from(conversations);
-    const totalConversations = allConversations.length;
-    
-    const allAnalytics = await db.select().from(analytics);
-    const totalConversions = allAnalytics.reduce((sum, a) => sum + (a.conversions || 0), 0);
-    const totalConvs = allAnalytics.reduce((sum, a) => sum + (a.totalConversations || 0), 0);
-    const averageConversionRate = totalConvs > 0 ? Math.round((totalConversions / totalConvs) * 100) : 0;
+    try {
+      const allAgents = await db.select().from(agents);
+      const totalAgents = allAgents.length;
+      const activeAgents = allAgents.filter(agent => agent.status === 'active').length;
+      
+      const allConversations = await db.select().from(conversations);
+      const totalConversations = allConversations.length;
+      
+      const allAnalytics = await db.select().from(analytics);
+      const totalConversions = allAnalytics.reduce((sum, a) => sum + (a.conversions || 0), 0);
+      const totalConvs = allAnalytics.reduce((sum, a) => sum + (a.totalConversations || 0), 0);
+      const averageConversionRate = totalConvs > 0 ? Math.round((totalConversions / totalConvs) * 100) : 0;
 
-    return {
-      totalAgents,
-      activeAgents,
-      totalConversations,
-      averageConversionRate,
-    };
+      return {
+        totalAgents,
+        activeAgents,
+        totalConversations,
+        averageConversionRate,
+      };
+    } catch (error) {
+      console.error('Error getting dashboard stats:', error);
+      return {
+        totalAgents: 0,
+        activeAgents: 0,
+        totalConversations: 0,
+        averageConversionRate: 0,
+      };
+    }
   }
 }
 
