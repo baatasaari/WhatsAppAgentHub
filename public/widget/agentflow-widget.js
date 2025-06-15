@@ -1,20 +1,40 @@
 (function() {
     'use strict';
     
-    // Widget configuration
-    const script = document.currentScript || document.querySelector('script[data-agent-id]');
+    // Widget configuration - support both encrypted and legacy formats
+    const script = document.currentScript || document.querySelector('script[data-agent-config]') || document.querySelector('script[data-agent-id]');
     if (!script) return;
     
-    const config = {
-        agentId: script.getAttribute('data-agent-id'),
-        position: script.getAttribute('data-position') || 'bottom-right',
-        color: script.getAttribute('data-color') || '#25D366',
-        welcomeMessage: script.getAttribute('data-welcome-msg') || 'Hi! How can I help you today?',
-        apiBase: script.src.replace('/widget/agentflow-widget.js', '')
-    };
+    let config = {};
+    
+    // Check for encrypted configuration first
+    const encryptedConfig = script.getAttribute('data-agent-config');
+    if (encryptedConfig) {
+        try {
+            // Decrypt the base64 encoded configuration
+            const decryptedData = atob(encryptedConfig);
+            config = JSON.parse(decryptedData);
+            config.apiBase = script.src.replace('/widget/agentflow-widget.js', '');
+        } catch (error) {
+            console.error('AgentFlow Widget: Failed to decrypt configuration');
+            return;
+        }
+    } else {
+        // Fallback to legacy unencrypted attributes for backward compatibility
+        config = {
+            apiKey: script.getAttribute('data-agent-id'),
+            position: script.getAttribute('data-position') || 'bottom-right',
+            color: script.getAttribute('data-color') || '#25D366',
+            welcomeMessage: script.getAttribute('data-welcome-msg') || 'Hi! How can I help you today?',
+            apiBase: script.src.replace('/widget/agentflow-widget.js', '')
+        };
+    }
+
+    // Normalize API key field names for compatibility
+    config.agentId = config.apiKey || config.agentId;
 
     if (!config.agentId) {
-        console.error('AgentFlow Widget: data-agent-id attribute is required');
+        console.error('AgentFlow Widget: Agent configuration is required');
         return;
     }
 
