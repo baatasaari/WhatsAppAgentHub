@@ -15,6 +15,8 @@ export const agents = pgTable("agents", {
   widgetPosition: text("widget_position").default("bottom-right"),
   widgetColor: text("widget_color").default("#25D366"),
   welcomeMessage: text("welcome_message").default("Hi! How can I help you today?"),
+  whatsappNumber: text("whatsapp_number"), // WhatsApp Business number
+  whatsappMode: text("whatsapp_mode").default("web"), // "web", "api", "hybrid"
   status: text("status").notNull().default("active"), // "active", "paused", "draft"
   apiKey: text("api_key").notNull(), // unique identifier for embedding
   createdAt: timestamp("created_at").defaultNow().notNull(),

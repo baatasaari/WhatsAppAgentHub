@@ -256,6 +256,63 @@ export default function CreateAgent() {
                 </div>
               </div>
               
+              {/* WhatsApp Business Settings */}
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <MessageCircle className="w-4 h-4 text-green-600 mr-2" />
+                    WhatsApp Business Integration
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="whatsappNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>WhatsApp Business Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="+1234567890"
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-sm text-gray-500">
+                            Include country code (e.g., +1 for US)
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="whatsappMode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Integration Mode</FormLabel>
+                          <FormControl>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="whatsapp">WhatsApp Only</SelectItem>
+                                <SelectItem value="web">Web Chat Only</SelectItem>
+                                <SelectItem value="hybrid">Hybrid (Both)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <p className="text-sm text-gray-500">
+                            Choose how visitors interact with your agent
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* AI Voice Settings */}
               <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-4">

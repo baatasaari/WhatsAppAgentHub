@@ -220,6 +220,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         position: agent.widgetPosition,
         color: agent.widgetColor,
         welcomeMessage: agent.welcomeMessage,
+        whatsappNumber: agent.whatsappNumber,
+        whatsappMode: agent.whatsappMode || 'web',
         timestamp: Date.now()
       };
       

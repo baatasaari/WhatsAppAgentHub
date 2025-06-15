@@ -38,6 +38,9 @@
         return;
     }
 
+    // Set default WhatsApp mode if not specified
+    config.whatsappMode = config.whatsappMode || 'web';
+
     // Generate unique session ID
     const sessionId = 'af_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     
@@ -284,13 +287,32 @@
     const messageInput = document.getElementById('agentflow-input');
     const sendButton = document.getElementById('agentflow-send');
 
-    // Functions
-    function toggleChat() {
+    // WhatsApp Business integration functions
+    function openWhatsApp() {
+        if (config.whatsappNumber) {
+            const message = encodeURIComponent(config.welcomeMessage || 'Hi! I\'m interested in your services.');
+            const whatsappUrl = `https://wa.me/${config.whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        } else {
+            // Fallback to web chat if no WhatsApp number configured
+            toggleWebChat();
+        }
+    }
+
+    function toggleWebChat() {
         isOpen = !isOpen;
         chatContainer.style.display = isOpen ? 'flex' : 'none';
         
         if (isOpen && messages.length === 0) {
             addMessage(config.welcomeMessage, 'bot');
+        }
+    }
+
+    function toggleChat() {
+        if (config.whatsappMode === 'whatsapp' && config.whatsappNumber) {
+            openWhatsApp();
+        } else {
+            toggleWebChat();
         }
     }
 
