@@ -2,7 +2,7 @@
 
 ## Overview
 
-AgentFlow is a comprehensive web application for creating, managing, and deploying AI-powered conversational agents. The platform allows users to build WhatsApp-style chat widgets that can be embedded on websites to handle customer interactions, lead qualification, and sales conversations. The application features a React frontend with a Node.js/Express backend, using PostgreSQL for data persistence and Drizzle ORM for database operations.
+AgentFlow is a comprehensive web application for creating, managing, and deploying WhatsApp Business integration widgets. The platform allows users to create embeddable WhatsApp buttons that redirect website visitors directly to WhatsApp Business conversations for customer interactions, lead qualification, and sales conversations. The application features a React frontend with a Node.js/Express backend, using PostgreSQL for data persistence and Drizzle ORM for database operations.
 
 ## System Architecture
 

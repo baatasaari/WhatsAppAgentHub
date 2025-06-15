@@ -95,92 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Widget chat endpoint
-  app.post("/api/widget/chat", async (req, res) => {
-    try {
-      const { apiKey, message, sessionId } = req.body;
-      
-      if (!apiKey || !message) {
-        return res.status(400).json({ message: "API key and message are required" });
-      }
-
-      const agent = await storage.getAgentByApiKey(apiKey);
-      if (!agent) {
-        return res.status(404).json({ message: "Agent not found" });
-      }
-
-      if (agent.status !== 'active') {
-        return res.status(403).json({ message: "Agent is not active" });
-      }
-
-      const currentSessionId = sessionId || nanoid();
-      
-      // Get or create conversation
-      let conversation = await storage.getConversationBySession(currentSessionId);
-      if (!conversation) {
-        conversation = await storage.createConversation({
-          agentId: agent.id,
-          sessionId: currentSessionId,
-          messages: [],
-          leadData: {},
-        });
-      }
-
-      // Add user message
-      const userMessage = {
-        role: 'user' as const,
-        content: message,
-        timestamp: new Date().toISOString(),
-      };
-
-      const updatedMessages = [...(conversation.messages || []), userMessage];
-
-      // Generate AI response
-      const chatMessages = [
-        { role: 'system' as const, content: agent.systemPrompt },
-        ...updatedMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
-      ];
-
-      const aiResponse = await generateChatResponse(chatMessages, agent.llmProvider);
-      
-      // Add AI response
-      const aiMessage = {
-        role: 'assistant' as const,
-        content: aiResponse,
-        timestamp: new Date().toISOString(),
-      };
-
-      const finalMessages = [...updatedMessages, aiMessage];
-
-      // Update conversation
-      await storage.updateConversation(conversation.id, {
-        messages: finalMessages,
-      });
-
-      // Check if we should qualify this lead
-      if (finalMessages.length >= 4) { // After a few exchanges
-        const conversationText = finalMessages.map(m => `${m.role}: ${m.content}`).join('\n');
-        const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || []);
-        
-        await storage.updateConversation(conversation.id, {
-          leadData: qualification.extractedData,
-          conversionScore: qualification.score,
-          callScheduled: qualification.recommendation === 'call',
-        });
-      }
-
-      res.json({
-        response: aiResponse,
-        sessionId: currentSessionId,
-      });
-
-    } catch (error) {
-      console.error("Chat error:", error);
-      res.status(500).json({ message: "Failed to process chat message" });
-    }
-  });
-
-  // Widget configuration endpoint
+  // WhatsApp widget configuration endpoint
   app.get("/api/widget/config/:apiKey", async (req, res) => {
     try {
       const { apiKey } = req.params;
@@ -198,6 +113,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         welcomeMessage: agent.welcomeMessage,
         widgetColor: agent.widgetColor,
         widgetPosition: agent.widgetPosition,
+        whatsappNumber: agent.whatsappNumber,
+        whatsappMode: agent.whatsappMode,
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch widget configuration" });
