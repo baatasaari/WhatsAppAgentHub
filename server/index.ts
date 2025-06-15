@@ -41,6 +41,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Add specific routes for widget and test files before Vite middleware
+  app.get('/widget/agentflow-widget.js', (req, res) => {
+    res.sendFile(path.resolve(import.meta.dirname, "..", "public", "widget", "agentflow-widget.js"));
+  });
+  
+  app.get('/test-widget.html', (req, res) => {
+    res.sendFile(path.resolve(import.meta.dirname, "..", "public", "test-widget.html"));
+  });
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
