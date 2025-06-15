@@ -98,7 +98,9 @@ The application uses three main entities:
 
 ```
 Changelog:
-- June 15, 2025. Initial setup
+- June 15, 2025. Initial setup complete
+- June 15, 2025. Fixed CSS color classes and integrated OpenAI API
+- June 15, 2025. Platform is now running with full functionality
 ```
 
 ## User Preferences
