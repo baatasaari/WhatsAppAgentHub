@@ -105,6 +105,8 @@ Changelog:
 - June 15, 2025. Added secure embed code generation with dual format support (encrypted/legacy)
 - June 15, 2025. Removed web chat functionality and simplified to WhatsApp Business only integration
 - June 15, 2025. Streamlined widget to direct WhatsApp redirects with encrypted configuration support
+- June 15, 2025. Implemented automatic embed code generation after agent creation
+- June 15, 2025. Fixed agent creation flow to automatically redirect to embed code page with generated client code
 ```
 
 ## User Preferences

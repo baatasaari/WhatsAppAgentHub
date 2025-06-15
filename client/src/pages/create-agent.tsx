@@ -61,10 +61,11 @@ export default function CreateAgent() {
     mutationFn: async (data: CreateAgentForm) => {
       return await apiRequest("POST", "/api/agents", data);
     },
-    onSuccess: () => {
+    onSuccess: (newAgent: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
-      toast({ title: "Agent created successfully!" });
-      setLocation("/agents");
+      toast({ title: "Agent created successfully! Your embed code is ready." });
+      // Redirect to embed code page with the new agent
+      setLocation(`/embed-code?agentId=${newAgent.id}`);
     },
     onError: (error: any) => {
       toast({ 

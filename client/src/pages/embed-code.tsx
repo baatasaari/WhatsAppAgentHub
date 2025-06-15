@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import CopyButton from "@/components/ui/copy-button";
 
 export default function EmbedCode() {
+  const [location] = useLocation();
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [widgetConfig, setWidgetConfig] = useState({
     position: "bottom-right",
@@ -18,6 +20,15 @@ export default function EmbedCode() {
     welcomeMessage: "Hi! How can I help you today?"
   });
   const [showChatPreview, setShowChatPreview] = useState(false);
+
+  // Auto-select agent from URL params (when coming from create flow)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const agentId = urlParams.get('agentId');
+    if (agentId) {
+      setSelectedAgentId(agentId);
+    }
+  }, [location]);
 
   const { data: agents, isLoading } = useQuery({
     queryKey: ["/api/agents"],
