@@ -96,7 +96,7 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // LLM Models configuration endpoint
+  // LLM Models configuration endpoints
   app.get("/api/models", async (req, res) => {
     try {
       const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
@@ -106,6 +106,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error loading model config:', error);
       res.status(500).json({ message: "Failed to load model configuration" });
+    }
+  });
+
+  app.post("/api/models", async (req, res) => {
+    try {
+      const modelData = req.body;
+      const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      
+      // Generate unique ID if not provided
+      if (!modelData.id) {
+        modelData.id = modelData.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now();
+      }
+      
+      // Add to models array
+      config.models.push(modelData);
+      
+      // Save back to file
+      const updatedYaml = yaml.dump(config);
+      fs.writeFileSync(configPath, updatedYaml, 'utf8');
+      
+      res.status(201).json(modelData);
+    } catch (error: any) {
+      console.error("Error creating model:", error);
+      res.status(500).json({ message: "Failed to create model" });
+    }
+  });
+
+  app.put("/api/models/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      
+      const modelIndex = config.models.findIndex((m: any) => m.id === id);
+      if (modelIndex === -1) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+      
+      // Update model
+      config.models[modelIndex] = { ...config.models[modelIndex], ...updateData };
+      
+      // Save back to file
+      const updatedYaml = yaml.dump(config);
+      fs.writeFileSync(configPath, updatedYaml, 'utf8');
+      
+      res.json(config.models[modelIndex]);
+    } catch (error: any) {
+      console.error("Error updating model:", error);
+      res.status(500).json({ message: "Failed to update model" });
+    }
+  });
+
+  app.delete("/api/models/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      
+      const modelIndex = config.models.findIndex((m: any) => m.id === id);
+      if (modelIndex === -1) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+      
+      // Remove model
+      config.models.splice(modelIndex, 1);
+      
+      // Save back to file
+      const updatedYaml = yaml.dump(config);
+      fs.writeFileSync(configPath, updatedYaml, 'utf8');
+      
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting model:", error);
+      res.status(500).json({ message: "Failed to delete model" });
+    }
+  });
+
+  app.put("/api/models/reorder", async (req, res) => {
+    try {
+      const { models } = req.body;
+      
+      if (!Array.isArray(models)) {
+        return res.status(400).json({ message: "Models must be an array" });
+      }
+      
+      const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      
+      // Update models order
+      config.models = models;
+      
+      // Save back to file
+      const updatedYaml = yaml.dump(config);
+      fs.writeFileSync(configPath, updatedYaml, 'utf8');
+      
+      res.json({ message: "Models reordered successfully" });
+    } catch (error: any) {
+      console.error("Error reordering models:", error);
+      res.status(500).json({ message: "Failed to reorder models" });
     }
   });
 
