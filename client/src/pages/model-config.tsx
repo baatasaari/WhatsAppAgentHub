@@ -135,10 +135,13 @@ export default function ModelConfig() {
 
   const reorderModelsMutation = useMutation({
     mutationFn: async (reorderedModels: ModelConfig[]) => {
-      return await apiRequest("/api/models/reorder", {
+      const response = await fetch("/api/models/reorder", {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ models: reorderedModels }),
       });
+      if (!response.ok) throw new Error("Failed to reorder models");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/models"] });
@@ -150,9 +153,10 @@ export default function ModelConfig() {
   });
 
   const onDragEnd = (result: any) => {
-    if (!result.destination || !models) return;
+    if (!result.destination || !models || !Array.isArray(models)) return;
 
-    const reorderedModels = Array.from(models);
+    const modelsList = models as ModelConfig[];
+    const reorderedModels = [...modelsList];
     const [movedModel] = reorderedModels.splice(result.source.index, 1);
     reorderedModels.splice(result.destination.index, 0, movedModel);
 

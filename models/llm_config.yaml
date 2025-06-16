@@ -1,13 +1,12 @@
-# LLM Models Configuration
 models:
-  - id: "gpt-4o"
-    name: "OpenAI GPT-4o"
-    provider: "OpenAI"
-    version: "2024-06"
-    model_type: "transformer"
-    description: "Most capable model for complex conversations"
-    badge: "Recommended"
-    badge_color: "text-green-600"
+  - id: gpt-4o
+    name: OpenAI GPT-4o
+    provider: OpenAI
+    version: 2024-06
+    model_type: transformer
+    description: Most capable model for complex conversations
+    badge: Recommended
+    badge_color: text-green-600
     capabilities:
       - code_generation
       - text_completion
@@ -18,13 +17,13 @@ models:
       - function_calling
     input:
       max_tokens: 128000
-      token_encoding: "cl100k_base"
+      token_encoding: cl100k_base
       formats_supported:
         - text
         - json
         - image
     output:
-      response_format: "text"
+      response_format: text
       temperature: 0.7
       top_p: 0.9
       max_tokens: 4096
@@ -34,7 +33,7 @@ models:
     cost_profile:
       prompt_token_cost_per_1k: 0.005
       completion_token_cost_per_1k: 0.015
-      currency: "USD"
+      currency: USD
     compliance:
       - GDPR
       - SOC2
@@ -44,25 +43,26 @@ models:
       - PII_redaction
       - prompt_injection_detection
     deployment:
-      mode: "API"
-      endpoint: "https://api.openai.com/v1/chat/completions"
-      authentication: "Bearer Token"
+      mode: API
+      endpoint: https://api.openai.com/v1/chat/completions
+      authentication: Bearer Token
     usage_limits:
       rate_limit_rpm: 3000
       concurrent_requests: 100
     fine_tuning:
       supported: true
-      method: "instruction tuning"
-    notes: "GPT-4o supports multi-modal inputs (text + image) and is optimized for both latency and cost efficiency in production workloads."
-
-  - id: "claude-sonnet-4-20250514"
-    name: "Claude Sonnet 4"
-    provider: "Anthropic"
-    version: "2025-05-14"
-    model_type: "transformer"
-    description: "Latest Anthropic model with superior reasoning"
-    badge: "New"
-    badge_color: "text-purple-600"
+      method: instruction tuning
+    notes: >-
+      GPT-4o supports multi-modal inputs (text + image) and is optimized for
+      both latency and cost efficiency in production workloads.
+  - id: claude-sonnet-4-20250514
+    name: Claude Sonnet 4
+    provider: Anthropic
+    version: '2025-05-14'
+    model_type: transformer
+    description: Latest Anthropic model with superior reasoning
+    badge: New
+    badge_color: text-purple-600
     capabilities:
       - text_completion
       - reasoning
@@ -72,12 +72,12 @@ models:
       - multilingual_support
     input:
       max_tokens: 200000
-      token_encoding: "claude"
+      token_encoding: claude
       formats_supported:
         - text
         - json
     output:
-      response_format: "text"
+      response_format: text
       temperature: 0.7
       top_p: 0.9
       max_tokens: 4096
@@ -87,7 +87,7 @@ models:
     cost_profile:
       prompt_token_cost_per_1k: 0.003
       completion_token_cost_per_1k: 0.015
-      currency: "USD"
+      currency: USD
     compliance:
       - GDPR
       - SOC2
@@ -96,24 +96,25 @@ models:
       - constitutional_AI
       - harmlessness_training
     deployment:
-      mode: "API"
-      endpoint: "https://api.anthropic.com/v1/messages"
-      authentication: "API Key"
+      mode: API
+      endpoint: https://api.anthropic.com/v1/messages
+      authentication: API Key
     usage_limits:
       rate_limit_rpm: 4000
       concurrent_requests: 50
     fine_tuning:
       supported: false
-    notes: "Claude Sonnet 4 is the latest model from Anthropic with enhanced reasoning capabilities and constitutional AI safety."
-
-  - id: "claude-3-7-sonnet-20250219"
-    name: "Claude 3.7 Sonnet"
-    provider: "Anthropic"
-    version: "2025-02-19"
-    model_type: "transformer"
-    description: "Fast and efficient Anthropic model"
-    badge: "Fast"
-    badge_color: "text-blue-600"
+    notes: >-
+      Claude Sonnet 4 is the latest model from Anthropic with enhanced reasoning
+      capabilities and constitutional AI safety.
+  - id: claude-3-7-sonnet-20250219
+    name: Claude 3.7 Sonnet
+    provider: Anthropic
+    version: '2025-02-19'
+    model_type: transformer
+    description: Fast and efficient Anthropic model
+    badge: Fast
+    badge_color: text-blue-600
     capabilities:
       - text_completion
       - reasoning
@@ -122,12 +123,12 @@ models:
       - code_generation
     input:
       max_tokens: 200000
-      token_encoding: "claude"
+      token_encoding: claude
       formats_supported:
         - text
         - json
     output:
-      response_format: "text"
+      response_format: text
       temperature: 0.7
       top_p: 0.9
       max_tokens: 4096
@@ -137,7 +138,7 @@ models:
     cost_profile:
       prompt_token_cost_per_1k: 0.003
       completion_token_cost_per_1k: 0.015
-      currency: "USD"
+      currency: USD
     compliance:
       - GDPR
       - SOC2
@@ -145,24 +146,23 @@ models:
       - content_filtering
       - constitutional_AI
     deployment:
-      mode: "API"
-      endpoint: "https://api.anthropic.com/v1/messages"
-      authentication: "API Key"
+      mode: API
+      endpoint: https://api.anthropic.com/v1/messages
+      authentication: API Key
     usage_limits:
       rate_limit_rpm: 4000
       concurrent_requests: 50
     fine_tuning:
       supported: false
-    notes: "Claude 3.7 Sonnet offers excellent performance with faster response times."
-
-  - id: "gemini-1.5-pro"
-    name: "Google Gemini 1.5 Pro"
-    provider: "Google"
-    version: "1.5"
-    model_type: "multimodal_transformer"
-    description: "Google's advanced multimodal AI"
-    badge: "Multimodal"
-    badge_color: "text-indigo-600"
+    notes: Claude 3.7 Sonnet offers excellent performance with faster response times.
+  - id: gemini-1.5-pro
+    name: Google Gemini 1.5 Pro
+    provider: Google
+    version: '1.5'
+    model_type: multimodal_transformer
+    description: Google's advanced multimodal AI
+    badge: Multimodal
+    badge_color: text-indigo-600
     capabilities:
       - text_completion
       - reasoning
@@ -173,7 +173,7 @@ models:
       - multilingual_support
     input:
       max_tokens: 1000000
-      token_encoding: "gemini"
+      token_encoding: gemini
       formats_supported:
         - text
         - json
@@ -181,7 +181,7 @@ models:
         - video
         - audio
     output:
-      response_format: "text"
+      response_format: text
       temperature: 0.7
       top_p: 0.9
       max_tokens: 8192
@@ -191,7 +191,7 @@ models:
     cost_profile:
       prompt_token_cost_per_1k: 0.00125
       completion_token_cost_per_1k: 0.00375
-      currency: "USD"
+      currency: USD
     compliance:
       - GDPR
       - SOC2
@@ -200,25 +200,26 @@ models:
       - safety_ratings
       - harm_categories
     deployment:
-      mode: "API"
-      endpoint: "https://generativelanguage.googleapis.com/v1beta/models"
-      authentication: "API Key"
+      mode: API
+      endpoint: https://generativelanguage.googleapis.com/v1beta/models
+      authentication: API Key
     usage_limits:
       rate_limit_rpm: 2000
       concurrent_requests: 60
     fine_tuning:
       supported: true
-      method: "supervised fine-tuning"
-    notes: "Gemini 1.5 Pro excels at multimodal understanding and can process large contexts including video and audio."
-
-  - id: "gpt-3.5-turbo"
-    name: "GPT-3.5 Turbo"
-    provider: "OpenAI"
-    version: "2023-11"
-    model_type: "transformer"
-    description: "Cost-effective for simple tasks"
-    badge: "Budget"
-    badge_color: "text-orange-600"
+      method: supervised fine-tuning
+    notes: >-
+      Gemini 1.5 Pro excels at multimodal understanding and can process large
+      contexts including video and audio.
+  - id: gpt-3.5-turbo
+    name: GPT-3.5 Turbo
+    provider: OpenAI
+    version: 2023-11
+    model_type: transformer
+    description: Cost-effective for simple tasks
+    badge: Budget
+    badge_color: text-orange-600
     capabilities:
       - text_completion
       - basic_reasoning
@@ -227,12 +228,12 @@ models:
       - multilingual_support
     input:
       max_tokens: 16385
-      token_encoding: "cl100k_base"
+      token_encoding: cl100k_base
       formats_supported:
         - text
         - json
     output:
-      response_format: "text"
+      response_format: text
       temperature: 0.7
       top_p: 0.9
       max_tokens: 4096
@@ -242,7 +243,7 @@ models:
     cost_profile:
       prompt_token_cost_per_1k: 0.0015
       completion_token_cost_per_1k: 0.002
-      currency: "USD"
+      currency: USD
     compliance:
       - GDPR
       - SOC2
@@ -251,13 +252,15 @@ models:
       - content_filtering
       - PII_redaction
     deployment:
-      mode: "API"
-      endpoint: "https://api.openai.com/v1/chat/completions"
-      authentication: "Bearer Token"
+      mode: API
+      endpoint: https://api.openai.com/v1/chat/completions
+      authentication: Bearer Token
     usage_limits:
       rate_limit_rpm: 3500
       concurrent_requests: 100
     fine_tuning:
       supported: true
-      method: "instruction tuning"
-    notes: "GPT-3.5 Turbo is optimized for speed and cost efficiency while maintaining good performance."
+      method: instruction tuning
+    notes: >-
+      GPT-3.5 Turbo is optimized for speed and cost efficiency while maintaining
+      good performance.
