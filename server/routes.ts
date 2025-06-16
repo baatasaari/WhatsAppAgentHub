@@ -109,6 +109,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Industry verticals endpoint
+  app.get("/api/industry-verticals", async (req, res) => {
+    try {
+      const configPath = path.join(process.cwd(), 'models', 'industry_verticals.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      res.json(config.industry_verticals);
+    } catch (error: any) {
+      console.error('Error loading industry verticals config:', error);
+      res.status(500).json({ message: "Failed to load industry verticals configuration" });
+    }
+  });
+
   // Agent routes
   app.get("/api/agents", async (req, res) => {
     try {

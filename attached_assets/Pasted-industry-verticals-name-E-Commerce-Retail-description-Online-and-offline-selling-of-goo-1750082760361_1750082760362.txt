@@ -1,0 +1,75 @@
+industry_verticals:
+  - name: E-Commerce & Retail
+    description: Online and offline selling of goods and services, including marketplaces and direct-to-consumer brands.
+
+  - name: Real Estate & Property Management
+    description: Buying, selling, renting, and managing residential, commercial, or industrial properties.
+
+  - name: Healthcare & Life Sciences
+    description: Medical care, health services, biotech, pharmaceuticals, diagnostics, and health insurance.
+
+  - name: Education & EdTech
+    description: Schools, universities, online learning platforms, and educational technology providers.
+
+  - name: Finance & Banking
+    description: Retail banking, investment banking, fintech, asset management, and credit services.
+
+  - name: Insurance
+    description: Life, health, auto, property, and commercial insurance providers and platforms.
+
+  - name: Legal Services & Law Firms
+    description: Legal practices, compliance services, legal tech, and contract management.
+
+  - name: Manufacturing & Supply Chain
+    description: Production, logistics, warehousing, and distribution of goods.
+
+  - name: Transportation & Logistics
+    description: Freight, shipping, last-mile delivery, public transport, and fleet management.
+
+  - name: Energy & Utilities
+    description: Electricity, gas, water, renewable energy, and sustainability services.
+
+  - name: Telecommunications
+    description: Mobile networks, internet service providers, and communication infrastructure.
+
+  - name: Media & Entertainment
+    description: News, streaming, publishing, advertising, music, and content creation.
+
+  - name: Hospitality & Travel
+    description: Hotels, airlines, travel booking platforms, and tourism services.
+
+  - name: Government & Public Sector
+    description: Local, regional, and national government agencies and services.
+
+  - name: Aerospace & Defense
+    description: Aviation, military systems, space exploration, and national security.
+
+  - name: Agriculture & Agritech
+    description: Farming, food production, supply chains, and agricultural technologies.
+
+  - name: Construction & Engineering
+    description: Building, infrastructure, architecture, and project management.
+
+  - name: Technology & Software Development
+    description: Software vendors, cloud services, SaaS, platforms, and IT services.
+
+  - name: Marketing & Advertising
+    description: Agencies, platforms, and tools for brand promotion and customer acquisition.
+
+  - name: Human Resources & Recruitment
+    description: Talent acquisition, HR tech, training, and employee management services.
+
+  - name: Non-Profits & NGOs
+    description: Charities, religious organizations, social enterprises, and advocacy groups.
+
+  - name: Automotive & Mobility
+    description: Car manufacturing, EVs, shared mobility, and transportation innovation.
+
+  - name: Pharmaceuticals & Biotechnology
+    description: Drug discovery, development, testing, and regulatory compliance.
+
+  - name: Cybersecurity & Compliance
+    description: Data protection, risk management, identity access, and governance.
+
+  - name: Gaming & Interactive Media
+    description: Game studios, platforms, eSports, AR/VR, and immersive experiences.

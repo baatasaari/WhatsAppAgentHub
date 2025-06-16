@@ -44,6 +44,11 @@ export default function CreateAgent() {
     queryKey: ["/api/models"],
   });
 
+  // Fetch industry verticals from configuration
+  const { data: industryVerticals, isLoading: industriesLoading } = useQuery({
+    queryKey: ["/api/industry-verticals"],
+  });
+
   const form = useForm<CreateAgentForm>({
     resolver: zodResolver(createAgentSchema),
     defaultValues: {
@@ -151,15 +156,16 @@ export default function CreateAgent() {
                     <FormItem>
                       <FormLabel>Business Category</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select value={field.value} onValueChange={field.onChange} disabled={industriesLoading}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder={industriesLoading ? "Loading categories..." : "Select category"} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="E-commerce">E-commerce</SelectItem>
-                            <SelectItem value="Real Estate">Real Estate</SelectItem>
-                            <SelectItem value="Healthcare">Healthcare</SelectItem>
-                            <SelectItem value="Education">Education</SelectItem>
+                            {Array.isArray(industryVerticals) ? industryVerticals.map((industry: any) => (
+                              <SelectItem key={industry.name} value={industry.name}>
+                                {industry.name}
+                              </SelectItem>
+                            )) : null}
                             <SelectItem value="Other">Other</SelectItem>
                           </SelectContent>
                         </Select>
