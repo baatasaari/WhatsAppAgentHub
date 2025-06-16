@@ -64,7 +64,10 @@ The application uses three main entities:
 ## External Dependencies
 
 ### AI Services
-- **OpenAI API**: Primary LLM provider for chat responses and lead qualification
+- **Multi-LLM Support**: OpenAI (GPT-4o, GPT-3.5), Anthropic (Claude Sonnet 4, Claude 3.7), Google (Gemini 1.5 Pro)
+- **OpenAI API**: GPT-4o and GPT-3.5-turbo models for chat responses and lead qualification
+- **Anthropic API**: Claude Sonnet 4 (latest) and Claude 3.7 Sonnet for advanced reasoning
+- **Google AI API**: Gemini 1.5 Pro for multimodal AI capabilities
 - **ElevenLabs**: Voice synthesis for AI phone calls (planned feature)
 
 ### Database
@@ -107,6 +110,9 @@ Changelog:
 - June 15, 2025. Streamlined widget to direct WhatsApp redirects with encrypted configuration support
 - June 15, 2025. Implemented automatic embed code generation after agent creation
 - June 15, 2025. Fixed agent creation flow to automatically redirect to embed code page with generated client code
+- June 16, 2025. Implemented multi-LLM provider support (OpenAI, Anthropic, Google AI) with unified interface
+- June 16, 2025. Added Claude Sonnet 4, Claude 3.7, and Gemini 1.5 Pro model support alongside existing OpenAI models
+- June 16, 2025. Enhanced agent management UI to display LLM provider badges and improved type safety
 ```
 
 ## User Preferences
