@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { calculateTokenCosts } from './cost-calculator.js';
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
@@ -16,6 +17,12 @@ export interface LLMResponse {
     promptTokens: number;
     completionTokens: number;
     totalTokens: number;
+  };
+  costs?: {
+    promptCost: number;
+    completionCost: number;
+    totalCost: number;
+    currency: string;
   };
 }
 
@@ -48,13 +55,18 @@ export class OpenAIProvider {
       max_tokens: 1000,
     });
 
+    const usage = {
+      promptTokens: response.usage?.prompt_tokens || 0,
+      completionTokens: response.usage?.completion_tokens || 0,
+      totalTokens: response.usage?.total_tokens || 0,
+    };
+
+    const costs = calculateTokenCosts(model, usage.promptTokens, usage.completionTokens);
+
     return {
       content: response.choices[0].message.content || '',
-      usage: {
-        promptTokens: response.usage?.prompt_tokens || 0,
-        completionTokens: response.usage?.completion_tokens || 0,
-        totalTokens: response.usage?.total_tokens || 0,
-      }
+      usage,
+      costs
     };
   }
 

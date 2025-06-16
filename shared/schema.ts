@@ -47,6 +47,21 @@ export const analytics = pgTable("analytics", {
   aiCalls: integer("ai_calls").default(0),
   conversionRate: integer("conversion_rate").default(0), // percentage * 100
   avgResponseTime: integer("avg_response_time").default(0), // milliseconds
+  promptTokens: integer("prompt_tokens").default(0),
+  completionTokens: integer("completion_tokens").default(0),
+  totalTokens: integer("total_tokens").default(0),
+  llmCosts: jsonb("llm_costs").$type<{
+    promptCost: number;
+    completionCost: number;
+    totalCost: number;
+    currency: string;
+  }>().default({
+    promptCost: 0,
+    completionCost: 0,
+    totalCost: 0,
+    currency: "USD"
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertAgentSchema = createInsertSchema(agents).omit({
