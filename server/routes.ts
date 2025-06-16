@@ -5,6 +5,9 @@ import { insertAgentSchema, insertConversationSchema } from "@shared/schema";
 import { generateChatResponse, qualifyLead } from "./services/llm-providers";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // WhatsApp Business API integration
 async function sendWhatsAppMessage(phoneNumber: string, message: string, accessToken: string) {
@@ -93,6 +96,19 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // LLM Models configuration endpoint
+  app.get("/api/models", async (req, res) => {
+    try {
+      const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
+      const fileContents = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(fileContents) as any;
+      res.json(config.models);
+    } catch (error: any) {
+      console.error('Error loading model config:', error);
+      res.status(500).json({ message: "Failed to load model configuration" });
+    }
+  });
+
   // Agent routes
   app.get("/api/agents", async (req, res) => {
     try {

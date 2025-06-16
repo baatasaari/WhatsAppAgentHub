@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,11 @@ export default function CreateAgent() {
   const [selectedLLM, setSelectedLLM] = useState("");
   const [qualificationQuestions, setQualificationQuestions] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Fetch available LLM models from configuration
+  const { data: availableModels, isLoading: modelsLoading } = useQuery({
+    queryKey: ["/api/models"],
+  });
 
   const form = useForm<CreateAgentForm>({
     resolver: zodResolver(createAgentSchema),
@@ -172,36 +177,38 @@ export default function CreateAgent() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Choose LLM Provider *</FormLabel>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[
-                        { id: "gpt-4o", name: "OpenAI GPT-4o", desc: "Most capable model for complex conversations", badge: "Recommended", badgeColor: "text-green-600" },
-                        { id: "claude-sonnet-4-20250514", name: "Claude Sonnet 4", desc: "Latest Anthropic model with superior reasoning", badge: "New", badgeColor: "text-purple-600" },
-                        { id: "claude-3-7-sonnet-20250219", name: "Claude 3.7 Sonnet", desc: "Fast and efficient Anthropic model", badge: "Fast", badgeColor: "text-blue-600" },
-                        { id: "gemini-1.5-pro", name: "Google Gemini 1.5 Pro", desc: "Google's advanced multimodal AI", badge: "Multimodal", badgeColor: "text-indigo-600" },
-                        { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", desc: "Cost-effective for simple tasks", badge: "Budget", badgeColor: "text-orange-600" },
-                      ].map((llm) => (
-                        <div
-                          key={llm.id}
-                          className={`llm-option ${field.value === llm.id ? 'selected' : ''}`}
-                          onClick={() => {
-                            field.onChange(llm.id);
-                            setSelectedLLM(llm.id);
-                          }}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-gray-900">{llm.name}</h4>
-                            <input
-                              type="radio"
-                              checked={field.value === llm.id}
-                              onChange={() => {}}
-                              className="text-primary"
-                            />
+                    {modelsLoading ? (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-24"></div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {(availableModels || []).map((llm: any) => (
+                          <div
+                            key={llm.id}
+                            className={`llm-option ${field.value === llm.id ? 'selected' : ''}`}
+                            onClick={() => {
+                              field.onChange(llm.id);
+                              setSelectedLLM(llm.id);
+                            }}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900">{llm.name}</h4>
+                              <input
+                                type="radio"
+                                checked={field.value === llm.id}
+                                onChange={() => {}}
+                                className="text-primary"
+                              />
+                            </div>
+                            <p className="text-sm text-gray-600">{llm.description}</p>
+                            <p className={`text-xs mt-2 ${llm.badge_color}`}>{llm.badge}</p>
                           </div>
-                          <p className="text-sm text-gray-600">{llm.desc}</p>
-                          <p className={`text-xs mt-2 ${llm.badgeColor}`}>{llm.badge}</p>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
