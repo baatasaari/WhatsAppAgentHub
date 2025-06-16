@@ -154,7 +154,24 @@ export default function Agents() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {agent.llmProvider}
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs font-medium rounded ${
+                          agent.llmProvider?.includes('gpt') 
+                            ? 'bg-green-100 text-green-800'
+                            : agent.llmProvider?.includes('claude')
+                            ? 'bg-purple-100 text-purple-800'
+                            : agent.llmProvider?.includes('gemini')
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {agent.llmProvider?.includes('gpt-4o') ? 'GPT-4o' :
+                           agent.llmProvider?.includes('claude-sonnet-4') ? 'Claude 4' :
+                           agent.llmProvider?.includes('claude-3-7') ? 'Claude 3.7' :
+                           agent.llmProvider?.includes('gemini-1.5') ? 'Gemini 1.5' :
+                           agent.llmProvider?.includes('gpt-3.5') ? 'GPT-3.5' :
+                           agent.llmProvider || 'Unknown'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {agent.businessCategory || 'General'}

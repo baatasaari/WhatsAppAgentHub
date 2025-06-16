@@ -175,8 +175,10 @@ export default function CreateAgent() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
                         { id: "gpt-4o", name: "OpenAI GPT-4o", desc: "Most capable model for complex conversations", badge: "Recommended", badgeColor: "text-green-600" },
-                        { id: "claude-3", name: "Claude-3 Sonnet", desc: "Great for reasoning and analysis", badge: "Fast & Reliable", badgeColor: "text-blue-600" },
-                        { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", desc: "Cost-effective for simple tasks", badge: "Budget Friendly", badgeColor: "text-orange-600" },
+                        { id: "claude-sonnet-4-20250514", name: "Claude Sonnet 4", desc: "Latest Anthropic model with superior reasoning", badge: "New", badgeColor: "text-purple-600" },
+                        { id: "claude-3-7-sonnet-20250219", name: "Claude 3.7 Sonnet", desc: "Fast and efficient Anthropic model", badge: "Fast", badgeColor: "text-blue-600" },
+                        { id: "gemini-1.5-pro", name: "Google Gemini 1.5 Pro", desc: "Google's advanced multimodal AI", badge: "Multimodal", badgeColor: "text-indigo-600" },
+                        { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", desc: "Cost-effective for simple tasks", badge: "Budget", badgeColor: "text-orange-600" },
                       ].map((llm) => (
                         <div
                           key={llm.id}

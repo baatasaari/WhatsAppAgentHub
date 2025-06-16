@@ -75,7 +75,7 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
 
   // Send LLM response back to WhatsApp
   if (agent.whatsappAccessToken) {
-    await sendWhatsAppMessage(userPhone, aiResponse, agent.whatsappAccessToken);
+    await sendWhatsAppMessage(userPhone, aiResponse.content, agent.whatsappAccessToken);
   }
 
   // Lead qualification after multiple exchanges
@@ -121,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertAgentSchema.parse(req.body);
       const agent = await storage.createAgent(validatedData);
       res.status(201).json(agent);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'ZodError') {
         return res.status(400).json({ message: "Invalid agent data", errors: error.errors });
       }
@@ -281,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add AI response
       const aiMessage = {
         role: 'assistant' as const,
-        content: aiResponse,
+        content: aiResponse.content,
         timestamp: new Date().toISOString(),
       };
 
@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if we should qualify this lead
       if (finalMessages.length >= 4) {
         const conversationText = finalMessages.map(m => `${m.role}: ${m.content}`).join('\n');
-        const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || []);
+        const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || [], agent.llmProvider);
         
         await storage.updateConversation(conversation.id, {
           leadData: qualification.extractedData,
@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate WhatsApp handoff URL if conversation should transfer
       let whatsappHandoff = null;
-      if (finalMessages.length >= 6 || aiResponse.toLowerCase().includes('contact') || aiResponse.toLowerCase().includes('speak')) {
+      if (finalMessages.length >= 6 || aiResponse.content.toLowerCase().includes('contact') || aiResponse.content.toLowerCase().includes('speak')) {
         if (agent.whatsappNumber) {
           const handoffMessage = encodeURIComponent(`Continuing our conversation: ${finalMessages.slice(-2).map(m => m.content).join(' ')}`);
           const cleanNumber = agent.whatsappNumber.replace(/[^0-9]/g, '');
@@ -315,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({
-        response: aiResponse,
+        response: aiResponse.content,
         sessionId: currentSessionId,
         whatsappHandoff,
         shouldTransfer: !!whatsappHandoff,
