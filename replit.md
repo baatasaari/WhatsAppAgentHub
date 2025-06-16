@@ -116,6 +116,9 @@ Changelog:
 - June 16, 2025. Replaced hardcoded model options with dynamic YAML configuration system for centralized management
 - June 16, 2025. Implemented centralized industry verticals configuration replacing hardcoded business categories
 - June 16, 2025. Added comprehensive model configuration page displaying cost, performance, and capability metrics
+- June 16, 2025. Implemented comprehensive LLM cost tracking across hourly, daily, weekly, monthly, and all-time periods
+- June 16, 2025. Enhanced analytics schema with token usage and cost fields, updated all LLM providers to calculate costs
+- June 16, 2025. Created cost analytics API endpoint and enhanced analytics page with detailed cost breakdowns by agent
 ```
 
 ## User Preferences
