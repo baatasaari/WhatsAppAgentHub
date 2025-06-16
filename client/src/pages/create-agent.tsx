@@ -177,15 +177,13 @@ export default function CreateAgent() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Choose LLM Provider *</FormLabel>
-                    {modelsLoading ? (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {Array.from({ length: 5 }).map((_, i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {modelsLoading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
                           <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-24"></div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {(availableModels || []).map((llm: any) => (
+                        ))
+                      ) : (
+                        Array.isArray(availableModels) ? availableModels.map((llm: any) => (
                           <div
                             key={llm.id}
                             className={`llm-option ${field.value === llm.id ? 'selected' : ''}`}
@@ -206,9 +204,9 @@ export default function CreateAgent() {
                             <p className="text-sm text-gray-600">{llm.description}</p>
                             <p className={`text-xs mt-2 ${llm.badge_color}`}>{llm.badge}</p>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        )) : []
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

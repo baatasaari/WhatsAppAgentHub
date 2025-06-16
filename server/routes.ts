@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Agent not found" });
       }
       res.json(agent);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'ZodError') {
         return res.status(400).json({ message: "Invalid agent data", errors: error.errors });
       }
