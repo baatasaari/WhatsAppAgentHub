@@ -34,7 +34,11 @@ export default function EmbedCode() {
     queryKey: ["/api/agents"],
   });
 
-  const { data: embedData, isLoading: isLoadingEmbed } = useQuery({
+  const { data: embedData, isLoading: isLoadingEmbed } = useQuery<{
+    secureEmbedCode: string;
+    legacyEmbedCode: string;
+    agent: any;
+  }>({
     queryKey: ["/api/agents", selectedAgentId, "embed-code"],
     enabled: !!selectedAgentId,
   });
@@ -126,7 +130,7 @@ export default function EmbedCode() {
                   
                   <div className="bg-gray-900 rounded-lg p-4 text-sm">
                     <pre className="text-green-400 overflow-x-auto">
-                      <code>{embedData.secureEmbedCode}</code>
+                      <code>{embedData?.secureEmbedCode || ''}</code>
                     </pre>
                   </div>
 
@@ -150,12 +154,12 @@ export default function EmbedCode() {
                       <AlertTriangle className="w-4 h-4 text-orange-600" />
                       <span className="font-medium text-orange-800">Legacy Format</span>
                     </div>
-                    <CopyButton text={embedData.legacyEmbedCode} />
+                    <CopyButton text={embedData?.legacyEmbedCode || ''} />
                   </div>
                   
                   <div className="bg-gray-900 rounded-lg p-4 text-sm">
                     <pre className="text-green-400 overflow-x-auto">
-                      <code>{embedData.legacyEmbedCode}</code>
+                      <code>{embedData?.legacyEmbedCode || ''}</code>
                     </pre>
                   </div>
 
