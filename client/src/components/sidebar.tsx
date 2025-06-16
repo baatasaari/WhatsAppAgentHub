@@ -6,7 +6,7 @@ const navigation = [
   { name: "My Agents", href: "/agents", icon: Bot },
   { name: "Create Agent", href: "/create", icon: Plus },
   { name: "Widget Preview", href: "/preview", icon: Eye },
-  { name: "Embed Code", href: "/embed", icon: Code },
+  { name: "Embed Code", href: "/embed-code", icon: Code },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Platform Test", href: "/test", icon: TestTube },
 ];

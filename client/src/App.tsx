@@ -26,7 +26,7 @@ function Router() {
             <Route path="/agents" component={Agents} />
             <Route path="/create" component={CreateAgent} />
             <Route path="/analytics" component={Analytics} />
-            <Route path="/embed" component={EmbedCode} />
+            <Route path="/embed-code" component={EmbedCode} />
             <Route path="/preview" component={WidgetPreview} />
             <Route path="/test" component={PlatformTest} />
             <Route component={NotFound} />

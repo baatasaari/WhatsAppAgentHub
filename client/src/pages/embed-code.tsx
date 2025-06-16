@@ -39,7 +39,7 @@ export default function EmbedCode() {
     enabled: !!selectedAgentId,
   });
 
-  const selectedAgent = agents?.find((agent: any) => agent.id.toString() === selectedAgentId);
+  const selectedAgent = Array.isArray(agents) ? agents.find((agent: any) => agent.id.toString() === selectedAgentId) : null;
 
   if (isLoading) {
     return (
@@ -51,7 +51,7 @@ export default function EmbedCode() {
     );
   }
 
-  const activeAgents = (agents || []).filter((agent: any) => agent.status === 'active');
+  const activeAgents = Array.isArray(agents) ? agents.filter((agent: any) => agent.status === 'active') : [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -121,7 +121,7 @@ export default function EmbedCode() {
                       <Shield className="w-4 h-4 text-green-600" />
                       <span className="font-medium text-green-800">Encrypted Configuration</span>
                     </div>
-                    <CopyButton text={embedData.secureEmbedCode} />
+                    <CopyButton text={embedData?.secureEmbedCode || ''} />
                   </div>
                   
                   <div className="bg-gray-900 rounded-lg p-4 text-sm">

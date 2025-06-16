@@ -476,6 +476,7 @@ export default function CreateAgent() {
                     type="button"
                     variant="secondary"
                     disabled={createAgentMutation.isPending}
+                    onClick={() => setLocation('/preview')}
                   >
                     Preview Widget
                   </Button>
