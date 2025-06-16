@@ -264,19 +264,353 @@ models:
     notes: >-
       GPT-3.5 Turbo is optimized for speed and cost efficiency while maintaining
       good performance.
-  - name: Test Model Crash Check
-    provider: Test
+  - id: llama-3.1-405b
+    name: Meta Llama 3.1 405B
+    provider: Meta
+    version: '3.1'
+    model_type: transformer
+    description: Meta's largest open source model with exceptional reasoning
+    badge: Open Source
+    badge_color: text-emerald-600
+    capabilities:
+      - text_completion
+      - reasoning
+      - code_generation
+      - multilingual_support
+      - function_calling
+      - creative_writing
+    input:
+      max_tokens: 128000
+      token_encoding: llama
+      formats_supported:
+        - text
+        - json
+    output:
+      response_format: text
+      temperature: 0.7
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 1200
+      burst_latency_ms: 3000
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - Custom License
+    safety_features:
+      - configurable_safety
+      - fine_tune_safety
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 1000
+      concurrent_requests: 10
+    fine_tuning:
+      supported: true
+      method: full_parameter_tuning
+    notes: >-
+      Llama 3.1 405B is Meta's flagship open source model, offering performance
+      comparable to closed models with full customization capabilities.
+  - id: llama-3.1-70b
+    name: Meta Llama 3.1 70B
+    provider: Meta
+    version: '3.1'
+    model_type: transformer
+    description: High-performance open source model for production use
+    badge: Open Source
+    badge_color: text-emerald-600
+    capabilities:
+      - text_completion
+      - reasoning
+      - code_generation
+      - multilingual_support
+      - function_calling
+    input:
+      max_tokens: 128000
+      token_encoding: llama
+      formats_supported:
+        - text
+        - json
+    output:
+      response_format: text
+      temperature: 0.7
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 800
+      burst_latency_ms: 2000
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - Custom License
+    safety_features:
+      - configurable_safety
+      - fine_tune_safety
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 2000
+      concurrent_requests: 20
+    fine_tuning:
+      supported: true
+      method: full_parameter_tuning
+    notes: >-
+      Llama 3.1 70B offers excellent performance for most tasks while being
+      more resource-efficient than the 405B model.
+  - id: mistral-7b-v0.3
+    name: Mistral 7B v0.3
+    provider: Mistral AI
+    version: 'v0.3'
+    model_type: transformer
+    description: Efficient open source model with strong multilingual capabilities
+    badge: Open Source
+    badge_color: text-emerald-600
+    capabilities:
+      - text_completion
+      - reasoning
+      - code_generation
+      - multilingual_support
+    input:
+      max_tokens: 32000
+      token_encoding: mistral
+      formats_supported:
+        - text
+        - json
+    output:
+      response_format: text
+      temperature: 0.7
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 400
+      burst_latency_ms: 1000
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - Apache 2.0
+    safety_features:
+      - configurable_safety
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 3000
+      concurrent_requests: 30
+    fine_tuning:
+      supported: true
+      method: lora_adapters
+    notes: >-
+      Mistral 7B is optimized for efficiency and multilingual performance,
+      making it ideal for resource-constrained deployments.
+  - id: qwen2.5-72b
+    name: Qwen 2.5 72B
+    provider: Alibaba Cloud
+    version: '2.5'
+    model_type: transformer
+    description: Advanced multilingual model with strong reasoning capabilities
+    badge: Open Source
+    badge_color: text-emerald-600
+    capabilities:
+      - text_completion
+      - reasoning
+      - code_generation
+      - multilingual_support
+      - math_problem_solving
+    input:
+      max_tokens: 128000
+      token_encoding: qwen
+      formats_supported:
+        - text
+        - json
+    output:
+      response_format: text
+      temperature: 0.7
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 900
+      burst_latency_ms: 2200
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - Tongyi Qianwen License
+    safety_features:
+      - content_filtering
+      - configurable_safety
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 1500
+      concurrent_requests: 15
+    fine_tuning:
+      supported: true
+      method: full_parameter_tuning
+    notes: >-
+      Qwen 2.5 72B excels in multilingual tasks and mathematical reasoning,
+      with particular strength in Chinese language processing.
+  - id: phi-3.5-mini
+    name: Microsoft Phi-3.5 Mini
+    provider: Microsoft
+    version: '3.5'
+    model_type: transformer
+    description: Compact high-performance model for efficient deployment
+    badge: Open Source
+    badge_color: text-emerald-600
+    capabilities:
+      - text_completion
+      - reasoning
+      - code_generation
+      - instruction_following
+    input:
+      max_tokens: 128000
+      token_encoding: phi
+      formats_supported:
+        - text
+        - json
+    output:
+      response_format: text
+      temperature: 0.7
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 200
+      burst_latency_ms: 500
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - MIT License
+    safety_features:
+      - built_in_safety
+      - responsible_ai
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 5000
+      concurrent_requests: 50
+    fine_tuning:
+      supported: true
+      method: lora_adapters
+    notes: >-
+      Phi-3.5 Mini delivers impressive performance despite its compact size,
+      making it perfect for edge deployment and resource-efficient applications.
+  - id: codellama-34b
+    name: Code Llama 34B
+    provider: Meta
     version: '1.0'
-    description: Testing crash issue
-    badge: Test
-    badge_color: text-blue-600
-    id: test-model-crash-check-1750085423887
-  - name: Load Test Model
-    provider: Test
-    version: '1.0'
-    id: load-test-model-1750085473642
-  - name: Stability Test Model
-    provider: Test Provider
-    version: 1.0.0
-    description: Testing stability
-    id: stability-test-model-1750085548300
+    model_type: transformer
+    description: Specialized open source model for code generation and completion
+    badge: Code Specialist
+    badge_color: text-cyan-600
+    capabilities:
+      - code_generation
+      - code_completion
+      - code_explanation
+      - debugging_assistance
+      - multiple_languages
+    input:
+      max_tokens: 100000
+      token_encoding: llama
+      formats_supported:
+        - text
+        - json
+        - code
+    output:
+      response_format: text
+      temperature: 0.1
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 1000
+      burst_latency_ms: 2500
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - Custom License
+    safety_features:
+      - code_safety_filters
+      - malicious_code_detection
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 1000
+      concurrent_requests: 10
+    fine_tuning:
+      supported: true
+      method: full_parameter_tuning
+    notes: >-
+      Code Llama 34B is specifically trained for programming tasks and supports
+      over 20 programming languages with excellent code understanding.
+  - id: deepseek-coder-33b
+    name: DeepSeek Coder 33B
+    provider: DeepSeek
+    version: '1.3'
+    model_type: transformer
+    description: Advanced open source coding model with strong problem-solving
+    badge: Code Specialist
+    badge_color: text-cyan-600
+    capabilities:
+      - code_generation
+      - code_completion
+      - algorithm_design
+      - code_optimization
+      - technical_documentation
+    input:
+      max_tokens: 16000
+      token_encoding: deepseek
+      formats_supported:
+        - text
+        - json
+        - code
+    output:
+      response_format: text
+      temperature: 0.1
+      top_p: 0.9
+      max_tokens: 4096
+    latency_profile:
+      avg_latency_ms: 900
+      burst_latency_ms: 2100
+    cost_profile:
+      prompt_token_cost_per_1k: 0.00
+      completion_token_cost_per_1k: 0.00
+      currency: USD
+    compliance:
+      - DeepSeek License
+    safety_features:
+      - code_safety_filters
+      - secure_coding_practices
+    deployment:
+      mode: Self-hosted
+      endpoint: configurable
+      authentication: Custom
+    usage_limits:
+      rate_limit_rpm: 1200
+      concurrent_requests: 12
+    fine_tuning:
+      supported: true
+      method: full_parameter_tuning
+    notes: >-
+      DeepSeek Coder 33B specializes in complex coding tasks and algorithmic
+      problem-solving with strong performance in competitive programming.

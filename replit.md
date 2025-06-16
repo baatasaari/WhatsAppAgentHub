@@ -128,6 +128,8 @@ Changelog:
 - June 16, 2025. Fixed database connection stability issues by enhancing pool configuration, adding connection error handling, and implementing graceful shutdown procedures
 - June 16, 2025. Resolved application crashes caused by WebSocket connection failures with Neon PostgreSQL database through improved connection management
 - June 16, 2025. Completed comprehensive stress testing with 45+ concurrent requests, memory leak testing, and full CRUD operation validation - all systems stable
+- June 16, 2025. Added 7 popular open source models to LLM configuration: Llama 3.1 (405B/70B), Mistral 7B, Qwen 2.5 72B, Phi-3.5 Mini, Code Llama 34B, DeepSeek Coder 33B
+- June 16, 2025. Enhanced model diversity with specialized coding models and efficient deployment options for self-hosted environments
 ```
 
 ## User Preferences
