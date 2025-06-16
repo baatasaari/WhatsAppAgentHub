@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertAgentSchema, insertConversationSchema } from "@shared/schema";
-import { generateChatResponse, qualifyLead } from "./services/openai";
+import { generateChatResponse, qualifyLead } from "./services/llm-providers";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 
@@ -62,7 +62,7 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
   // Add AI response to conversation
   const aiChatMessage = {
     role: 'assistant' as const,
-    content: aiResponse,
+    content: aiResponse.content,
     timestamp: new Date().toISOString(),
   };
 
@@ -81,7 +81,7 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
   // Lead qualification after multiple exchanges
   if (finalMessages.length >= 4) {
     const conversationText = finalMessages.map(m => `${m.role}: ${m.content}`).join('\n');
-    const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || []);
+    const qualification = await qualifyLead(conversationText, agent.leadQualificationQuestions || [], agent.llmProvider);
     
     await storage.updateConversation(conversation.id, {
       leadData: { ...conversation.leadData, ...qualification.extractedData, phone: userPhone },
