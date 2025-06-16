@@ -209,6 +209,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Agent cost analytics endpoint
+  app.get("/api/analytics/agent/:id/costs", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const costs = await storage.getAgentCostAnalytics(agentId);
+      res.json(costs);
+    } catch (error) {
+      console.error('Error fetching cost analytics:', error);
+      res.status(500).json({ message: "Failed to fetch cost analytics" });
+    }
+  });
+
   // WhatsApp Business webhook for incoming messages
   app.post("/api/whatsapp/webhook/:apiKey", async (req, res) => {
     try {

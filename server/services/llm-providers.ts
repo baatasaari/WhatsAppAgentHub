@@ -126,13 +126,18 @@ export class AnthropicProvider {
     });
 
     const content = response.content[0];
+    const usage = {
+      promptTokens: response.usage.input_tokens,
+      completionTokens: response.usage.output_tokens,
+      totalTokens: response.usage.input_tokens + response.usage.output_tokens,
+    };
+
+    const costs = calculateTokenCosts(model, usage.promptTokens, usage.completionTokens);
+
     return {
       content: content.type === 'text' ? content.text : '',
-      usage: {
-        promptTokens: response.usage.input_tokens,
-        completionTokens: response.usage.output_tokens,
-        totalTokens: response.usage.input_tokens + response.usage.output_tokens,
-      }
+      usage,
+      costs
     };
   }
 
@@ -197,13 +202,19 @@ export class GoogleAIProvider {
     const result = await chat.sendMessage(prompt);
     const response = await result.response;
 
+    // Estimate token usage for Google AI (they don't provide exact counts)
+    const usage = {
+      promptTokens: Math.floor(prompt.length / 4), // Rough estimation
+      completionTokens: Math.floor(response.text().length / 4),
+      totalTokens: Math.floor((prompt.length + response.text().length) / 4),
+    };
+
+    const costs = calculateTokenCosts(model, usage.promptTokens, usage.completionTokens);
+
     return {
       content: response.text(),
-      usage: {
-        promptTokens: 0, // Google AI doesn't provide detailed token usage
-        completionTokens: 0,
-        totalTokens: 0,
-      }
+      usage,
+      costs
     };
   }
 

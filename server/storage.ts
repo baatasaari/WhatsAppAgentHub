@@ -22,12 +22,21 @@ export interface IStorage {
   // Analytics operations
   getAnalyticsByAgent(agentId: number): Promise<Analytics[]>;
   getAnalyticsByDate(date: string): Promise<Analytics[]>;
+  getAnalyticsByTimeRange(agentId: number, startDate: string, endDate: string): Promise<Analytics[]>;
   createOrUpdateAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
   getDashboardStats(): Promise<{
     totalAgents: number;
     activeAgents: number;
     totalConversations: number;
     averageConversionRate: number;
+  }>;
+  getAgentCostAnalytics(agentId: number): Promise<{
+    hourly: number;
+    daily: number;
+    weekly: number;
+    monthly: number;
+    allTime: number;
+    currency: string;
   }>;
 }
 
@@ -222,6 +231,85 @@ export class DatabaseStorage implements IStorage {
       console.error('Error creating/updating analytics:', error);
       throw error;
     }
+  }
+
+  async getAnalyticsByTimeRange(agentId: number, startDate: string, endDate: string): Promise<Analytics[]> {
+    return await db.select().from(analytics)
+      .where(
+        and(
+          eq(analytics.agentId, agentId),
+          sql`${analytics.date} >= ${startDate}`,
+          sql`${analytics.date} <= ${endDate}`
+        )
+      )
+      .orderBy(analytics.date);
+  }
+
+  async getAgentCostAnalytics(agentId: number): Promise<{
+    hourly: number;
+    daily: number;
+    weekly: number;
+    monthly: number;
+    allTime: number;
+    currency: string;
+  }> {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get analytics data for different time periods
+    const hourlyData = await db.select().from(analytics)
+      .where(
+        and(
+          eq(analytics.agentId, agentId),
+          sql`${analytics.createdAt} >= ${oneHourAgo.toISOString()}`
+        )
+      );
+
+    const dailyData = await db.select().from(analytics)
+      .where(
+        and(
+          eq(analytics.agentId, agentId),
+          sql`${analytics.date} = ${now.toISOString().split('T')[0]}`
+        )
+      );
+
+    const weeklyData = await db.select().from(analytics)
+      .where(
+        and(
+          eq(analytics.agentId, agentId),
+          sql`${analytics.date} >= ${oneWeekAgo.toISOString().split('T')[0]}`
+        )
+      );
+
+    const monthlyData = await db.select().from(analytics)
+      .where(
+        and(
+          eq(analytics.agentId, agentId),
+          sql`${analytics.date} >= ${oneMonthAgo.toISOString().split('T')[0]}`
+        )
+      );
+
+    const allTimeData = await db.select().from(analytics)
+      .where(eq(analytics.agentId, agentId));
+
+    const calculateTotalCost = (data: Analytics[]) => {
+      return data.reduce((total, record) => {
+        const costs = record.llmCosts as any;
+        return total + (costs?.totalCost || 0);
+      }, 0);
+    };
+
+    return {
+      hourly: calculateTotalCost(hourlyData),
+      daily: calculateTotalCost(dailyData),
+      weekly: calculateTotalCost(weeklyData),
+      monthly: calculateTotalCost(monthlyData),
+      allTime: calculateTotalCost(allTimeData),
+      currency: 'USD'
+    };
   }
 
   async getDashboardStats(): Promise<{
