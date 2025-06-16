@@ -113,6 +113,9 @@ Changelog:
 - June 16, 2025. Implemented multi-LLM provider support (OpenAI, Anthropic, Google AI) with unified interface
 - June 16, 2025. Added Claude Sonnet 4, Claude 3.7, and Gemini 1.5 Pro model support alongside existing OpenAI models
 - June 16, 2025. Enhanced agent management UI to display LLM provider badges and improved type safety
+- June 16, 2025. Replaced hardcoded model options with dynamic YAML configuration system for centralized management
+- June 16, 2025. Implemented centralized industry verticals configuration replacing hardcoded business categories
+- June 16, 2025. Added comprehensive model configuration page displaying cost, performance, and capability metrics
 ```
 
 ## User Preferences
