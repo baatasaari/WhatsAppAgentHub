@@ -40,7 +40,8 @@ export default function Analytics() {
   }
 
   const agentsList = Array.isArray(agents) ? agents : [];
-  const statsData = stats || { totalAgents: 0, activeAgents: 0, totalConversations: 0, averageConversionRate: 0 };
+  const statsData = stats as any || { totalAgents: 0, activeAgents: 0, totalConversations: 0, averageConversionRate: 0 };
+  const costData = costAnalytics as any || { hourly: 0, daily: 0, weekly: 0, monthly: 0, allTime: 0, currency: 'USD' };
 
   return (
     <div className="space-y-6">
@@ -136,7 +137,7 @@ export default function Analytics() {
                     <Skeleton key={i} className="h-24 w-full" />
                   ))}
                 </div>
-              ) : costAnalytics ? (
+              ) : costData ? (
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <Card className="bg-red-50 border-red-200">
                     <CardContent className="p-4">
@@ -145,7 +146,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-red-900">Hourly</span>
                       </div>
                       <p className="text-lg font-bold text-red-700">
-                        ${costAnalytics.hourly?.toFixed(4) || '0.0000'}
+                        ${costData.hourly?.toFixed(4) || '0.0000'}
                       </p>
                     </CardContent>
                   </Card>
@@ -157,7 +158,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-orange-900">Daily</span>
                       </div>
                       <p className="text-lg font-bold text-orange-700">
-                        ${costAnalytics.daily?.toFixed(4) || '0.0000'}
+                        ${costData.daily?.toFixed(4) || '0.0000'}
                       </p>
                     </CardContent>
                   </Card>
@@ -169,7 +170,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-yellow-900">Weekly</span>
                       </div>
                       <p className="text-lg font-bold text-yellow-700">
-                        ${costAnalytics.weekly?.toFixed(4) || '0.0000'}
+                        ${costData.weekly?.toFixed(4) || '0.0000'}
                       </p>
                     </CardContent>
                   </Card>
@@ -181,7 +182,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-blue-900">Monthly</span>
                       </div>
                       <p className="text-lg font-bold text-blue-700">
-                        ${costAnalytics.monthly?.toFixed(4) || '0.0000'}
+                        ${costData.monthly?.toFixed(4) || '0.0000'}
                       </p>
                     </CardContent>
                   </Card>
@@ -193,7 +194,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-green-900">All Time</span>
                       </div>
                       <p className="text-lg font-bold text-green-700">
-                        ${costAnalytics.allTime?.toFixed(4) || '0.0000'}
+                        ${costData.allTime?.toFixed(4) || '0.0000'}
                       </p>
                     </CardContent>
                   </Card>

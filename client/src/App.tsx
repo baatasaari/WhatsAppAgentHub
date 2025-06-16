@@ -9,6 +9,7 @@ import CreateAgent from "@/pages/create-agent";
 import Analytics from "@/pages/analytics";
 import EmbedCode from "@/pages/embed-code";
 import WidgetPreview from "@/pages/widget-preview";
+import ModelConfig from "@/pages/model-config";
 import PlatformTest from "@/pages/platform-test";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/sidebar";
@@ -28,6 +29,7 @@ function Router() {
             <Route path="/analytics" component={Analytics} />
             <Route path="/embed-code" component={EmbedCode} />
             <Route path="/preview" component={WidgetPreview} />
+            <Route path="/model-config" component={ModelConfig} />
             <Route path="/test" component={PlatformTest} />
             <Route component={NotFound} />
           </Switch>
