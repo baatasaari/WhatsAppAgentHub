@@ -1,6 +1,6 @@
 import { agents, conversations, analytics, type Agent, type InsertAgent, type Conversation, type InsertConversation, type Analytics, type InsertAnalytics } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -253,63 +253,76 @@ export class DatabaseStorage implements IStorage {
     allTime: number;
     currency: string;
   }> {
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    try {
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      const today = now.toISOString().split('T')[0];
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get analytics data for different time periods
-    const hourlyData = await db.select().from(analytics)
-      .where(
-        and(
-          eq(analytics.agentId, agentId),
-          sql`${analytics.createdAt} >= ${oneHourAgo.toISOString()}`
-        )
-      );
+      // Get analytics data for different time periods
+      const hourlyData = await db.select().from(analytics)
+        .where(
+          and(
+            eq(analytics.agentId, agentId),
+            eq(analytics.date, today)
+          )
+        );
 
-    const dailyData = await db.select().from(analytics)
-      .where(
-        and(
-          eq(analytics.agentId, agentId),
-          sql`${analytics.date} = ${now.toISOString().split('T')[0]}`
-        )
-      );
+      const dailyData = await db.select().from(analytics)
+        .where(
+          and(
+            eq(analytics.agentId, agentId),
+            eq(analytics.date, today)
+          )
+        );
 
-    const weeklyData = await db.select().from(analytics)
-      .where(
-        and(
-          eq(analytics.agentId, agentId),
-          sql`${analytics.date} >= ${oneWeekAgo.toISOString().split('T')[0]}`
-        )
-      );
+      const weeklyData = await db.select().from(analytics)
+        .where(eq(analytics.agentId, agentId));
 
-    const monthlyData = await db.select().from(analytics)
-      .where(
-        and(
-          eq(analytics.agentId, agentId),
-          sql`${analytics.date} >= ${oneMonthAgo.toISOString().split('T')[0]}`
-        )
-      );
+      const monthlyData = await db.select().from(analytics)
+        .where(eq(analytics.agentId, agentId));
 
-    const allTimeData = await db.select().from(analytics)
-      .where(eq(analytics.agentId, agentId));
+      const allTimeData = await db.select().from(analytics)
+        .where(eq(analytics.agentId, agentId));
 
-    const calculateTotalCost = (data: Analytics[]) => {
-      return data.reduce((total, record) => {
-        const costs = record.llmCosts as any;
-        return total + (costs?.totalCost || 0);
-      }, 0);
-    };
+      const calculateTotalCost = (data: Analytics[]) => {
+        return data.reduce((total, record) => {
+          const costs = record.llmCosts as any;
+          return total + (costs?.totalCost || 0);
+        }, 0);
+      };
 
-    return {
-      hourly: calculateTotalCost(hourlyData),
-      daily: calculateTotalCost(dailyData),
-      weekly: calculateTotalCost(weeklyData),
-      monthly: calculateTotalCost(monthlyData),
-      allTime: calculateTotalCost(allTimeData),
-      currency: 'USD'
-    };
+      // Filter data by time periods
+      const weeklyFiltered = weeklyData.filter(record => {
+        const recordDate = new Date(record.date);
+        return recordDate >= oneWeekAgo;
+      });
+
+      const monthlyFiltered = monthlyData.filter(record => {
+        const recordDate = new Date(record.date);
+        return recordDate >= oneMonthAgo;
+      });
+
+      return {
+        hourly: calculateTotalCost(hourlyData) * 0.1, // Estimate hourly from daily
+        daily: calculateTotalCost(dailyData),
+        weekly: calculateTotalCost(weeklyFiltered),
+        monthly: calculateTotalCost(monthlyFiltered),
+        allTime: calculateTotalCost(allTimeData),
+        currency: 'USD'
+      };
+    } catch (error) {
+      console.error('Error calculating cost analytics:', error);
+      return {
+        hourly: 0,
+        daily: 0,
+        weekly: 0,
+        monthly: 0,
+        allTime: 0,
+        currency: 'USD'
+      };
+    }
   }
 
   async getDashboardStats(): Promise<{
