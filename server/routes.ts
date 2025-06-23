@@ -1063,6 +1063,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WhatsApp integration status endpoint
+  app.get("/api/agents/:id/whatsapp-status", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Check if user owns this agent (unless admin)
+      if (req.user?.role !== 'admin' && agent.userId !== req.user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const status = {
+        configured: false,
+        issues: [] as string[],
+        webhookUrl: `${req.protocol}://${req.get('host')}/webhook/whatsapp/${agentId}`,
+        requirements: {
+          whatsappNumber: !!agent.whatsappNumber,
+          accessToken: !!agent.whatsappAccessToken,
+          phoneNumberId: !!agent.whatsappPhoneNumberId,
+          webhookVerifyToken: !!agent.whatsappWebhookVerifyToken,
+          businessAccountId: !!agent.whatsappBusinessAccountId
+        }
+      };
+
+      // Check configuration completeness
+      if (!agent.whatsappNumber) status.issues.push("WhatsApp Business number not configured");
+      if (!agent.whatsappAccessToken) status.issues.push("WhatsApp Business access token not configured");
+      if (!agent.whatsappPhoneNumberId) status.issues.push("WhatsApp Business phone number ID not configured");
+      if (!agent.whatsappWebhookVerifyToken) status.issues.push("Webhook verification token not configured");
+      if (!agent.whatsappBusinessAccountId) status.issues.push("WhatsApp Business account ID not configured");
+
+      status.configured = status.issues.length === 0;
+
+      res.json(status);
+    } catch (error) {
+      console.error("Error checking WhatsApp status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Test WhatsApp integration endpoint
+  app.post("/api/agents/:id/test-whatsapp", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Check if user owns this agent (unless admin)
+      if (req.user?.role !== 'admin' && agent.userId !== req.user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      interface TestResult {
+        name: string;
+        passed: boolean;
+        issues: string[];
+      }
+
+      const testResults = {
+        success: true,
+        tests: [] as TestResult[],
+        summary: "",
+        webhookUrl: `${req.protocol}://${req.get('host')}/webhook/whatsapp/${agentId}`
+      };
+
+      // Test 1: Configuration completeness
+      const configTest: TestResult = {
+        name: "Configuration Check",
+        passed: true,
+        issues: []
+      };
+
+      if (!agent.whatsappNumber) {
+        configTest.passed = false;
+        configTest.issues.push("WhatsApp Business number missing");
+      }
+      if (!agent.whatsappAccessToken) {
+        configTest.passed = false;
+        configTest.issues.push("Access token missing");
+      }
+      if (!agent.whatsappPhoneNumberId) {
+        configTest.passed = false;
+        configTest.issues.push("Phone number ID missing");
+      }
+      if (!agent.whatsappWebhookVerifyToken) {
+        configTest.passed = false;
+        configTest.issues.push("Webhook verify token missing");
+      }
+
+      if (configTest.passed) {
+        configTest.issues.push("All required credentials configured");
+      }
+
+      testResults.tests.push(configTest);
+
+      // Test 2: API connectivity (if configured)
+      if (agent.whatsappAccessToken && agent.whatsappPhoneNumberId) {
+        const apiTest: TestResult = {
+          name: "WhatsApp API Connectivity",
+          passed: false,
+          issues: []
+        };
+
+        try {
+          // Test API connectivity by fetching phone number info
+          const testResult = await whatsappService.getPhoneNumberInfo(
+            agent.whatsappAccessToken,
+            agent.whatsappPhoneNumberId
+          );
+
+          if (testResult.success) {
+            apiTest.passed = true;
+            apiTest.issues.push("API connection successful");
+          } else {
+            apiTest.issues.push(`API error: ${testResult.error}`);
+          }
+        } catch (error: any) {
+          apiTest.issues.push(`Network error: ${error.message || 'Unknown error'}`);
+        }
+
+        testResults.tests.push(apiTest);
+      } else {
+        const apiTest: TestResult = {
+          name: "WhatsApp API Connectivity",
+          passed: false,
+          issues: ["Cannot test API - missing credentials"]
+        };
+        testResults.tests.push(apiTest);
+      }
+
+      // Generate summary
+      const passedTests = testResults.tests.filter(t => t.passed).length;
+      const totalTests = testResults.tests.length;
+      
+      if (passedTests === totalTests) {
+        testResults.summary = "WhatsApp integration is properly configured and ready to use";
+      } else {
+        testResults.success = false;
+        testResults.summary = `${totalTests - passedTests} configuration issues found. Please configure WhatsApp Business API credentials.`;
+      }
+
+      res.json(testResults);
+    } catch (error) {
+      console.error("Error testing WhatsApp integration:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Send WhatsApp message manually
   app.post("/api/agents/:id/send-whatsapp", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {

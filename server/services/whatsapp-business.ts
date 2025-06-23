@@ -76,6 +76,22 @@ export class WhatsAppBusinessService {
     message: string
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
+      // Validate inputs
+      if (!accessToken || !phoneNumberId || !to || !message) {
+        console.error('WhatsApp sendMessage: Missing required parameters', {
+          hasAccessToken: !!accessToken,
+          hasPhoneNumberId: !!phoneNumberId,
+          hasTo: !!to,
+          hasMessage: !!message
+        });
+        return { 
+          success: false, 
+          error: 'Missing required parameters for WhatsApp message' 
+        };
+      }
+
+      console.log(`Sending WhatsApp message to ${to} via phone number ID ${phoneNumberId}`);
+
       const response = await fetch(`${this.baseUrl}/${phoneNumberId}/messages`, {
         method: 'POST',
         headers: {
@@ -95,20 +111,42 @@ export class WhatsAppBusinessService {
       const data = await response.json();
 
       if (!response.ok) {
+        console.error('WhatsApp API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        
+        let errorMessage = 'Failed to send message';
+        if (data.error) {
+          errorMessage = data.error.message || data.error.error_data?.details || errorMessage;
+        }
+        
         return {
           success: false,
-          error: data.error?.message || 'Failed to send message'
+          error: errorMessage
         };
       }
 
+      const messageId = data.messages?.[0]?.id;
+      if (!messageId) {
+        console.error('WhatsApp API returned unexpected response format:', data);
+        return {
+          success: false,
+          error: 'Invalid response from WhatsApp API'
+        };
+      }
+
+      console.log(`WhatsApp message sent successfully with ID: ${messageId}`);
       return {
         success: true,
-        messageId: data.messages?.[0]?.id
+        messageId: messageId
       };
     } catch (error) {
+      console.error('Network error sending WhatsApp message:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Network error'
       };
     }
   }
