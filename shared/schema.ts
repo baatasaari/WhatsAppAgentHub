@@ -52,6 +52,63 @@ export const agents = pgTable("agents", {
   whatsappWebhookVerifyToken: text("whatsapp_webhook_verify_token"),
   status: text("status").notNull().default("active"), // "active", "paused", "draft"
   apiKey: text("api_key").notNull(), // unique identifier for embedding
+  
+  // B2B Business Enhancement Fields
+  businessWebsite: text("business_website"),
+  businessLogo: text("business_logo"),
+  businessHours: jsonb("business_hours").$type<{
+    monday?: { open: string, close: string, closed?: boolean },
+    tuesday?: { open: string, close: string, closed?: boolean },
+    wednesday?: { open: string, close: string, closed?: boolean },
+    thursday?: { open: string, close: string, closed?: boolean },
+    friday?: { open: string, close: string, closed?: boolean },
+    saturday?: { open: string, close: string, closed?: boolean },
+    sunday?: { open: string, close: string, closed?: boolean },
+    timezone?: string
+  }>(),
+  knowledgeBase: text("knowledge_base"),
+  faqData: jsonb("faq_data").$type<Array<{ question: string, answer: string, category?: string }>>(),
+  productCatalog: jsonb("product_catalog").$type<Array<{ 
+    name: string, 
+    description: string, 
+    price?: number, 
+    currency?: string,
+    category?: string,
+    image?: string,
+    inStock?: boolean 
+  }>>(),
+  contactInfo: jsonb("contact_info").$type<{
+    email?: string,
+    phone?: string,
+    address?: string,
+    supportHours?: string,
+    departments?: Array<{ name: string, contact: string }>
+  }>(),
+  customBranding: jsonb("custom_branding").$type<{
+    primaryColor?: string,
+    secondaryColor?: string,
+    fontFamily?: string,
+    logoUrl?: string,
+    companyName?: string
+  }>(),
+  leadQualificationQuestions: jsonb("lead_qualification_questions").$type<Array<{
+    question: string,
+    type: 'text' | 'choice' | 'number',
+    required: boolean,
+    options?: string[]
+  }>>(),
+  autoResponseTemplates: jsonb("auto_response_templates").$type<{
+    greeting?: string,
+    businessHours?: string,
+    afterHours?: string,
+    fallback?: string,
+    handoff?: string
+  }>(),
+  businessType: text("business_type"), // "ecommerce", "saas", "service", "restaurant", etc.
+  targetAudience: text("target_audience"),
+  maxMonthlyMessages: integer("max_monthly_messages").default(1000),
+  pricingTier: text("pricing_tier").default("starter"), // "starter", "professional", "enterprise"
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -263,3 +320,100 @@ export const insertWhatsappMessageSchema = createInsertSchema(whatsappMessages).
 
 export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
 export type InsertWhatsappMessage = z.infer<typeof insertWhatsappMessageSchema>;
+
+// B2B SaaS Business Infrastructure
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  planName: text("plan_name").notNull(), // "starter", "professional", "enterprise"
+  status: text("status").notNull().default("active"), // "active", "cancelled", "past_due", "trialing"
+  billingCycle: text("billing_cycle").notNull().default("monthly"), // "monthly", "yearly"
+  pricePerMonth: integer("price_per_month").notNull(), // in cents
+  maxAgents: integer("max_agents").notNull().default(1),
+  maxMessagesPerMonth: integer("max_messages_per_month").notNull().default(1000),
+  featuresIncluded: jsonb("features_included").$type<Array<string>>().default([]),
+  currentPeriodStart: timestamp("current_period_start").defaultNow().notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  trialEndsAt: timestamp("trial_ends_at"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const usageMetrics = pgTable("usage_metrics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  agentId: integer("agent_id").references(() => agents.id),
+  month: text("month").notNull(), // "2025-01" format
+  messagesUsed: integer("messages_used").default(0),
+  conversationsStarted: integer("conversations_started").default(0),
+  leadsGenerated: integer("leads_generated").default(0),
+  apiCallsMade: integer("api_calls_made").default(0),
+  costIncurred: integer("cost_incurred").default(0), // in cents
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const businessTemplates = pgTable("business_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // "ecommerce", "saas", "restaurant", etc.
+  systemPrompt: text("system_prompt").notNull(),
+  welcomeMessage: text("welcome_message").notNull(),
+  sampleFaqs: jsonb("sample_faqs").$type<Array<{ question: string, answer: string }>>(),
+  sampleProducts: jsonb("sample_products").$type<Array<{ 
+    name: string, 
+    description: string, 
+    price?: number 
+  }>>(),
+  leadQualificationFlow: jsonb("lead_qualification_flow").$type<Array<{
+    question: string,
+    type: string,
+    required: boolean
+  }>>(),
+  customizations: jsonb("customizations").$type<{
+    widgetColor?: string,
+    brandingOptions?: Record<string, any>
+  }>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const clientDomains = pgTable("client_domains", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  domain: text("domain").notNull(),
+  verified: boolean("verified").default(false),
+  verificationToken: text("verification_token"),
+  sslEnabled: boolean("ssl_enabled").default(true),
+  customCss: text("custom_css"),
+  allowedIps: jsonb("allowed_ips").$type<Array<string>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueDomainAgent: unique().on(table.domain, table.agentId),
+}));
+
+// Business schema types
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBusinessTemplateSchema = createInsertSchema(businessTemplates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertClientDomainSchema = createInsertSchema(clientDomains).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type UsageMetrics = typeof usageMetrics.$inferSelect;
+export type BusinessTemplate = typeof businessTemplates.$inferSelect;
+export type InsertBusinessTemplate = z.infer<typeof insertBusinessTemplateSchema>;
+export type ClientDomain = typeof clientDomains.$inferSelect;
+export type InsertClientDomain = z.infer<typeof insertClientDomainSchema>;

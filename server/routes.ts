@@ -542,6 +542,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Business Templates API for B2B SaaS
+  app.get("/api/business-templates", authenticate, requireApproved, async (req, res) => {
+    try {
+      const { BusinessTemplateService } = await import('./services/business-templates');
+      const templateService = new BusinessTemplateService();
+      
+      const category = req.query.category as string;
+      const templates = category 
+        ? templateService.getTemplatesByCategory(category)
+        : templateService.getAllTemplates();
+      
+      res.json(templates);
+    } catch (error: any) {
+      console.error('Error loading business templates:', error);
+      res.status(500).json({ message: "Failed to load business templates" });
+    }
+  });
+
+  app.get("/api/business-templates/categories", authenticate, requireApproved, async (req, res) => {
+    try {
+      const { BusinessTemplateService } = await import('./services/business-templates');
+      const templateService = new BusinessTemplateService();
+      const categories = templateService.getCategories();
+      res.json(categories);
+    } catch (error: any) {
+      console.error('Error loading template categories:', error);
+      res.status(500).json({ message: "Failed to load template categories" });
+    }
+  });
+
+  app.post("/api/business-templates/:templateName/customize", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { templateName } = req.params;
+      const businessData = req.body;
+      
+      const { BusinessTemplateService } = await import('./services/business-templates');
+      const templateService = new BusinessTemplateService();
+      
+      const customizedTemplate = templateService.customizeTemplateForBusiness(templateName, businessData);
+      
+      if (!customizedTemplate) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      res.json(customizedTemplate);
+    } catch (error: any) {
+      console.error('Error customizing business template:', error);
+      res.status(500).json({ message: "Failed to customize template" });
+    }
+  });
+
+  // Subscription Management API
+  app.get("/api/subscription", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const subscription = await storage.getUserSubscription(userId);
+      
+      if (!subscription) {
+        return res.status(404).json({ message: "No active subscription found" });
+      }
+      
+      res.json(subscription);
+    } catch (error: any) {
+      console.error('Error fetching subscription:', error);
+      res.status(500).json({ message: "Failed to fetch subscription" });
+    }
+  });
+
+  app.get("/api/subscription/usage", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      
+      const usage = await storage.getUserUsageMetrics(userId, currentMonth);
+      res.json(usage || {
+        messagesUsed: 0,
+        conversationsStarted: 0,
+        leadsGenerated: 0,
+        apiCallsMade: 0,
+        costIncurred: 0
+      });
+    } catch (error: any) {
+      console.error('Error fetching usage metrics:', error);
+      res.status(500).json({ message: "Failed to fetch usage metrics" });
+    }
+  });
+
+  // Enhanced Analytics for Business Intelligence
+  app.get("/api/agents/:id/business-insights", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      // Check ownership unless admin
+      if (!['system_admin', 'business_manager'].includes(req.user!.role) && agent.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const insights = await storage.getBusinessInsights(agentId);
+      res.json(insights);
+    } catch (error: any) {
+      console.error('Error fetching business insights:', error);
+      res.status(500).json({ message: "Failed to fetch business insights" });
+    }
+  });
+
   // Protected agent routes - require approved users
   app.get("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
