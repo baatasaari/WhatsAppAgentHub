@@ -239,3 +239,28 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
+
+// WhatsApp Messages table
+export const whatsappMessages = pgTable("whatsapp_messages", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  conversationId: integer("conversation_id").references(() => conversations.id),
+  whatsappMessageId: text("whatsapp_message_id").unique(),
+  fromPhoneNumber: text("from_phone_number").notNull(),
+  toPhoneNumber: text("to_phone_number").notNull(),
+  messageType: text("message_type").notNull(), // "text", "image", "document", "audio", "video"
+  content: text("content"),
+  mediaUrl: text("media_url"),
+  status: text("status").default("sent"), // "sent", "delivered", "read", "failed"
+  direction: text("direction").notNull(), // "inbound", "outbound"
+  timestamp: timestamp("timestamp").defaultNow(),
+  webhookData: jsonb("webhook_data"),
+});
+
+export const insertWhatsappMessageSchema = createInsertSchema(whatsappMessages).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
+export type InsertWhatsappMessage = z.infer<typeof insertWhatsappMessageSchema>;

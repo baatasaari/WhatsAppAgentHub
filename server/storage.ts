@@ -4,6 +4,7 @@ import {
   analytics, 
   users, 
   sessions,
+  whatsappMessages,
   type Agent, 
   type InsertAgent, 
   type Conversation, 
@@ -14,7 +15,9 @@ import {
   type InsertUser,
   type UpdateUser,
   type Session,
-  type InsertSession
+  type InsertSession,
+  type WhatsappMessage,
+  type InsertWhatsappMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, count, sql } from "drizzle-orm";
@@ -68,6 +71,13 @@ export interface IStorage {
     allTime: number;
     currency: string;
   }>;
+
+  // WhatsApp message operations
+  createWhatsappMessage(message: InsertWhatsappMessage): Promise<WhatsappMessage>;
+  getWhatsappMessagesByAgent(agentId: number): Promise<WhatsappMessage[]>;
+  getWhatsappMessagesByConversation(conversationId: number): Promise<WhatsappMessage[]>;
+  updateWhatsappMessageStatus(whatsappMessageId: string, status: string): Promise<void>;
+  getWhatsappMessageById(whatsappMessageId: string): Promise<WhatsappMessage | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
