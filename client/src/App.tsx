@@ -17,6 +17,7 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import BusinessTemplates from "@/pages/business-templates";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -52,6 +53,7 @@ function Router() {
         <main className="flex-1 overflow-y-auto p-6">
           <Switch>
             <Route path="/" component={Dashboard} />
+            <Route path="/business-templates" component={BusinessTemplates} />
             <Route path="/agents" component={Agents} />
             <Route path="/create" component={CreateAgent} />
             <Route path="/analytics" component={Analytics} />
