@@ -210,13 +210,13 @@ export default function AgentWizard() {
     },
   });
 
-  // Watch selected platforms to force re-render when they change
-  const selectedPlatforms = form.watch("selectedPlatforms") || [];
+  // Use local state for platform selection to avoid form state issues
+  const [localSelectedPlatforms, setLocalSelectedPlatforms] = useState<string[]>([]);
   
-  // Debug logging to understand the selection state
+  // Sync local state with form
   useEffect(() => {
-    console.log("Selected platforms state:", selectedPlatforms);
-  }, [selectedPlatforms]);
+    form.setValue("selectedPlatforms", localSelectedPlatforms);
+  }, [localSelectedPlatforms, form]);
   
   // Watch LLM provider to force re-render when it changes
   const selectedLlmProvider = form.watch("llmProvider");
@@ -271,7 +271,7 @@ export default function AgentWizard() {
       
       toast({
         title: "Agents Created Successfully!",
-        description: `Created ${agents.length} agent${agents.length > 1 ? 's' : ''} across ${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}`,
+        description: `Created ${agents.length} agent${agents.length > 1 ? 's' : ''} across ${localSelectedPlatforms.length} platform${localSelectedPlatforms.length > 1 ? 's' : ''}`,
       });
       
       setLocation("/agents");
@@ -410,7 +410,7 @@ export default function AgentWizard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {platformTypes.map((platform) => {
                       const IconComponent = platform.icon;
-                      const isSelected = selectedPlatforms?.includes(platform.id) || false;
+                      const isSelected = localSelectedPlatforms.includes(platform.id);
                       
                       return (
                         <div
@@ -426,11 +426,10 @@ export default function AgentWizard() {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={(checked) => {
-                                  const current = field.value || [];
                                   const updated = checked
-                                    ? [...current, platform.id]
-                                    : current.filter(id => id !== platform.id);
-                                  field.onChange(updated);
+                                    ? [...localSelectedPlatforms, platform.id]
+                                    : localSelectedPlatforms.filter(id => id !== platform.id);
+                                  setLocalSelectedPlatforms(updated);
                                 }}
                                 className="mt-1"
                               />
@@ -468,16 +467,16 @@ export default function AgentWizard() {
             />
             
             <div className="mt-6">
-              {selectedPlatforms.length > 0 ? (
+              {localSelectedPlatforms.length > 0 ? (
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-2">
                     <Check className="w-5 h-5 text-blue-600" />
                     <span className="font-medium text-blue-900">
-                      {selectedPlatforms.length} platform{selectedPlatforms.length > 1 ? 's' : ''} selected
+                      {localSelectedPlatforms.length} platform{localSelectedPlatforms.length > 1 ? 's' : ''} selected
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
-                    {selectedPlatforms.map(platformId => {
+                    {localSelectedPlatforms.map(platformId => {
                       const platform = platformTypes.find(p => p.id === platformId);
                       if (!platform) return null;
                       const IconComponent = platform.icon;
@@ -487,7 +486,7 @@ export default function AgentWizard() {
                           <span className="text-blue-800">{platform.name}</span>
                         </div>
                       );
-                    }).filter(Boolean)}
+                    })}
                   </div>
                   <p className="text-sm text-blue-700 mt-2">
                     We'll create separate agents for each platform to ensure optimal performance
