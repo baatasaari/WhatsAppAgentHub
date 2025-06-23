@@ -391,14 +391,12 @@ export default function Settings() {
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Member Since</Label>
-                  <p className="text-sm font-medium">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                  </p>
+                  <p className="text-sm font-medium">Recently Joined</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
-                  <p className="text-sm font-medium">
-                    {user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'}
+                  <Label className="text-sm font-medium text-gray-500">Account Status</Label>
+                  <p className="text-sm font-medium capitalize text-green-600">
+                    {user?.status === 'approved' ? 'Active' : user?.status || 'Pending'}
                   </p>
                 </div>
               </div>
