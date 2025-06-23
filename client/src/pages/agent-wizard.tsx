@@ -417,10 +417,13 @@ export default function AgentWizard() {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={(checked) => {
+                                  console.log('Checkbox changed:', checked, 'for platform:', platform.id);
                                   const current = field.value || [];
+                                  console.log('Current platforms:', current);
                                   const updated = checked
                                     ? [...current, platform.id]
                                     : current.filter(id => id !== platform.id);
+                                  console.log('Updated platforms:', updated);
                                   field.onChange(updated);
                                 }}
                                 className="mt-1"
