@@ -344,7 +344,8 @@ export const insertUserSchema = createInsertSchema(users);
 export const insertAgentSchema = createInsertSchema(agents).omit({ 
   id: true, 
   createdAt: true, 
-  apiKey: true 
+  apiKey: true,
+  userId: true 
 });
 export const insertConversationSchema = createInsertSchema(conversations);
 export const insertAnalyticsSchema = createInsertSchema(analytics);
