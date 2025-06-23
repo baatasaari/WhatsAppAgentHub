@@ -81,12 +81,12 @@ export default function Settings() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       });
-      refetchUser();
+      updateUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: (error) => {
@@ -100,10 +100,18 @@ export default function Settings() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: PasswordFormData) => {
-      return apiRequest(`/api/user/change-password`, {
-        method: "PUT",
+      const response = await fetch('/api/user/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({

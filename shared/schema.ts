@@ -197,7 +197,6 @@ export const loginSchema = z.object({
 
 export const updateUserSchema = createInsertSchema(users).omit({
   id: true,
-  passwordHash: true,
   createdAt: true,
   updatedAt: true,
   lastLogin: true,

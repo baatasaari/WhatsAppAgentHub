@@ -8,6 +8,8 @@ interface User {
   companyName?: string;
   role: string;
   status: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthContextType {
