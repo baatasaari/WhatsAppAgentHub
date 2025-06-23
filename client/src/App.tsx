@@ -15,6 +15,7 @@ import ModelConfig from "@/pages/model-config";
 import PlatformTest from "@/pages/platform-test";
 import WhatsAppConfig from "@/pages/whatsapp-config";
 import Settings from "@/pages/settings";
+import SystemLogs from "@/pages/system-logs";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -66,6 +67,7 @@ function Router() {
             <Route path="/model-config" component={ModelConfig} />
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
             <Route path="/settings" component={Settings} />
+            <Route path="/system-logs" component={SystemLogs} />
             <Route path="/test" component={PlatformTest} />
             <Route component={NotFound} />
           </Switch>

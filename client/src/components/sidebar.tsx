@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2 } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2, FileText } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const getNavigationForRole = (userRole: string) => {
@@ -16,11 +16,12 @@ const getNavigationForRole = (userRole: string) => {
     { name: "Platform Test", href: "/test", icon: TestTube },
   ];
 
-  // System Admin gets access to all features including model configuration
+  // System Admin gets access to all features including model configuration and system logs
   if (userRole === 'system_admin') {
     return [
       ...baseNavigation,
       { name: "Model Config", href: "/model-config", icon: Settings },
+      { name: "System Logs", href: "/system-logs", icon: FileText },
     ];
   }
 

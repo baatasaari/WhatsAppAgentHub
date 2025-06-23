@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";
 import { voiceCallingService } from "./services/voice-calling";
+import { logger } from "./services/logging";
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -1556,6 +1557,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send WhatsApp message manually
+  // System Admin Logging API Endpoints
+  app.get("/api/admin/logs", authenticate, requireSystemAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const {
+        level,
+        category,
+        userId,
+        agentId,
+        startDate,
+        endDate,
+        search,
+        limit = 50,
+        offset = 0
+      } = req.query;
+
+      const filters: any = {};
+      if (level) filters.level = level as string;
+      if (category) filters.category = category as string;
+      if (userId) filters.userId = parseInt(userId as string);
+      if (agentId) filters.agentId = parseInt(agentId as string);
+      if (startDate) filters.startDate = new Date(startDate as string);
+      if (endDate) filters.endDate = new Date(endDate as string);
+      if (search) filters.search = search as string;
+      filters.limit = parseInt(limit as string);
+      filters.offset = parseInt(offset as string);
+
+      const logs = await logger.getLogs(filters);
+      
+      await logger.logApiRequest('GET', '/api/admin/logs', 200, Date.now(), req.user?.id, {
+        filters,
+        resultCount: logs.length
+      });
+
+      res.json(logs);
+    } catch (error) {
+      await logger.logError(error as Error, 'admin_logs_fetch', req.user?.id);
+      res.status(500).json({ message: "Failed to fetch logs" });
+    }
+  });
+
+  app.get("/api/admin/logs/stats", authenticate, requireSystemAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      const filters: { startDate?: Date; endDate?: Date } = {};
+      if (startDate) filters.startDate = new Date(startDate as string);
+      if (endDate) filters.endDate = new Date(endDate as string);
+
+      const stats = await logger.getLogStats(filters.startDate, filters.endDate);
+      
+      await logger.logApiRequest('GET', '/api/admin/logs/stats', 200, Date.now(), req.user?.id);
+
+      res.json(stats);
+    } catch (error) {
+      await logger.logError(error as Error, 'admin_logs_stats', req.user?.id);
+      res.status(500).json({ message: "Failed to fetch log statistics" });
+    }
+  });
+
+  app.delete("/api/admin/logs/cleanup", authenticate, requireSystemAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { daysToKeep = 30 } = req.body;
+      
+      const deletedCount = await logger.cleanupOldLogs(parseInt(daysToKeep));
+      
+      await logger.logApiRequest('DELETE', '/api/admin/logs/cleanup', 200, Date.now(), req.user?.id, {
+        daysToKeep,
+        deletedCount
+      });
+
+      res.json({ message: `Cleaned up ${deletedCount} old logs`, deletedCount });
+    } catch (error) {
+      await logger.logError(error as Error, 'admin_logs_cleanup', req.user?.id);
+      res.status(500).json({ message: "Failed to cleanup logs" });
+    }
+  });
+
   app.post("/api/agents/:id/send-whatsapp", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);
