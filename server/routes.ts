@@ -874,9 +874,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const senderContact = contacts?.find(contact => contact.wa_id === message.from);
                 const senderName = senderContact?.profile?.name || 'Unknown';
 
+                // Get or create conversation for this phone number
+                let conversation = await storage.getConversationBySession(`whatsapp_${message.from}_${agent.id}`);
+                if (!conversation) {
+                  conversation = await storage.createConversation({
+                    agentId: agent.id,
+                    sessionId: `whatsapp_${message.from}_${agent.id}`,
+                    messages: [],
+                    leadData: {},
+                  });
+                }
+
                 // Store incoming message
-                await storage.createWhatsappMessage({
+                const incomingMessage = await storage.createWhatsappMessage({
                   agentId: agent.id,
+                  conversationId: conversation.id,
                   whatsappMessageId: message.id,
                   fromPhoneNumber: message.from,
                   toPhoneNumber: change.value.metadata.phone_number_id,

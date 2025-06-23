@@ -1,5 +1,6 @@
 import { Agent } from "@shared/schema";
 import { generateChatResponse } from "./llm-providers";
+import { storage } from "../storage";
 
 export interface WhatsAppMessage {
   id: string;
@@ -237,11 +238,34 @@ export class WhatsAppBusinessService {
         }
       ];
 
-      // Generate AI response
+      // Generate AI response using preconfigured LLM
       const aiResponse = await generateChatResponse(
         conversationHistory,
         agent.llmProvider
       );
+
+      // Track analytics and costs for WhatsApp messages
+      if (aiResponse.costs && aiResponse.usage) {
+        try {
+          // Create or update analytics record for WhatsApp messages
+          await storage.createOrUpdateAnalytics({
+            agentId: agent.id,
+            date: new Date().toISOString().split('T')[0],
+            totalConversations: 1,
+            totalTokens: aiResponse.usage.totalTokens,
+            promptTokens: aiResponse.usage.promptTokens,
+            completionTokens: aiResponse.usage.completionTokens,
+            llmCosts: {
+              promptCost: parseFloat(aiResponse.costs.promptCost.toString()),
+              completionCost: parseFloat(aiResponse.costs.completionCost.toString()),
+              totalCost: parseFloat(aiResponse.costs.totalCost.toString()),
+              currency: aiResponse.costs.currency
+            }
+          });
+        } catch (error) {
+          console.error('Error tracking WhatsApp message analytics:', error);
+        }
+      }
 
       return {
         response: aiResponse.content,
