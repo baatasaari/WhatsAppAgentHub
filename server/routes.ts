@@ -1,8 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertAgentSchema, insertConversationSchema } from "@shared/schema";
+import { insertAgentSchema, insertConversationSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { generateChatResponse, qualifyLead } from "./services/llm-providers";
+import { authenticate, requireAdmin, requireApproved, AuthenticatedRequest, AuthService } from "./auth";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 import * as yaml from 'js-yaml';
@@ -95,6 +96,202 @@ async function processWhatsAppMessage(agent: any, message: any, messageData: any
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(409).json({ message: 'User already exists with this email' });
+      }
+
+      const user = await storage.createUser(userData);
+      res.status(201).json({
+        message: 'Registration successful. Please wait for admin approval.',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          companyName: user.companyName,
+          status: user.status,
+          role: user.role
+        }
+      });
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      res.status(400).json({ message: 'Registration failed', error: error.message });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      if (user.status !== 'approved') {
+        return res.status(403).json({ 
+          message: user.status === 'pending' ? 'Account pending approval' : 'Account suspended'
+        });
+      }
+
+      const isValidPassword = await AuthService.verifyPassword(password, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      const token = await AuthService.createSession(user.id);
+      
+      res.json({
+        message: 'Login successful',
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          companyName: user.companyName,
+          role: user.role,
+          status: user.status
+        }
+      });
+    } catch (error: any) {
+      console.error('Login error:', error);
+      res.status(400).json({ message: 'Login failed', error: error.message });
+    }
+  });
+
+  app.post('/api/auth/logout', authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+      
+      if (token) {
+        await AuthService.revokeSession(token);
+      }
+      
+      res.json({ message: 'Logout successful' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: 'Logout failed' });
+    }
+  });
+
+  app.get('/api/auth/me', authenticate, async (req: AuthenticatedRequest, res) => {
+    res.json({ user: req.user });
+  });
+
+  // Admin-only user management routes
+  app.get('/api/admin/users', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        companyName: user.companyName,
+        role: user.role,
+        status: user.status,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
+        approvedAt: user.approvedAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  app.get('/api/admin/users/pending', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const pendingUsers = await storage.getPendingUsers();
+      const safeUsers = pendingUsers.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        companyName: user.companyName,
+        phone: user.phone,
+        createdAt: user.createdAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching pending users:', error);
+      res.status(500).json({ message: 'Failed to fetch pending users' });
+    }
+  });
+
+  app.post('/api/admin/users/:id/approve', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const adminId = req.user!.id;
+      
+      const user = await storage.approveUser(userId, adminId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json({ 
+        message: 'User approved successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          status: user.status,
+          approvedAt: user.approvedAt
+        }
+      });
+    } catch (error) {
+      console.error('Error approving user:', error);
+      res.status(500).json({ message: 'Failed to approve user' });
+    }
+  });
+
+  app.post('/api/admin/users/:id/suspend', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const user = await storage.suspendUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json({ 
+        message: 'User suspended successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          status: user.status
+        }
+      });
+    } catch (error) {
+      console.error('Error suspending user:', error);
+      res.status(500).json({ message: 'Failed to suspend user' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const success = await storage.deleteUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ message: 'Failed to delete user' });
+    }
+  });
   
   // LLM Models configuration endpoints
   app.get("/api/models", async (req, res) => {
@@ -227,33 +424,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Agent routes
-  app.get("/api/agents", async (req, res) => {
+  // Protected agent routes - require approved users
+  app.get("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
-      const agents = await storage.getAllAgents();
+      const userId = req.user!.role === 'admin' ? undefined : req.user!.id;
+      const agents = await storage.getAllAgents(userId);
       res.json(agents);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch agents" });
     }
   });
 
-  app.get("/api/agents/:id", async (req, res) => {
+  app.get("/api/agents/:id", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
       const agent = await storage.getAgent(id);
       if (!agent) {
         return res.status(404).json({ message: "Agent not found" });
       }
+      
+      // Check ownership unless admin
+      if (req.user!.role !== 'admin' && agent.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       res.json(agent);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch agent" });
     }
   });
 
-  app.post("/api/agents", async (req, res) => {
+  app.post("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const validatedData = insertAgentSchema.parse(req.body);
-      const agent = await storage.createAgent(validatedData);
+      const agentData = { ...validatedData, userId: req.user!.id };
+      const agent = await storage.createAgent(agentData);
       res.status(201).json(agent);
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -263,14 +468,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/agents/:id", async (req, res) => {
+  app.put("/api/agents/:id", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertAgentSchema.partial().parse(req.body);
-      const agent = await storage.updateAgent(id, validatedData);
-      if (!agent) {
+      
+      // Check ownership unless admin
+      const existingAgent = await storage.getAgent(id);
+      if (!existingAgent) {
         return res.status(404).json({ message: "Agent not found" });
       }
+      
+      if (req.user!.role !== 'admin' && existingAgent.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const agent = await storage.updateAgent(id, validatedData);
       res.json(agent);
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -280,9 +493,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/agents/:id", async (req, res) => {
+  app.delete("/api/agents/:id", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Check ownership unless admin
+      const existingAgent = await storage.getAgent(id);
+      if (!existingAgent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      
+      if (req.user!.role !== 'admin' && existingAgent.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const deleted = await storage.deleteAgent(id);
       if (!deleted) {
         return res.status(404).json({ message: "Agent not found" });
