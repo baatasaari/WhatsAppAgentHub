@@ -215,6 +215,10 @@ export default function CreateAgent() {
       discordBotToken: "",
       discordGuildId: "",
       discordChannelId: "",
+      // Voice calling settings
+      voiceProvider: "",
+      voiceModel: "",
+      callScript: "",
     },
   });
 
