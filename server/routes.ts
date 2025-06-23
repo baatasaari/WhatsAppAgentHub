@@ -900,13 +900,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const agent = await storage.getAgent(parseInt(agentId));
       if (!agent) {
+        console.log(`Webhook verification failed: Agent ${agentId} not found`);
         return res.status(404).send('Agent not found');
+      }
+
+      // Check if WhatsApp is configured for this agent
+      if (!agent.whatsappWebhookVerifyToken) {
+        console.log(`Webhook verification failed: Agent ${agentId} has no WhatsApp verification token configured`);
+        return res.status(400).send('WhatsApp webhook not configured for this agent');
       }
 
       if (mode === 'subscribe' && token === agent.whatsappWebhookVerifyToken) {
         console.log('WhatsApp webhook verified for agent:', agentId);
         res.status(200).send(challenge);
       } else {
+        console.log(`Webhook verification failed: Mode=${mode}, Token match=${token === agent.whatsappWebhookVerifyToken}`);
         res.status(403).send('Verification failed');
       }
     } catch (error) {
@@ -923,7 +931,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const agent = await storage.getAgent(parseInt(agentId));
       if (!agent) {
+        console.log(`WhatsApp webhook failed: Agent ${agentId} not found`);
         return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Check if WhatsApp Business API is properly configured
+      if (!agent.whatsappAccessToken || !agent.whatsappPhoneNumberId) {
+        console.log(`WhatsApp webhook failed: Agent ${agentId} missing WhatsApp Business API credentials`);
+        return res.status(400).json({ 
+          error: "WhatsApp Business API not configured", 
+          details: "Missing access token or phone number ID" 
+        });
       }
 
       // Process each entry in the webhook payload
