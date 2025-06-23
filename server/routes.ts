@@ -359,8 +359,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // LLM Models configuration endpoints
-  app.get("/api/models", async (req, res) => {
+  // LLM Models configuration endpoints - System Admin only for modifications
+  app.get("/api/models", authenticate, requireApproved, async (req, res) => {
     try {
       const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
       const fileContents = fs.readFileSync(configPath, 'utf8');
@@ -372,7 +372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/models", async (req, res) => {
+  app.post("/api/models", authenticate, requireSystemAdmin, async (req, res) => {
     try {
       const modelData = req.body;
       const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
@@ -398,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/models/:id", async (req, res) => {
+  app.put("/api/models/:id", authenticate, requireSystemAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/models/:id", async (req, res) => {
+  app.delete("/api/models/:id", authenticate, requireSystemAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
@@ -451,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/models/reorder", async (req, res) => {
+  app.put("/api/models/reorder", authenticate, requireSystemAdmin, async (req, res) => {
     try {
       const { models } = req.body;
       
@@ -493,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected agent routes - require approved users
   app.get("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user!.role === 'admin' ? undefined : req.user!.id;
+      const userId = ['system_admin', 'business_manager'].includes(req.user!.role) ? undefined : req.user!.id;
       const agents = await storage.getAllAgents(userId);
       res.json(agents);
     } catch (error) {
@@ -510,7 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check ownership unless admin
-      if (req.user!.role !== 'admin' && agent.userId !== req.user!.id) {
+      if (!['system_admin', 'business_manager'].includes(req.user!.role) && agent.userId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
       

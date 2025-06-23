@@ -49,15 +49,15 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("profile");
 
   // Fetch all users for admin
-  const { data: allUsers, isLoading: usersLoading } = useQuery({
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery({
     queryKey: ['/api/admin/users'],
-    enabled: user?.role === 'admin' && activeTab === 'users',
+    enabled: ['system_admin', 'business_manager'].includes(user?.role || '') && activeTab === 'users',
   });
 
-  // Fetch pending users for admin
-  const { data: pendingUsers } = useQuery({
+  // Fetch pending users for admin  
+  const { data: pendingUsers = [] } = useQuery({
     queryKey: ['/api/admin/users/pending'],
-    enabled: user?.role === 'admin' && activeTab === 'users',
+    enabled: ['system_admin', 'business_manager'].includes(user?.role || '') && activeTab === 'users',
   });
 
   const profileForm = useForm<ProfileFormData>({
