@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/users/:id/approve', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/admin/users/:id/approve', authenticate, requireBusinessManager, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.id);
       const adminId = req.user!.id;
@@ -320,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/users/:id/suspend', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/admin/users/:id/suspend', authenticate, requireBusinessManager, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.id);
       
@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.delete('/api/admin/users/:id', authenticate, requireSystemAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.id);
       
@@ -356,6 +356,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting user:', error);
       res.status(500).json({ message: 'Failed to delete user' });
+    }
+  });
+
+  // System Admin only - User role management endpoints
+  app.put('/api/admin/users/:id/role', authenticate, requireSystemAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (!['system_admin', 'business_manager', 'business_user'].includes(role)) {
+        return res.status(400).json({ message: 'Invalid role' });
+      }
+      
+      const user = await storage.updateUser(userId, { role });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json({
+        message: 'User role updated successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({ message: 'Failed to update user role' });
+    }
+  });
+
+  app.post('/api/admin/users/:id/reactivate', authenticate, requireBusinessManager, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const user = await storage.updateUser(userId, { status: 'approved' });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json({
+        message: 'User reactivated successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          status: user.status
+        }
+      });
+    } catch (error) {
+      console.error('Error reactivating user:', error);
+      res.status(500).json({ message: 'Failed to reactivate user' });
     }
   });
   
