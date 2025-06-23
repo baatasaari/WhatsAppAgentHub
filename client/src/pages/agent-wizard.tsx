@@ -406,20 +406,13 @@ export default function AgentWizard() {
                       return (
                         <div
                           key={platform.id}
-                          className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                          className={`relative rounded-lg border-2 p-4 transition-all ${
                             isSelected 
                               ? 'border-blue-500 bg-blue-50 shadow-sm' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
-                          onClick={() => {
-                            const current = field.value || [];
-                            const updated = current.includes(platform.id)
-                              ? current.filter(id => id !== platform.id)
-                              : [...current, platform.id];
-                            field.onChange(updated);
-                          }}
                         >
-                          <div className="flex items-start justify-between">
+                          <label className="flex items-start justify-between cursor-pointer w-full">
                             <div className="flex items-start space-x-3 flex-1">
                               <Checkbox
                                 checked={isSelected}
@@ -455,7 +448,7 @@ export default function AgentWizard() {
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </label>
                         </div>
                       );
                     })}
