@@ -339,6 +339,23 @@ export type InsertBusinessTemplate = typeof businessTemplates.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 
+// Comprehensive logging table for system operations
+export const logs = pgTable("logs", {
+  id: varchar("id").primaryKey().notNull(),
+  level: text("level").notNull(), // debug, info, warn, error, critical
+  category: text("category").notNull(), // agent, auth, api, cost, webhook, voice, whatsapp, system, security
+  message: text("message").notNull(),
+  userId: integer("user_id").references(() => users.id),
+  agentId: integer("agent_id").references(() => agents.id),
+  sessionId: varchar("session_id"),
+  metadata: jsonb("metadata").default({}),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type InsertLog = typeof logs.$inferInsert;
+export type Log = typeof logs.$inferSelect;
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertAgentSchema = createInsertSchema(agents).omit({ 
