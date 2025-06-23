@@ -898,24 +898,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   webhookData: message
                 });
 
-                // Update conversation with the new message
-                await storage.updateConversation(conversation.id, {
-                  messages: [
-                    ...(conversation.messages || []),
-                    {
-                      role: 'user',
-                      content: message.text?.body || `[${message.type} message]`,
-                      timestamp: new Date().toISOString()
-                    }
-                  ]
-                });
-
-                // Process message with AI agent using full conversation context
+                // Process message with AI agent
                 const { response, shouldSend } = await whatsappService.processIncomingMessage(
                   agent,
                   message,
-                  senderName,
-                  conversation.id
+                  senderName
                 );
 
                 // Send AI response if needed
@@ -931,7 +918,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     // Store outgoing message
                     await storage.createWhatsappMessage({
                       agentId: agent.id,
-                      conversationId: conversation.id,
                       whatsappMessageId: sendResult.messageId,
                       fromPhoneNumber: agent.whatsappNumber || change.value.metadata.display_phone_number,
                       toPhoneNumber: message.from,
@@ -939,23 +925,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       content: response,
                       direction: 'outbound',
                       status: 'sent'
-                    });
-
-                    // Update conversation with AI response
-                    await storage.updateConversation(conversation.id, {
-                      messages: [
-                        ...(conversation.messages || []),
-                        {
-                          role: 'user',
-                          content: message.text?.body || `[${message.type} message]`,
-                          timestamp: new Date().toISOString()
-                        },
-                        {
-                          role: 'assistant',
-                          content: response,
-                          timestamp: new Date().toISOString()
-                        }
-                      ]
                     });
                   }
                 }

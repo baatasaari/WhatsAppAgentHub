@@ -207,8 +207,7 @@ export class WhatsAppBusinessService {
   async processIncomingMessage(
     agent: Agent,
     message: WhatsAppMessage,
-    senderName?: string,
-    conversationId?: number
+    senderName?: string
   ): Promise<{ response: string; shouldSend: boolean }> {
     try {
       // Extract message content
@@ -227,50 +226,17 @@ export class WhatsAppBusinessService {
         messageContent = `[${message.type} message received]`;
       }
 
-      // Build conversation context with history
-      let conversationHistory: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
+      // Build conversation context
+      const conversationHistory = [
         {
-          role: 'system',
+          role: 'system' as const,
           content: `${agent.systemPrompt}\n\nYou are responding to ${senderName || 'a customer'} via WhatsApp. Keep responses concise and conversational.`
+        },
+        {
+          role: 'user' as const,
+          content: messageContent
         }
       ];
-
-      // Add conversation history if available
-      if (conversationId) {
-        try {
-          const previousMessages = await storage.getWhatsappMessagesByConversation(conversationId);
-          // Sort by timestamp and add recent messages (last 10 for context)
-          const recentMessages = previousMessages
-            .sort((a, b) => {
-              const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-              const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-              return aTime - bTime;
-            })
-            .slice(-10);
-
-          for (const msg of recentMessages) {
-            if (msg.direction === 'inbound' && msg.content) {
-              conversationHistory.push({
-                role: 'user',
-                content: msg.content
-              });
-            } else if (msg.direction === 'outbound' && msg.content) {
-              conversationHistory.push({
-                role: 'assistant',
-                content: msg.content
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching conversation history:', error);
-        }
-      }
-
-      // Add current message
-      conversationHistory.push({
-        role: 'user',
-        content: messageContent
-      });
 
       // Generate AI response using preconfigured LLM
       const aiResponse = await generateChatResponse(
