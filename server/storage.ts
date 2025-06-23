@@ -246,26 +246,9 @@ export class DatabaseStorage implements IStorage {
 
   async createAgent(insertAgent: InsertAgent): Promise<Agent> {
     try {
-      const apiKey = `af_${nanoid(20)}`;
       const [agent] = await db
         .insert(agents)
-        .values({
-          name: insertAgent.name,
-          businessCategory: insertAgent.businessCategory || null,
-          llmProvider: insertAgent.llmProvider,
-          systemPrompt: insertAgent.systemPrompt,
-          leadQualificationQuestions: insertAgent.leadQualificationQuestions || [],
-          voiceProvider: insertAgent.voiceProvider || 'elevenlabs',
-          voiceModel: insertAgent.voiceModel || 'professional-male',
-          callScript: insertAgent.callScript || null,
-          widgetPosition: insertAgent.widgetPosition || 'bottom-right',
-          widgetColor: insertAgent.widgetColor || '#25D366',
-          welcomeMessage: insertAgent.welcomeMessage || 'Hi! How can I help you today?',
-          whatsappNumber: insertAgent.whatsappNumber || null,
-          whatsappMode: insertAgent.whatsappMode || 'web',
-          status: insertAgent.status || 'active',
-          apiKey
-        } as any)
+        .values(insertAgent)
         .returning();
       return agent;
     } catch (error) {
@@ -695,10 +678,9 @@ export class DatabaseStorage implements IStorage {
         await db.update(usageMetrics)
           .set({
             messagesUsed: sql`${usageMetrics.messagesUsed} + ${metrics.messagesUsed || 0}`,
-            conversationsStarted: sql`${usageMetrics.conversationsStarted} + ${metrics.conversationsStarted || 0}`,
             leadsGenerated: sql`${usageMetrics.leadsGenerated} + ${metrics.leadsGenerated || 0}`,
-            apiCallsMade: sql`${usageMetrics.apiCallsMade} + ${metrics.apiCallsMade || 0}`,
-            costIncurred: sql`${usageMetrics.costIncurred} + ${metrics.costIncurred || 0}`,
+            totalCost: sql`${usageMetrics.totalCost} + ${metrics.costIncurred || 0}`,
+            conversions: sql`${usageMetrics.conversions} + ${metrics.conversions || 0}`,
           })
           .where(and(
             eq(usageMetrics.userId, userId),
@@ -711,10 +693,9 @@ export class DatabaseStorage implements IStorage {
           agentId,
           month: currentMonth,
           messagesUsed: metrics.messagesUsed || 0,
-          conversationsStarted: metrics.conversationsStarted || 0,
           leadsGenerated: metrics.leadsGenerated || 0,
-          apiCallsMade: metrics.apiCallsMade || 0,
-          costIncurred: metrics.costIncurred || 0,
+          conversions: metrics.conversions || 0,
+          totalCost: metrics.costIncurred || 0,
         });
       }
     } catch (error) {

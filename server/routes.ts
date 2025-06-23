@@ -710,11 +710,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate API key for the agent
       const apiKey = randomBytes(32).toString('hex');
       
+      console.log('User context:', req.user);
+      console.log('User ID:', req.user?.id);
+      
       const validatedData = insertAgentSchema.parse(req.body);
-      const agentData = { ...validatedData, userId: req.user!.id, apiKey };
+      const agentData = { 
+        ...validatedData, 
+        userId: req.user!.id, 
+        apiKey 
+      };
+      
+      console.log('Agent data before creation:', agentData);
+      
       const agent = await storage.createAgent(agentData);
       res.status(201).json(agent);
     } catch (error: any) {
+      console.error('Agent creation error:', error);
       if (error.name === 'ZodError') {
         return res.status(400).json({ message: "Invalid agent data", errors: error.errors });
       }
