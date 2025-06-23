@@ -8,18 +8,81 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Rocket, Plus, Phone, MessageCircle } from "lucide-react";
+import { Rocket, Plus, Phone, MessageCircle, Bot, Send, Globe, Smartphone } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+
+// Platform definitions with configuration options
+const platformTypes = [
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Business',
+    icon: MessageCircle,
+    color: '#25D366',
+    description: 'Connect through WhatsApp Business for direct messaging',
+    defaultMessage: 'Hi! How can I help you today?',
+    fields: ['whatsappNumber', 'whatsappMode']
+  },
+  {
+    id: 'chatbot',
+    name: 'Website Chatbot',
+    icon: Bot,
+    color: '#2563eb',
+    description: 'Embedded chat widget for your website',
+    defaultMessage: 'Hello! I\'m here to assist you.',
+    fields: ['widgetPosition', 'widgetColor']
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram Bot',
+    icon: Send,
+    color: '#0088cc',
+    description: 'Automated bot for Telegram messaging',
+    defaultMessage: 'Welcome to our Telegram support bot!',
+    fields: ['telegramBotToken', 'telegramUsername']
+  },
+  {
+    id: 'webchat',
+    name: 'Live Web Chat',
+    icon: Globe,
+    color: '#10b981',
+    description: 'Real-time chat support on your website',
+    defaultMessage: 'Hi there! Need help with anything?',
+    fields: ['chatTheme', 'operatingHours']
+  },
+  {
+    id: 'sms',
+    name: 'SMS Support',
+    icon: Smartphone,
+    color: '#7c3aed',
+    description: 'Text message based customer support',
+    defaultMessage: 'Thanks for texting us! How can we help?',
+    fields: ['smsNumber', 'smsProvider']
+  },
+  {
+    id: 'voice',
+    name: 'Voice Assistant',
+    icon: Phone,
+    color: '#dc2626',
+    description: 'AI-powered phone support system',
+    defaultMessage: 'Hello, thanks for calling!',
+    fields: ['voiceProvider', 'voiceModel', 'callScript']
+  }
+];
 
 const createAgentSchema = z.object({
   name: z.string().min(1, "Agent name is required"),
   businessCategory: z.string().optional(),
   llmProvider: z.string().min(1, "LLM provider is required"),
   systemPrompt: z.string().min(10, "System prompt must be at least 10 characters"),
+  selectedPlatforms: z.array(z.string()).min(1, "Select at least one platform"),
   leadQualificationQuestions: z.array(z.string()).default([]),
+  
+  // Platform-specific fields
   voiceProvider: z.string().default("elevenlabs"),
   voiceModel: z.string().default("professional-male"),
   callScript: z.string().optional(),
@@ -28,6 +91,12 @@ const createAgentSchema = z.object({
   welcomeMessage: z.string().default("Hi! How can I help you today?"),
   whatsappNumber: z.string().optional(),
   whatsappMode: z.string().default("web"),
+  telegramBotToken: z.string().optional(),
+  telegramUsername: z.string().optional(),
+  chatTheme: z.string().default("modern"),
+  operatingHours: z.string().default("24/7"),
+  smsNumber: z.string().optional(),
+  smsProvider: z.string().default("twilio"),
   status: z.string().default("active"),
 });
 
@@ -36,7 +105,9 @@ type CreateAgentForm = z.infer<typeof createAgentSchema>;
 export default function CreateAgent() {
   const [, setLocation] = useLocation();
   const [selectedLLM, setSelectedLLM] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [qualificationQuestions, setQualificationQuestions] = useState<string[]>([]);
+  const [isCreatingMultiple, setIsCreatingMultiple] = useState(false);
   const { toast } = useToast();
 
   // Fetch available LLM models from configuration
@@ -56,6 +127,7 @@ export default function CreateAgent() {
       businessCategory: "",
       llmProvider: "",
       systemPrompt: "",
+      selectedPlatforms: [],
       leadQualificationQuestions: [],
       voiceProvider: "elevenlabs",
       voiceModel: "professional-male",
@@ -63,25 +135,71 @@ export default function CreateAgent() {
       widgetPosition: "bottom-right",
       widgetColor: "#25D366",
       welcomeMessage: "Hi! How can I help you today?",
+      whatsappNumber: "",
+      whatsappMode: "web",
+      telegramBotToken: "",
+      telegramUsername: "",
+      chatTheme: "modern",
+      operatingHours: "24/7",
+      smsNumber: "",
+      smsProvider: "twilio",
       status: "active",
     },
   });
 
   const createAgentMutation = useMutation({
     mutationFn: async (data: CreateAgentForm) => {
-      return await apiRequest("POST", "/api/agents", data);
+      setIsCreatingMultiple(true);
+      
+      if (data.selectedPlatforms.length === 1) {
+        // Single platform creation
+        return await apiRequest("POST", "/api/agents", {
+          ...data,
+          platformType: data.selectedPlatforms[0],
+        });
+      } else {
+        // Multi-platform creation - create separate agents for each platform
+        const createdAgents = [];
+        for (const platform of data.selectedPlatforms) {
+          const platformData = {
+            ...data,
+            name: `${data.name} - ${platformTypes.find(p => p.id === platform)?.name}`,
+            platformType: platform,
+            welcomeMessage: platformTypes.find(p => p.id === platform)?.defaultMessage || data.welcomeMessage,
+            widgetColor: platformTypes.find(p => p.id === platform)?.color || data.widgetColor,
+          };
+          
+          const agent = await apiRequest("POST", "/api/agents", platformData);
+          createdAgents.push(agent);
+        }
+        return createdAgents;
+      }
     },
-    onSuccess: (newAgent: any) => {
+    onSuccess: (result: any) => {
+      setIsCreatingMultiple(false);
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
-      toast({ title: "Agent created successfully! Your embed code is ready." });
-      // Redirect to embed code page with the new agent
-      setLocation(`/embed-code?agentId=${newAgent.id}`);
+      
+      const isMultiple = Array.isArray(result);
+      const agentCount = isMultiple ? result.length : 1;
+      
+      toast({ 
+        title: `${agentCount} agent${agentCount > 1 ? 's' : ''} created successfully!`,
+        description: isMultiple ? "Multiple platform widgets are ready." : "Your embed code is ready."
+      });
+      
+      // Redirect to appropriate page
+      if (isMultiple) {
+        setLocation("/agents");
+      } else {
+        setLocation(`/embed-code?agentId=${result.id}`);
+      }
     },
     onError: (error: any) => {
-      toast({ 
-        title: "Failed to create agent", 
-        description: error.message,
-        variant: "destructive" 
+      setIsCreatingMultiple(false);
+      toast({
+        title: "Failed to create agent(s)",
+        description: error.message || "Please check your configuration and try again.",
+        variant: "destructive",
       });
     },
   });
