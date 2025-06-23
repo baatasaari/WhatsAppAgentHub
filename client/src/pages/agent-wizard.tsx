@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -214,7 +214,7 @@ export default function AgentWizard() {
   const selectedPlatforms = form.watch("selectedPlatforms") || [];
   
   // Debug logging to understand the selection state
-  React.useEffect(() => {
+  useEffect(() => {
     console.log("Selected platforms state:", selectedPlatforms);
   }, [selectedPlatforms]);
   
