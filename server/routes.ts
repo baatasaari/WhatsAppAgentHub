@@ -188,6 +188,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.user });
   });
 
+  // User profile management endpoints
+  app.put('/api/user/profile', authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { firstName, lastName, email, companyName } = req.body;
+      
+      // Check if email is already taken by another user
+      if (email !== req.user!.email) {
+        const existingUser = await storage.getUserByEmail(email);
+        if (existingUser && existingUser.id !== req.user!.id) {
+          return res.status(400).json({ message: 'Email already in use' });
+        }
+      }
+
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        firstName,
+        lastName,
+        email,
+        companyName
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
+    }
+  });
+
+  app.put('/api/user/change-password', authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      const user = await storage.getUserById(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await AuthService.verifyPassword(currentPassword, user.passwordHash);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+
+      // Hash new password
+      const newPasswordHash = await AuthService.hashPassword(newPassword);
+      
+      // Update password
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        passwordHash: newPasswordHash
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      res.status(500).json({ message: 'Failed to change password' });
+    }
+  });
+
   // Admin-only user management routes
   app.get('/api/admin/users', authenticate, requireAdmin, async (req: AuthenticatedRequest, res) => {
     try {

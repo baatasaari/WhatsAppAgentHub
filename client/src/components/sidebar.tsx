@@ -54,15 +54,17 @@ export default function Sidebar() {
       </nav>
       
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center space-x-3 px-3 py-2">
+        <Link href="/settings" className="flex items-center space-x-3 px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-gray-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">John Smith</p>
-            <p className="text-xs text-gray-500">john@company.com</p>
+            <p className="text-sm font-medium text-gray-900">
+              {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'Loading...'}
+            </p>
+            <p className="text-xs text-gray-500">{user?.email || 'Loading...'}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   );
