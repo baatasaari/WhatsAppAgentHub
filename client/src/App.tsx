@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import Agents from "@/pages/agents";
 import CreateAgent from "@/pages/create-agent";
+import AgentWizard from "@/pages/agent-wizard";
 import Analytics from "@/pages/analytics";
 import EmbedCode from "@/pages/embed-code";
 import WidgetPreview from "@/pages/widget-preview";
@@ -57,6 +58,7 @@ function Router() {
             <Route path="/business-templates" component={BusinessTemplates} />
             <Route path="/agents" component={Agents} />
             <Route path="/create" component={CreateAgent} />
+            <Route path="/wizard" component={AgentWizard} />
             <Route path="/voice-calling" component={VoiceCalling} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/embed-code" component={EmbedCode} />
