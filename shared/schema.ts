@@ -417,3 +417,122 @@ export type BusinessTemplate = typeof businessTemplates.$inferSelect;
 export type InsertBusinessTemplate = z.infer<typeof insertBusinessTemplateSchema>;
 export type ClientDomain = typeof clientDomains.$inferSelect;
 export type InsertClientDomain = z.infer<typeof insertClientDomainSchema>;
+
+// AI Voice Calling System
+export const voiceCalls = pgTable("voice_calls", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  conversationId: integer("conversation_id").references(() => conversations.id),
+  
+  // Call details
+  phoneNumber: text("phone_number").notNull(),
+  callId: text("call_id"), // External service call ID
+  status: text("status").notNull().default("pending"), // pending, calling, connected, completed, failed, no_answer
+  
+  // Call metadata
+  triggeredBy: text("triggered_by").notNull(), // failed_conversion, manual, scheduled
+  triggerReason: text("trigger_reason"), // cart_abandonment, form_incomplete, high_value_lead
+  callDuration: integer("call_duration").default(0), // seconds
+  
+  // AI configuration
+  voiceModel: text("voice_model").default("alloy"), // OpenAI voice models
+  systemPrompt: text("system_prompt"),
+  callScript: text("call_script"),
+  
+  // Results
+  transcript: text("transcript"),
+  sentiment: text("sentiment"), // positive, neutral, negative
+  callOutcome: text("call_outcome"), // conversion, callback_scheduled, not_interested, no_answer
+  leadScore: integer("lead_score").default(0), // 0-100
+  
+  // Follow-up
+  followUpRequired: boolean("follow_up_required").default(false),
+  followUpDate: timestamp("follow_up_date"),
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const voiceCallTriggers = pgTable("voice_call_triggers", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  
+  // Trigger conditions
+  enabled: boolean("enabled").default(false),
+  triggerType: text("trigger_type").notNull(), // time_based, behavior_based, manual
+  
+  // Time-based triggers
+  delayMinutes: integer("delay_minutes").default(15), // Minutes after failed conversion
+  businessHoursOnly: boolean("business_hours_only").default(true),
+  
+  // Behavior-based triggers
+  minEngagementScore: integer("min_engagement_score").default(50), // 0-100
+  requireEmailCapture: boolean("require_email_capture").default(false),
+  requirePhoneCapture: boolean("require_phone_capture").default(true),
+  
+  // Call settings
+  maxAttemptsPerLead: integer("max_attempts_per_lead").default(2),
+  retryDelayHours: integer("retry_delay_hours").default(24),
+  
+  // Voice configuration
+  voicePersona: text("voice_persona").default("professional"), // professional, friendly, sales
+  callObjective: text("call_objective"), // schedule_demo, answer_questions, close_sale
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const voiceCallAnalytics = pgTable("voice_call_analytics", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD
+  
+  // Call volume metrics
+  totalCalls: integer("total_calls").default(0),
+  successfulConnections: integer("successful_connections").default(0),
+  failedCalls: integer("failed_calls").default(0),
+  noAnswers: integer("no_answers").default(0),
+  
+  // Conversation metrics
+  avgCallDuration: integer("avg_call_duration").default(0), // seconds
+  totalTalkTime: integer("total_talk_time").default(0), // seconds
+  avgLeadScore: integer("avg_lead_score").default(0),
+  
+  // Outcome metrics
+  conversions: integer("conversions").default(0),
+  callbacksScheduled: integer("callbacks_scheduled").default(0),
+  notInterested: integer("not_interested").default(0),
+  
+  // Cost metrics
+  totalCost: integer("total_cost").default(0), // cents
+  costPerCall: integer("cost_per_call").default(0), // cents
+  costPerConversion: integer("cost_per_conversion").default(0), // cents
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Voice calling schemas
+export const insertVoiceCallSchema = createInsertSchema(voiceCalls).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertVoiceCallTriggerSchema = createInsertSchema(voiceCallTriggers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVoiceCallAnalyticsSchema = createInsertSchema(voiceCallAnalytics).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type VoiceCall = typeof voiceCalls.$inferSelect;
+export type InsertVoiceCall = z.infer<typeof insertVoiceCallSchema>;
+export type VoiceCallTrigger = typeof voiceCallTriggers.$inferSelect;
+export type InsertVoiceCallTrigger = z.infer<typeof insertVoiceCallTriggerSchema>;
+export type VoiceCallAnalytics = typeof voiceCallAnalytics.$inferSelect;
+export type InsertVoiceCallAnalytics = z.infer<typeof insertVoiceCallAnalyticsSchema>;

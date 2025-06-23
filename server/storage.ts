@@ -5,6 +5,9 @@ import {
   users, 
   sessions,
   whatsappMessages,
+  voiceCalls,
+  voiceCallTriggers,
+  voiceCallAnalytics,
   type Agent, 
   type InsertAgent, 
   type Conversation, 
@@ -17,7 +20,13 @@ import {
   type Session,
   type InsertSession,
   type WhatsappMessage,
-  type InsertWhatsappMessage
+  type InsertWhatsappMessage,
+  type VoiceCall,
+  type InsertVoiceCall,
+  type VoiceCallTrigger,
+  type InsertVoiceCallTrigger,
+  type VoiceCallAnalytics,
+  type InsertVoiceCallAnalytics
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, count, sql } from "drizzle-orm";
@@ -714,6 +723,25 @@ export class DatabaseStorage implements IStorage {
       console.error('Error creating/updating usage metrics:', error);
     }
   }
+
+  // Voice calling operations
+  getVoiceCall(id: number): Promise<VoiceCall | undefined>;
+  getVoiceCallByCallId(callId: string): Promise<VoiceCall | undefined>;
+  getVoiceCallsByAgent(agentId: number): Promise<VoiceCall[]>;
+  getVoiceCallsByConversation(conversationId: number): Promise<VoiceCall[]>;
+  createVoiceCall(call: InsertVoiceCall): Promise<VoiceCall>;
+  updateVoiceCall(id: number, updates: Partial<InsertVoiceCall>): Promise<VoiceCall | undefined>;
+  updateVoiceCallStatus(id: number, status: string): Promise<void>;
+
+  // Voice call trigger operations
+  getVoiceCallTrigger(agentId: number): Promise<VoiceCallTrigger | undefined>;
+  createVoiceCallTrigger(trigger: InsertVoiceCallTrigger): Promise<VoiceCallTrigger>;
+  updateVoiceCallTrigger(agentId: number, updates: Partial<InsertVoiceCallTrigger>): Promise<VoiceCallTrigger | undefined>;
+
+  // Voice call analytics operations
+  getVoiceCallAnalytics(agentId: number, date: string): Promise<VoiceCallAnalytics | undefined>;
+  createVoiceCallAnalytics(analytics: InsertVoiceCallAnalytics): Promise<VoiceCallAnalytics>;
+  updateVoiceCallAnalytics(id: number, updates: Partial<InsertVoiceCallAnalytics>): Promise<VoiceCallAnalytics | undefined>;
 
   async checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }> {
     try {
