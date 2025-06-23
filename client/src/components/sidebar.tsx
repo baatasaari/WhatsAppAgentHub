@@ -1,5 +1,6 @@
 import { useLocation, Link } from "wouter";
 import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -15,6 +16,7 @@ const navigation = [
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
