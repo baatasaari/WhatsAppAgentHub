@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertAgentSchema, insertConversationSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { generateChatResponse, qualifyLead } from "./services/llm-providers";
-import { authenticate, requireAdmin, requireApproved, AuthenticatedRequest, AuthService } from "./auth";
+import { authenticate, requireAdmin, requireApproved, requireSystemAdmin, requireBusinessManager, AuthenticatedRequest, AuthService } from "./auth";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";

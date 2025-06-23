@@ -117,13 +117,39 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
   }
 };
 
-// Authorization middleware for admin only
+// Authorization middleware for system admin only
+export const requireSystemAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  if (req.user.role !== 'system_admin') {
+    return res.status(403).json({ message: 'System Admin access required' });
+  }
+
+  next();
+};
+
+// Authorization middleware for business manager or above
+export const requireBusinessManager = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  if (!['system_admin', 'business_manager'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Business Manager or System Admin access required' });
+  }
+
+  next();
+};
+
+// Authorization middleware for admin (backward compatibility - maps to business manager+)
 export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
 
-  if (req.user.role !== 'admin') {
+  if (!['system_admin', 'business_manager'].includes(req.user.role)) {
     return res.status(403).json({ message: 'Admin access required' });
   }
 
@@ -146,5 +172,11 @@ export const requireApproved = (req: AuthenticatedRequest, res: Response, next: 
 // Combined middleware for approved business users or admins
 export const requireApprovedUser = [authenticate, requireApproved];
 
-// Combined middleware for admin access
+// Combined middleware for business manager access
+export const requireBusinessManagerAccess = [authenticate, requireBusinessManager];
+
+// Combined middleware for system admin access
+export const requireSystemAdminAccess = [authenticate, requireSystemAdmin];
+
+// Combined middleware for admin access (backward compatibility)
 export const requireAdminAccess = [authenticate, requireAdmin];

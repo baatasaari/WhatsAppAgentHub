@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   firstName: varchar("first_name", { length: 100 }),
   lastName: varchar("last_name", { length: 100 }),
-  role: text("role").notNull().default("business_user"), // "admin", "business_user"
+  role: text("role").notNull().default("business_user"), // "system_admin", "business_manager", "business_user"
   status: text("status").notNull().default("pending"), // "pending", "approved", "suspended"
   companyName: varchar("company_name", { length: 255 }),
   phone: varchar("phone", { length: 20 }),
