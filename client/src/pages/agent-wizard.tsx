@@ -213,6 +213,11 @@ export default function AgentWizard() {
   // Watch selected platforms to force re-render when they change
   const selectedPlatforms = form.watch("selectedPlatforms") || [];
   
+  // Debug logging to understand the selection state
+  React.useEffect(() => {
+    console.log("Selected platforms state:", selectedPlatforms);
+  }, [selectedPlatforms]);
+  
   // Watch LLM provider to force re-render when it changes
   const selectedLlmProvider = form.watch("llmProvider");
 
