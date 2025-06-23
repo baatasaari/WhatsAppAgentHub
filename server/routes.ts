@@ -7,6 +7,7 @@ import { authenticate, requireAdmin, requireApproved, requireSystemAdmin, requir
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
 import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";
+import { voiceCallingService } from "./services/voice-calling";
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -825,6 +826,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).send(challenge);
     } else {
       res.status(403).send('Forbidden');
+    }
+  });
+
+  // Voice calling API endpoints
+  app.get("/api/voice-calls", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = req.query.agentId as string;
+      if (agentId) {
+        const calls = await storage.getVoiceCallsByAgent(parseInt(agentId));
+        res.json(calls);
+      } else {
+        // Get all calls for user's agents
+        const userAgents = await storage.getUserAgents(req.user!.id);
+        const allCalls = [];
+        for (const agent of userAgents) {
+          const calls = await storage.getVoiceCallsByAgent(agent.id);
+          allCalls.push(...calls);
+        }
+        res.json(allCalls);
+      }
+    } catch (error) {
+      console.error("Error fetching voice calls:", error);
+      res.status(500).json({ message: "Failed to fetch voice calls" });
+    }
+  });
+
+  app.get("/api/voice-calls/trigger/:agentId", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent || agent.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      const trigger = await storage.getVoiceCallTrigger(agentId);
+      res.json(trigger || {
+        agentId,
+        enabled: false,
+        triggerType: "time_based",
+        delayMinutes: 15,
+        businessHoursOnly: true,
+        minEngagementScore: 50,
+        requireEmailCapture: false,
+        requirePhoneCapture: true,
+        maxAttemptsPerLead: 2,
+        retryDelayHours: 24,
+        voicePersona: "professional",
+        callObjective: "answer_questions"
+      });
+    } catch (error) {
+      console.error("Error fetching voice call trigger:", error);
+      res.status(500).json({ message: "Failed to fetch trigger settings" });
+    }
+  });
+
+  app.put("/api/voice-calls/trigger/:agentId", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent || agent.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      const existingTrigger = await storage.getVoiceCallTrigger(agentId);
+      
+      if (existingTrigger) {
+        const updated = await storage.updateVoiceCallTrigger(agentId, req.body);
+        res.json(updated);
+      } else {
+        const created = await storage.createVoiceCallTrigger({
+          agentId,
+          ...req.body
+        });
+        res.json(created);
+      }
+    } catch (error) {
+      console.error("Error updating voice call trigger:", error);
+      res.status(500).json({ message: "Failed to update trigger settings" });
+    }
+  });
+
+  app.post("/api/voice-calls/manual", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { agentId, phoneNumber, triggerReason } = req.body;
+      
+      const agent = await storage.getAgent(agentId);
+      if (!agent || agent.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      const voiceCall = await voiceCallingService.triggerVoiceCall({
+        agentId,
+        phoneNumber,
+        triggerReason,
+        triggeredBy: "manual"
+      });
+
+      res.json(voiceCall);
+    } catch (error) {
+      console.error("Error initiating manual voice call:", error);
+      res.status(500).json({ message: "Failed to initiate voice call" });
+    }
+  });
+
+  app.get("/api/voice-calls/analytics/:agentId", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent || agent.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const analytics = await storage.getVoiceCallAnalytics(agentId, today);
+      
+      res.json(analytics || {
+        agentId,
+        date: today,
+        totalCalls: 0,
+        successfulConnections: 0,
+        failedCalls: 0,
+        noAnswers: 0,
+        conversions: 0,
+        callbacksScheduled: 0,
+        notInterested: 0,
+        avgCallDuration: 0,
+        totalTalkTime: 0,
+        avgLeadScore: 0,
+        totalCost: 0,
+        costPerCall: 0,
+        costPerConversion: 0
+      });
+    } catch (error) {
+      console.error("Error fetching voice call analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
 

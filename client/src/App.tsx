@@ -18,6 +18,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import BusinessTemplates from "@/pages/business-templates";
+import VoiceCalling from "@/pages/voice-calling";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -56,6 +57,7 @@ function Router() {
             <Route path="/business-templates" component={BusinessTemplates} />
             <Route path="/agents" component={Agents} />
             <Route path="/create" component={CreateAgent} />
+            <Route path="/voice-calling" component={VoiceCalling} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/embed-code" component={EmbedCode} />
             <Route path="/preview" component={WidgetPreview} />

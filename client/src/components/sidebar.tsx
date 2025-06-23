@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const getNavigationForRole = (userRole: string) => {
@@ -8,6 +8,7 @@ const getNavigationForRole = (userRole: string) => {
     { name: "Business Templates", href: "/business-templates", icon: MessageSquare },
     { name: "My Agents", href: "/agents", icon: Bot },
     { name: "Create Agent", href: "/create", icon: Plus },
+    { name: "AI Voice Calling", href: "/voice-calling", icon: Phone },
     { name: "Widget Preview", href: "/preview", icon: Eye },
     { name: "Embed Code", href: "/embed-code", icon: Code },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
