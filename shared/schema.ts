@@ -1,9 +1,36 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// User management tables for RBAC
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  role: text("role").notNull().default("business_user"), // "admin", "business_user"
+  status: text("status").notNull().default("pending"), // "pending", "approved", "suspended"
+  companyName: varchar("company_name", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+});
+
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(), // Owner of the agent
   name: text("name").notNull(),
   businessCategory: text("business_category"),
   llmProvider: text("llm_provider").notNull(), // "gpt-4o", "claude-3", "gpt-3.5-turbo"
@@ -64,6 +91,36 @@ export const analytics = pgTable("analytics", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// User schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLogin: true,
+  approvedBy: true,
+  approvedAt: true,
+}).extend({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const updateUserSchema = createInsertSchema(users).omit({
+  id: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLogin: true,
+}).partial();
+
+export const insertSessionSchema = createInsertSchema(sessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertAgentSchema = createInsertSchema(agents).omit({
   id: true,
   apiKey: true,
@@ -80,6 +137,15 @@ export const insertAnalyticsSchema = createInsertSchema(analytics).omit({
   id: true,
 });
 
+// User types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginUser = z.infer<typeof loginSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = z.infer<typeof insertSessionSchema>;
+
+// Existing types
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = z.infer<typeof insertAgentSchema>;
 export type Conversation = typeof conversations.$inferSelect;

@@ -1,7 +1,25 @@
-import { agents, conversations, analytics, type Agent, type InsertAgent, type Conversation, type InsertConversation, type Analytics, type InsertAnalytics } from "@shared/schema";
+import { 
+  agents, 
+  conversations, 
+  analytics, 
+  users, 
+  sessions,
+  type Agent, 
+  type InsertAgent, 
+  type Conversation, 
+  type InsertConversation, 
+  type Analytics, 
+  type InsertAnalytics,
+  type User,
+  type InsertUser,
+  type UpdateUser,
+  type Session,
+  type InsertSession
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, and, count, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { AuthService } from "./auth";
 
 export interface IStorage {
   // Agent operations
