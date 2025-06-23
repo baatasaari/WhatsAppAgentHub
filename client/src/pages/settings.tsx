@@ -2,16 +2,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { User, Lock, Bell, Shield, Trash2, Save } from "lucide-react";
+import { User, Lock, Bell, Shield, Trash2, Save, UserCheck, UserX, Clock } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -46,6 +47,18 @@ export default function Settings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("profile");
+
+  // Fetch all users for admin
+  const { data: allUsers, isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/admin/users'],
+    enabled: user?.role === 'admin' && activeTab === 'users',
+  });
+
+  // Fetch pending users for admin
+  const { data: pendingUsers } = useQuery({
+    queryKey: ['/api/admin/users/pending'],
+    enabled: user?.role === 'admin' && activeTab === 'users',
+  });
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -129,6 +142,96 @@ export default function Settings() {
     },
   });
 
+  // User management mutations
+  const approveUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User approved",
+        description: "User has been successfully approved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/pending'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve user.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const suspendUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}/suspend`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User suspended",
+        description: "User has been successfully suspended.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to suspend user.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User deleted",
+        description: "User has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/pending'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete user.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onProfileSubmit = (data: ProfileFormData) => {
     updateProfileMutation.mutate(data);
   };
@@ -142,6 +245,7 @@ export default function Settings() {
     { id: "security", label: "Security", icon: Lock },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "account", label: "Account", icon: Shield },
+    ...(user?.role === 'admin' ? [{ id: "users", label: "User Management", icon: Shield }] : []),
   ];
 
   return (
@@ -423,6 +527,158 @@ export default function Settings() {
                   Delete Account
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "users" && user?.role === 'admin' && (
+        <div className="space-y-6">
+          {/* Pending Users */}
+          {pendingUsers && pendingUsers.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-yellow-500" />
+                  <span>Pending Approvals ({pendingUsers.length})</span>
+                </CardTitle>
+                <CardDescription>
+                  Users waiting for approval to access the platform.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pendingUsers.map((pendingUser: any) => (
+                    <div key={pendingUser.id} className="flex items-center justify-between p-4 border rounded-lg bg-yellow-50">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <p className="font-medium">{pendingUser.firstName} {pendingUser.lastName}</p>
+                            <p className="text-sm text-gray-600">{pendingUser.email}</p>
+                            <p className="text-xs text-gray-500">{pendingUser.companyName}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="secondary">Pending</Badge>
+                        <Button
+                          size="sm"
+                          onClick={() => approveUserMutation.mutate(pendingUser.id)}
+                          disabled={approveUserMutation.isPending}
+                        >
+                          <UserCheck className="w-4 h-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteUserMutation.mutate(pendingUser.id)}
+                          disabled={deleteUserMutation.isPending}
+                        >
+                          <UserX className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* All Users */}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Users</CardTitle>
+              <CardDescription>
+                Manage all platform users and their permissions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {usersLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading users...</p>
+                  </div>
+                </div>
+              ) : allUsers && allUsers.length > 0 ? (
+                <div className="space-y-4">
+                  {allUsers.map((userItem: any) => (
+                    <div key={userItem.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <p className="font-medium">{userItem.firstName} {userItem.lastName}</p>
+                              {userItem.id === user?.id && (
+                                <Badge variant="outline" className="text-xs">You</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{userItem.email}</p>
+                            {userItem.companyName && (
+                              <p className="text-xs text-gray-500">{userItem.companyName}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="text-right">
+                          <Badge 
+                            variant={
+                              userItem.status === 'approved' ? 'default' :
+                              userItem.status === 'suspended' ? 'destructive' : 'secondary'
+                            }
+                          >
+                            {userItem.status}
+                          </Badge>
+                          <p className="text-xs text-gray-500 mt-1 capitalize">
+                            {userItem.role.replace('_', ' ')}
+                          </p>
+                        </div>
+                        {userItem.id !== user?.id && (
+                          <div className="flex items-center space-x-2">
+                            {userItem.status === 'approved' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => suspendUserMutation.mutate(userItem.id)}
+                                disabled={suspendUserMutation.isPending}
+                              >
+                                <UserX className="w-4 h-4 mr-1" />
+                                Suspend
+                              </Button>
+                            )}
+                            {userItem.status === 'suspended' && (
+                              <Button
+                                size="sm"
+                                onClick={() => approveUserMutation.mutate(userItem.id)}
+                                disabled={approveUserMutation.isPending}
+                              >
+                                <UserCheck className="w-4 h-4 mr-1" />
+                                Reactivate
+                              </Button>
+                            )}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteUserMutation.mutate(userItem.id)}
+                              disabled={deleteUserMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-8">
+                  <p className="text-gray-500">No users found.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
