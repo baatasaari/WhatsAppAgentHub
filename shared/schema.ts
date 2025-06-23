@@ -536,3 +536,24 @@ export type VoiceCallTrigger = typeof voiceCallTriggers.$inferSelect;
 export type InsertVoiceCallTrigger = z.infer<typeof insertVoiceCallTriggerSchema>;
 export type VoiceCallAnalytics = typeof voiceCallAnalytics.$inferSelect;
 export type InsertVoiceCallAnalytics = z.infer<typeof insertVoiceCallAnalyticsSchema>;
+
+// Audit logs for enterprise compliance
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  action: varchar("action", { length: 100 }).notNull(),
+  resource: varchar("resource", { length: 50 }).notNull(),
+  resourceId: varchar("resource_id", { length: 100 }),
+  details: jsonb("details").$type<Record<string, any>>().default({}),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  severity: varchar("severity", { length: 20 }).notNull().default("medium"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+});
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;

@@ -2,11 +2,41 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createInitialAdminIfNeeded } from "./init-admin";
+import { HealthMonitor, MetricsCollector } from "./monitoring/health";
+import { 
+  securityHeaders, 
+  corsMiddleware, 
+  requestLogger, 
+  errorHandler, 
+  generateRequestId,
+  apiRateLimit 
+} from "./middleware/security";
+import { pool } from "./db";
+import { DatabaseHealth, gracefulShutdown } from "./config/database";
 import path from "path";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Enterprise security middleware
+app.use(generateRequestId);
+app.use(securityHeaders);
+app.use(corsMiddleware);
+
+// Enhanced body parsing with security limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Rate limiting for API routes
+app.use('/api', apiRateLimit);
+
+// Enterprise health and monitoring endpoints
+const healthMonitor = HealthMonitor.getInstance();
+const metricsCollector = MetricsCollector.getInstance();
+
+app.get('/health', healthMonitor.handleHealthCheck.bind(healthMonitor));
+app.get('/health/ready', healthMonitor.handleReadiness.bind(healthMonitor));
+app.get('/health/live', healthMonitor.handleLiveness.bind(healthMonitor));
+app.get('/metrics', metricsCollector.handleMetrics.bind(metricsCollector));
 
 // Serve static files from public directory (including widget and test files)
 app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
