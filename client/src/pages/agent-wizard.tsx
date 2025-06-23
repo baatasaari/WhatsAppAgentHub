@@ -840,7 +840,7 @@ export default function AgentWizard() {
                     </div>
                     <div>
                       <span className="text-gray-600">AI Model:</span>
-                      <span className="ml-2 font-medium">{availableModels?.find((m: any) => m.id === form.getValues("llmProvider"))?.name || "Not selected"}</span>
+                      <span className="ml-2 font-medium">{Array.isArray(availableModels) ? availableModels.find((m: any) => m.id === form.getValues("llmProvider"))?.name || "Not selected" : "Not selected"}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Platforms:</span>
