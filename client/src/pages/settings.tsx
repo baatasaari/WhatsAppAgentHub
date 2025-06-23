@@ -532,15 +532,15 @@ export default function Settings() {
         </div>
       )}
 
-      {activeTab === "users" && user?.role === 'admin' && (
+      {activeTab === "users" && ['system_admin', 'business_manager'].includes(user?.role || '') && (
         <div className="space-y-6">
           {/* Pending Users */}
-          {pendingUsers && pendingUsers.length > 0 && (
+          {Array.isArray(pendingUsers) && pendingUsers.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-yellow-500" />
-                  <span>Pending Approvals ({pendingUsers.length})</span>
+                  <span>Pending Approvals ({Array.isArray(pendingUsers) ? pendingUsers.length : 0})</span>
                 </CardTitle>
                 <CardDescription>
                   Users waiting for approval to access the platform.
@@ -548,7 +548,7 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {pendingUsers.map((pendingUser: any) => (
+                  {Array.isArray(pendingUsers) && pendingUsers.map((pendingUser: any) => (
                     <div key={pendingUser.id} className="flex items-center justify-between p-4 border rounded-lg bg-yellow-50">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">
@@ -602,9 +602,9 @@ export default function Settings() {
                     <p className="mt-2 text-gray-600">Loading users...</p>
                   </div>
                 </div>
-              ) : allUsers && allUsers.length > 0 ? (
+              ) : allUsers && Array.isArray(allUsers) && allUsers.length > 0 ? (
                 <div className="space-y-4">
-                  {allUsers.map((userItem: any) => (
+                  {Array.isArray(allUsers) && allUsers.map((userItem: any) => (
                     <div key={userItem.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">

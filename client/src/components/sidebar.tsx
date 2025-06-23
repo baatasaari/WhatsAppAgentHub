@@ -2,20 +2,34 @@ import { useLocation, Link } from "wouter";
 import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "My Agents", href: "/agents", icon: Bot },
-  { name: "Create Agent", href: "/create", icon: Plus },
-  { name: "Widget Preview", href: "/preview", icon: Eye },
-  { name: "Embed Code", href: "/embed-code", icon: Code },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Model Config", href: "/model-config", icon: Settings },
-  { name: "Platform Test", href: "/test", icon: TestTube },
-];
+const getNavigationForRole = (userRole: string) => {
+  const baseNavigation = [
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "My Agents", href: "/agents", icon: Bot },
+    { name: "Create Agent", href: "/create", icon: Plus },
+    { name: "Widget Preview", href: "/preview", icon: Eye },
+    { name: "Embed Code", href: "/embed-code", icon: Code },
+    { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Platform Test", href: "/test", icon: TestTube },
+  ];
+
+  // System Admin gets access to all features including model configuration
+  if (userRole === 'system_admin') {
+    return [
+      ...baseNavigation,
+      { name: "Model Config", href: "/model-config", icon: Settings },
+    ];
+  }
+
+  // Business Manager and Business User get standard features
+  return baseNavigation;
+};
 
 export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
+
+  const navigation = getNavigationForRole(user?.role || 'business_user');
 
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
