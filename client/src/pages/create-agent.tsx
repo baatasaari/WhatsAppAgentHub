@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -160,6 +160,15 @@ export default function CreateAgent() {
   const [qualificationQuestions, setQualificationQuestions] = useState<string[]>([]);
   const [isCreatingMultiple, setIsCreatingMultiple] = useState(false);
   const { toast } = useToast();
+
+  // Optimized platform selection handler to prevent infinite loops
+  const handlePlatformToggle = useCallback((platformId: string, currentPlatforms: string[]) => {
+    const updated = currentPlatforms.includes(platformId)
+      ? currentPlatforms.filter(id => id !== platformId)
+      : [...currentPlatforms, platformId];
+    setSelectedPlatforms(updated);
+    return updated;
+  }, []);
 
   // Fetch available LLM models from configuration
   const { data: availableModels, isLoading: modelsLoading } = useQuery({
@@ -399,13 +408,14 @@ export default function CreateAgent() {
                                 ? 'border-blue-500 bg-blue-50 shadow-sm' 
                                 : 'border-gray-200 hover:border-gray-300'
                             }`}
-                            onClick={() => {
-                              const current = field.value || [];
-                              const updated = current.includes(platform.id)
-                                ? current.filter(id => id !== platform.id)
-                                : [...current, platform.id];
-                              field.onChange(updated);
-                              setSelectedPlatforms(updated);
+                            onClick={(e) => {
+                              // Prevent double triggering from checkbox click
+                              const target = e.target as HTMLElement;
+                              if (target === e.currentTarget || !target.closest('[role="checkbox"]')) {
+                                const current = field.value || [];
+                                const updated = handlePlatformToggle(platform.id, current);
+                                field.onChange(updated);
+                              }
                             }}
                           >
                             <div className="flex items-start space-x-3">
