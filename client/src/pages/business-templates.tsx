@@ -50,12 +50,9 @@ export default function BusinessTemplates() {
 
   const customizeMutation = useMutation({
     mutationFn: async (data: { templateName: string; businessData: any }) => {
-      return await apiRequest(`/api/business-templates/${data.templateName}/customize`, {
-        method: 'POST',
-        body: JSON.stringify(data.businessData),
-      });
+      return await apiRequest(`/api/business-templates/${data.templateName}/customize`, 'POST', data.businessData);
     },
-    onSuccess: (customizedTemplate) => {
+    onSuccess: (customizedTemplate: any) => {
       toast({
         title: "Template Customized",
         description: "Your business template has been customized successfully!",
@@ -81,7 +78,7 @@ export default function BusinessTemplates() {
           primaryColor: customizationData.brandColor,
           companyName: customizationData.businessName,
         },
-        widgetColor: customizedTemplate.customizations.widgetColor,
+        widgetColor: customizedTemplate.customizations?.widgetColor,
       };
       
       // Store in localStorage and redirect to create agent
