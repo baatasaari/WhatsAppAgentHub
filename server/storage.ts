@@ -78,6 +78,13 @@ export interface IStorage {
   getWhatsappMessagesByConversation(conversationId: number): Promise<WhatsappMessage[]>;
   updateWhatsappMessageStatus(whatsappMessageId: string, status: string): Promise<void>;
   getWhatsappMessageById(whatsappMessageId: string): Promise<WhatsappMessage | undefined>;
+
+  // B2B SaaS Business operations
+  getUserSubscription(userId: number): Promise<any>;
+  getUserUsageMetrics(userId: number, month: string): Promise<any>;
+  getBusinessInsights(agentId: number): Promise<any>;
+  createOrUpdateUsageMetrics(userId: number, agentId: number, metrics: any): Promise<void>;
+  checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -583,6 +590,161 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error getting WhatsApp message by ID:", error);
       return undefined;
+    }
+  }
+
+  // B2B SaaS Business operations implementation
+  async getUserSubscription(userId: number): Promise<any> {
+    try {
+      const [subscription] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId));
+      return subscription;
+    } catch (error) {
+      console.error('Error getting user subscription:', error);
+      return null;
+    }
+  }
+
+  async getUserUsageMetrics(userId: number, month: string): Promise<any> {
+    try {
+      const [usage] = await db.select().from(usageMetrics)
+        .where(and(eq(usageMetrics.userId, userId), eq(usageMetrics.month, month)));
+      return usage;
+    } catch (error) {
+      console.error('Error getting user usage metrics:', error);
+      return null;
+    }
+  }
+
+  async getBusinessInsights(agentId: number): Promise<any> {
+    try {
+      const agent = await this.getAgent(agentId);
+      if (!agent) return null;
+
+      // Get conversations and analytics for business insights
+      const conversations = await this.getConversationsByAgent(agentId);
+      const analytics = await this.getAnalyticsByAgent(agentId);
+
+      // Calculate business metrics
+      const totalConversations = conversations.length;
+      const qualifiedLeads = conversations.filter(c => c.conversionScore > 70).length;
+      const averageConversionScore = conversations.reduce((sum, c) => sum + c.conversionScore, 0) / totalConversations || 0;
+
+      // Product interest analysis
+      let productInterests: Record<string, number> = {};
+      if (agent.productCatalog && Array.isArray(agent.productCatalog)) {
+        agent.productCatalog.forEach((product: any) => {
+          const mentions = conversations.filter(c => 
+            JSON.stringify(c.messages).toLowerCase().includes(product.name.toLowerCase())
+          ).length;
+          if (mentions > 0) {
+            productInterests[product.name] = mentions;
+          }
+        });
+      }
+
+      // FAQ effectiveness analysis
+      let faqEffectiveness: Record<string, number> = {};
+      if (agent.faqData && Array.isArray(agent.faqData)) {
+        agent.faqData.forEach((faq: any) => {
+          const mentions = conversations.filter(c => 
+            JSON.stringify(c.messages).toLowerCase().includes(faq.question.toLowerCase())
+          ).length;
+          if (mentions > 0) {
+            faqEffectiveness[faq.question] = mentions;
+          }
+        });
+      }
+
+      return {
+        agentId,
+        businessType: agent.businessType,
+        totalConversations,
+        qualifiedLeads,
+        conversionRate: totalConversations > 0 ? (qualifiedLeads / totalConversations) * 100 : 0,
+        averageConversionScore,
+        productInterests,
+        faqEffectiveness,
+        recentAnalytics: analytics.slice(-7), // Last 7 days
+        generatedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error getting business insights:', error);
+      return null;
+    }
+  }
+
+  async createOrUpdateUsageMetrics(userId: number, agentId: number, metrics: any): Promise<void> {
+    try {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      
+      const existing = await db.select().from(usageMetrics)
+        .where(and(
+          eq(usageMetrics.userId, userId),
+          eq(usageMetrics.month, currentMonth),
+          agentId ? eq(usageMetrics.agentId, agentId) : sql`agent_id IS NULL`
+        ));
+
+      if (existing.length > 0) {
+        await db.update(usageMetrics)
+          .set({
+            messagesUsed: sql`${usageMetrics.messagesUsed} + ${metrics.messagesUsed || 0}`,
+            conversationsStarted: sql`${usageMetrics.conversationsStarted} + ${metrics.conversationsStarted || 0}`,
+            leadsGenerated: sql`${usageMetrics.leadsGenerated} + ${metrics.leadsGenerated || 0}`,
+            apiCallsMade: sql`${usageMetrics.apiCallsMade} + ${metrics.apiCallsMade || 0}`,
+            costIncurred: sql`${usageMetrics.costIncurred} + ${metrics.costIncurred || 0}`,
+          })
+          .where(and(
+            eq(usageMetrics.userId, userId),
+            eq(usageMetrics.month, currentMonth),
+            agentId ? eq(usageMetrics.agentId, agentId) : sql`agent_id IS NULL`
+          ));
+      } else {
+        await db.insert(usageMetrics).values({
+          userId,
+          agentId,
+          month: currentMonth,
+          messagesUsed: metrics.messagesUsed || 0,
+          conversationsStarted: metrics.conversationsStarted || 0,
+          leadsGenerated: metrics.leadsGenerated || 0,
+          apiCallsMade: metrics.apiCallsMade || 0,
+          costIncurred: metrics.costIncurred || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating/updating usage metrics:', error);
+    }
+  }
+
+  async checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }> {
+    try {
+      const subscription = await this.getUserSubscription(userId);
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const usage = await this.getUserUsageMetrics(userId, currentMonth);
+
+      if (!subscription) {
+        return {
+          withinLimits: false,
+          usage: usage || {},
+          limits: { maxMessagesPerMonth: 0, maxAgents: 0 }
+        };
+      }
+
+      const limits = {
+        maxMessagesPerMonth: subscription.maxMessagesPerMonth,
+        maxAgents: subscription.maxAgents
+      };
+
+      const currentUsage = usage || { messagesUsed: 0 };
+      const withinLimits = currentUsage.messagesUsed < limits.maxMessagesPerMonth;
+
+      return { withinLimits, usage: currentUsage, limits };
+    } catch (error) {
+      console.error('Error checking subscription limits:', error);
+      return {
+        withinLimits: false,
+        usage: {},
+        limits: { maxMessagesPerMonth: 0, maxAgents: 0 }
+      };
     }
   }
 }

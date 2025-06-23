@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 const getNavigationForRole = (userRole: string) => {
   const baseNavigation = [
     { name: "Dashboard", href: "/", icon: Home },
+    { name: "Business Templates", href: "/business-templates", icon: MessageSquare },
     { name: "My Agents", href: "/agents", icon: Bot },
     { name: "Create Agent", href: "/create", icon: Plus },
     { name: "Widget Preview", href: "/preview", icon: Eye },

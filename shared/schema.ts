@@ -93,7 +93,7 @@ export const agents = pgTable("agents", {
   }>(),
   leadQualificationQuestions: jsonb("lead_qualification_questions").$type<Array<{
     question: string,
-    type: 'text' | 'choice' | 'number',
+    questionType: 'text' | 'choice' | 'number',
     required: boolean,
     options?: string[]
   }>>(),

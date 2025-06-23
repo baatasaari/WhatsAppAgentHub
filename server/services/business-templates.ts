@@ -247,7 +247,8 @@ export class BusinessTemplateService {
   }
   
   getCategories(): string[] {
-    return [...new Set(businessTemplates.map(template => template.category))];
+    const categorySet = new Set(businessTemplates.map(template => template.category));
+    return Array.from(categorySet);
   }
   
   customizeTemplateForBusiness(templateName: string, businessData: {
