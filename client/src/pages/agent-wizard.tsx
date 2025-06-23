@@ -226,7 +226,7 @@ export default function AgentWizard() {
       setIsCreating(true);
       
       const createdAgents = [];
-      for (const platformId of data.selectedPlatforms) {
+      for (const platformId of localSelectedPlatforms) {
         const platform = platformTypes.find(p => p.id === platformId);
         if (!platform) continue;
 
@@ -304,12 +304,12 @@ export default function AgentWizard() {
       case 1:
         return form.getValues("name").length > 0;
       case 2:
-        return selectedPlatforms.length > 0;
+        return localSelectedPlatforms.length > 0;
       case 3:
         return form.getValues("llmProvider") && form.getValues("systemPrompt").length >= 10;
       case 4:
         // Check if required platform credentials are provided
-        return selectedPlatforms.every(platformId => {
+        return localSelectedPlatforms.every((platformId: string) => {
           const platform = platformTypes.find(p => p.id === platformId);
           if (!platform) return true;
           
@@ -593,7 +593,7 @@ export default function AgentWizard() {
               <p className="text-gray-600">Configure your platform integrations</p>
             </div>
             
-            {selectedPlatforms.map(platformId => {
+            {localSelectedPlatforms.map((platformId: string) => {
               const platform = platformTypes.find(p => p.id === platformId);
               if (!platform) return null;
               
@@ -844,7 +844,7 @@ export default function AgentWizard() {
                     </div>
                     <div>
                       <span className="text-gray-600">Platforms:</span>
-                      <span className="ml-2 font-medium">{selectedPlatforms.length}</span>
+                      <span className="ml-2 font-medium">{localSelectedPlatforms.length}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -854,7 +854,7 @@ export default function AgentWizard() {
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-gray-900 mb-4">Selected Platforms</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {selectedPlatforms.map(platformId => {
+                    {localSelectedPlatforms.map((platformId: string) => {
                       const platform = platformTypes.find(p => p.id === platformId);
                       if (!platform) return null;
                       
@@ -878,7 +878,7 @@ export default function AgentWizard() {
                 size="lg"
                 className="min-w-[200px]"
               >
-                {isCreating ? "Creating Agents..." : `Create ${selectedPlatforms.length} Agent${selectedPlatforms.length > 1 ? 's' : ''}`}
+                {isCreating ? "Creating Agents..." : `Create ${localSelectedPlatforms.length} Agent${localSelectedPlatforms.length > 1 ? 's' : ''}`}
               </Button>
             </div>
           </div>
