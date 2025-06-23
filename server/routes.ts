@@ -11,6 +11,7 @@ import { voiceCallingService } from "./services/voice-calling";
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomBytes } from 'crypto';
 
 // WhatsApp Business API integration
 async function sendWhatsAppMessage(phoneNumber: string, message: string, accessToken: string) {
@@ -706,7 +707,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
-      const validatedData = insertAgentSchema.parse(req.body);
+      // Generate API key for the agent
+      const apiKey = randomBytes(32).toString('hex');
+      
+      const validatedData = insertAgentSchema.parse({
+        ...req.body,
+        apiKey
+      });
       const agentData = { ...validatedData, userId: req.user!.id };
       const agent = await storage.createAgent(agentData);
       res.status(201).json(agent);
