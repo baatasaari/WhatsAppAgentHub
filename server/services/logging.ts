@@ -316,40 +316,47 @@ export class LoggingService {
       offset?: number;
     } = {}
   ) {
-    const conditions = [];
+    try {
+      const conditions = [];
 
-    if (filters.level) {
-      conditions.push(eq(logs.level, filters.level));
-    }
-    if (filters.category) {
-      conditions.push(eq(logs.category, filters.category));
-    }
-    if (filters.userId) {
-      conditions.push(eq(logs.userId, filters.userId));
-    }
-    if (filters.agentId) {
-      conditions.push(eq(logs.agentId, filters.agentId));
-    }
-    if (filters.startDate) {
-      conditions.push(gte(logs.timestamp, filters.startDate));
-    }
-    if (filters.endDate) {
-      conditions.push(lte(logs.timestamp, filters.endDate));
-    }
-    if (filters.search) {
-      conditions.push(like(logs.message, `%${filters.search}%`));
-    }
+      if (filters.level) {
+        conditions.push(eq(logs.level, filters.level));
+      }
+      if (filters.category) {
+        conditions.push(eq(logs.category, filters.category));
+      }
+      if (filters.userId) {
+        conditions.push(eq(logs.userId, filters.userId));
+      }
+      if (filters.agentId) {
+        conditions.push(eq(logs.agentId, filters.agentId));
+      }
+      if (filters.startDate) {
+        conditions.push(gte(logs.timestamp, filters.startDate));
+      }
+      if (filters.endDate) {
+        conditions.push(lte(logs.timestamp, filters.endDate));
+      }
+      if (filters.search) {
+        conditions.push(like(logs.message, `%${filters.search}%`));
+      }
 
-    let query = db.select().from(logs);
-    
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
+      let query = db.select().from(logs);
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
 
-    return await query
-      .orderBy(desc(logs.timestamp))
-      .limit(filters.limit || 50)
-      .offset(filters.offset || 0);
+      const results = await query
+        .orderBy(desc(logs.timestamp))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
+
+      return results;
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      return [];
+    }
   }
 
   // Get log statistics

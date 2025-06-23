@@ -159,6 +159,10 @@ Changelog:
 - June 23, 2025. Added in-memory caching system with TTL expiration, automatic cleanup, and cache invalidation for performance optimization
 - June 23, 2025. Created centralized environment configuration with Zod validation and audit logging for enterprise compliance
 - June 23, 2025. Transformed AgentFlow into production-ready B2B SaaS platform with enterprise security, monitoring, and scalability features
+- June 23, 2025. Implemented comprehensive logging service with system administrator dashboard for monitoring agent decisions, costs, and operations
+- June 23, 2025. Added centralized logging system with categories (agent, auth, api, cost, webhook, voice, whatsapp, system, security) and log levels
+- June 23, 2025. Created System Logs dashboard accessible only to System Administrators with filtering, analytics, and log cleanup capabilities
+- June 23, 2025. Integrated logging throughout application for authentication events, API requests, agent decisions, cost tracking, and error monitoring
 ```
 
 ## User Preferences
