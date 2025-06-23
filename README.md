@@ -11,9 +11,11 @@ AgentFlow is a comprehensive SaaS platform for creating and managing AI-powered 
 
 ### Core Platform
 - **Multi-LLM Support**: Integration with OpenAI GPT-4o, Anthropic Claude Sonnet 4, Google Gemini 1.5 Pro, and 7+ open source models
-- **WhatsApp Business Integration**: Direct conversation routing without web chat complexity
+- **WhatsApp Business Integration**: Direct conversation routing with real-time webhook processing
 - **Encrypted Widget Security**: Base64-encoded configuration for secure deployment
-- **Real-time Analytics**: Comprehensive cost tracking and performance metrics
+- **Real-time Analytics**: Comprehensive cost tracking and performance metrics across all time periods
+- **Role-Based Access Control**: System Admin, Business Manager, and Business User roles with granular permissions
+- **Advanced User Management**: Complete approval workflow, user administration, and role assignment
 - **Drag-and-Drop Model Management**: Professional interface for managing AI model configurations
 
 ### AI Capabilities
@@ -186,11 +188,14 @@ Pre-configured business categories including:
 - **Database Security**: PostgreSQL with connection pooling and SSL
 - **GDPR Compliance**: Built-in privacy and data protection features
 
-### Authentication
-- **API Key Management**: Secure agent-specific authentication
+### Authentication & Authorization
+- **Role-Based Access Control**: Three-tier permission system with System Admin, Business Manager, and Business User roles
+- **User Registration Workflow**: Approval-based registration with admin oversight
+- **Session Management**: Secure JWT-style token authentication with PostgreSQL session storage
+- **API Key Management**: Secure agent-specific authentication with encrypted configurations
 - **Rate Limiting**: Built-in request throttling and abuse prevention
-- **Input Validation**: Comprehensive Zod schema validation
-- **Error Handling**: Graceful failure modes and error recovery
+- **Input Validation**: Comprehensive Zod schema validation throughout the application
+- **Error Handling**: Graceful failure modes and comprehensive error recovery
 
 ## 🚀 Deployment
 
@@ -258,12 +263,33 @@ GET    /api/analytics/agent/:id/costs  # Cost analytics
 GET    /api/analytics/agent/:id # Performance metrics
 ```
 
-### Model Management
+### User Management (Admin)
+```http
+GET    /api/admin/users         # List all users (Business Manager+)
+GET    /api/admin/users/pending # List pending approvals (Business Manager+)
+POST   /api/admin/users/:id/approve     # Approve user (Business Manager+)
+POST   /api/admin/users/:id/suspend     # Suspend user (Business Manager+)
+POST   /api/admin/users/:id/reactivate  # Reactivate user (Business Manager+)
+PUT    /api/admin/users/:id/role        # Update user role (System Admin only)
+DELETE /api/admin/users/:id             # Delete user (System Admin only)
+```
+
+### Model Management (System Admin)
 ```http
 GET    /api/models              # List available models
-POST   /api/models              # Add new model
-PUT    /api/models/:id          # Update model
-DELETE /api/models/:id          # Remove model
+POST   /api/models              # Add new model (System Admin only)
+PUT    /api/models/:id          # Update model (System Admin only)
+DELETE /api/models/:id          # Remove model (System Admin only)
+PUT    /api/models/reorder      # Reorder models (System Admin only)
+```
+
+### WhatsApp Business Integration
+```http
+POST   /api/webhook/whatsapp    # WhatsApp webhook endpoint
+GET    /api/agents/:id/whatsapp-messages  # Get message history
+GET    /api/agents/:id/whatsapp-status    # Get integration status
+POST   /api/agents/:id/test-whatsapp      # Test WhatsApp configuration
+POST   /api/agents/:id/send-whatsapp      # Send WhatsApp message
 ```
 
 ## 🤝 Contributing
@@ -313,16 +339,18 @@ For enterprise support, custom integrations, or consulting services, contact us 
 ## 🎯 Roadmap
 
 ### Q1 2025
+- [x] WhatsApp Business API webhooks ✅ Completed
+- [x] Role-based access control ✅ Completed
+- [x] Advanced user management ✅ Completed
 - [ ] Voice integration with ElevenLabs
-- [ ] Advanced analytics dashboard
 - [ ] Multi-language admin interface
-- [ ] WhatsApp Business API webhooks
 
 ### Q2 2025
 - [ ] Team collaboration features
 - [ ] Advanced A/B testing
 - [ ] Custom branding options
 - [ ] Integration marketplace
+- [ ] Advanced compliance features
 
 ### Future
 - [ ] Mobile app for agent management
