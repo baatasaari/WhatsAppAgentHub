@@ -140,6 +140,10 @@ Changelog:
 - June 23, 2025. Added WhatsApp Business API service for sending messages, handling status updates, and managing real-time conversations
 - June 23, 2025. Created WhatsApp configuration page with credential management, webhook setup instructions, and message history
 - June 23, 2025. Extended database schema with WhatsApp message tracking, agent API configuration, and comprehensive webhook support
+- June 23, 2025. Fixed user display in sidebar to show actual logged-in user instead of hardcoded "John Smith"
+- June 23, 2025. Created comprehensive user settings page with profile management, password change, and account information
+- June 23, 2025. Added user profile update API endpoints with proper authentication and validation
+- June 23, 2025. Removed WhatsApp API from sidebar navigation to streamline user interface
 ```
 
 ## User Preferences

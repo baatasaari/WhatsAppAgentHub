@@ -9,7 +9,6 @@ const navigation = [
   { name: "Widget Preview", href: "/preview", icon: Eye },
   { name: "Embed Code", href: "/embed-code", icon: Code },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "WhatsApp API", href: "/whatsapp-config", icon: MessageSquare },
   { name: "Model Config", href: "/model-config", icon: Settings },
   { name: "Platform Test", href: "/test", icon: TestTube },
 ];
