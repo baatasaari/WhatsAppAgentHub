@@ -22,6 +22,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string>("");
+  const { login } = useAuth();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -49,8 +50,7 @@ export default function Login() {
       return response.json();
     },
     onSuccess: (data) => {
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      login(data.token, data.user);
       setLocation("/");
     },
     onError: (error: any) => {
