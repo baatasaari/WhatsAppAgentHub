@@ -30,7 +30,7 @@ export const sessions = pgTable("sessions", {
 
 export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(), // Owner of the agent
+  userId: integer("user_id").references(() => users.id), // Owner of the agent - temporary nullable for migration
   name: text("name").notNull(),
   businessCategory: text("business_category"),
   llmProvider: text("llm_provider").notNull(), // "gpt-4o", "claude-3", "gpt-3.5-turbo"

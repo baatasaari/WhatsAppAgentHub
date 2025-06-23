@@ -22,10 +22,22 @@ import { nanoid } from "nanoid";
 import { AuthService } from "./auth";
 
 export interface IStorage {
+  // User operations
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getPendingUsers(): Promise<User[]>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: UpdateUser): Promise<User | undefined>;
+  approveUser(userId: number, adminId: number): Promise<User | undefined>;
+  suspendUser(userId: number): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+
   // Agent operations
   getAgent(id: number): Promise<Agent | undefined>;
   getAgentByApiKey(apiKey: string): Promise<Agent | undefined>;
-  getAllAgents(): Promise<Agent[]>;
+  getAllAgents(userId?: number): Promise<Agent[]>;
+  getUserAgents(userId: number): Promise<Agent[]>;
   createAgent(agent: InsertAgent): Promise<Agent>;
   updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined>;
   deleteAgent(id: number): Promise<boolean>;
@@ -59,6 +71,114 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUserById(id: number): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user || undefined;
+    } catch (error) {
+      console.error('Error getting user by id:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      return user || undefined;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return undefined;
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      return await db.select().from(users).orderBy(users.createdAt);
+    } catch (error) {
+      console.error('Error getting all users:', error);
+      return [];
+    }
+  }
+
+  async getPendingUsers(): Promise<User[]> {
+    try {
+      return await db.select().from(users).where(eq(users.status, 'pending')).orderBy(users.createdAt);
+    } catch (error) {
+      console.error('Error getting pending users:', error);
+      return [];
+    }
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    try {
+      const passwordHash = await AuthService.hashPassword(insertUser.password);
+      const userData = { ...insertUser, passwordHash };
+      delete (userData as any).password;
+
+      const [user] = await db.insert(users).values(userData).returning();
+      return user;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  async updateUser(id: number, updates: UpdateUser): Promise<User | undefined> {
+    try {
+      const [user] = await db.update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.id, id))
+        .returning();
+      return user || undefined;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return undefined;
+    }
+  }
+
+  async approveUser(userId: number, adminId: number): Promise<User | undefined> {
+    try {
+      const [user] = await db.update(users)
+        .set({ 
+          status: 'approved', 
+          approvedBy: adminId, 
+          approvedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return user || undefined;
+    } catch (error) {
+      console.error('Error approving user:', error);
+      return undefined;
+    }
+  }
+
+  async suspendUser(userId: number): Promise<User | undefined> {
+    try {
+      const [user] = await db.update(users)
+        .set({ status: 'suspended', updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning();
+      return user || undefined;
+    } catch (error) {
+      console.error('Error suspending user:', error);
+      return undefined;
+    }
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(users).where(eq(users.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  }
+
+  // Agent operations
   async getAgent(id: number): Promise<Agent | undefined> {
     try {
       const [agent] = await db.select().from(agents).where(eq(agents.id, id));
@@ -79,11 +199,23 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getAllAgents(): Promise<Agent[]> {
+  async getAllAgents(userId?: number): Promise<Agent[]> {
     try {
+      if (userId) {
+        return await db.select().from(agents).where(eq(agents.userId, userId));
+      }
       return await db.select().from(agents);
     } catch (error) {
       console.error('Error getting all agents:', error);
+      return [];
+    }
+  }
+
+  async getUserAgents(userId: number): Promise<Agent[]> {
+    try {
+      return await db.select().from(agents).where(eq(agents.userId, userId));
+    } catch (error) {
+      console.error('Error getting user agents:', error);
       return [];
     }
   }

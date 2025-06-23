@@ -76,9 +76,9 @@ export class AuthService {
       email: session.user.email,
       role: session.user.role,
       status: session.user.status,
-      firstName: session.user.firstName,
-      lastName: session.user.lastName,
-      companyName: session.user.companyName,
+      firstName: session.user.firstName || undefined,
+      lastName: session.user.lastName || undefined,
+      companyName: session.user.companyName || undefined,
     };
   }
 
