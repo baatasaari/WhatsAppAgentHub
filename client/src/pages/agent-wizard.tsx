@@ -462,19 +462,46 @@ export default function AgentWizard() {
               )}
             />
             
-            {selectedPlatforms.length > 0 && (
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5 text-blue-600" />
-                  <span className="font-medium text-blue-900">
-                    {selectedPlatforms.length} platform{selectedPlatforms.length > 1 ? 's' : ''} selected
-                  </span>
+            <div className="mt-6">
+              {selectedPlatforms.length > 0 ? (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2">
+                    <Check className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium text-blue-900">
+                      {selectedPlatforms.length} platform{selectedPlatforms.length > 1 ? 's' : ''} selected
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {selectedPlatforms.map(platformId => {
+                      const platform = platformTypes.find(p => p.id === platformId);
+                      if (!platform) return null;
+                      const IconComponent = platform.icon;
+                      return (
+                        <div key={platformId} className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full text-xs">
+                          <IconComponent className="w-3 h-3" style={{ color: platform.color }} />
+                          <span className="text-blue-800">{platform.name}</span>
+                        </div>
+                      );
+                    }).filter(Boolean)}
+                  </div>
+                  <p className="text-sm text-blue-700 mt-2">
+                    We'll create separate agents for each platform to ensure optimal performance
+                  </p>
                 </div>
-                <p className="text-sm text-blue-700 mt-1">
-                  We'll create separate agents for each platform to ensure optimal performance
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span className="font-medium text-gray-600">
+                      Select platforms for your agents
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Choose one or more messaging platforms where your AI agents will be available
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         );
 
@@ -492,7 +519,6 @@ export default function AgentWizard() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>AI Model *</FormLabel>
-                  {console.log('Available models:', availableModels, 'Type:', typeof availableModels, 'Is array:', Array.isArray(availableModels))}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {modelsLoading ? (
                       Array.from({ length: 6 }).map((_, i) => (
