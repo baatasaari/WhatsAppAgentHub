@@ -245,7 +245,14 @@ export default function CreateAgent() {
       <Card>
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Create New Agent</h3>
-          <p className="text-gray-600 mt-1">Configure your WhatsApp agent to start converting visitors into leads</p>
+          <p className="text-gray-600 mt-1">Configure multi-platform agents for WhatsApp, chatbots, Telegram, and more</p>
+          {isCreatingMultiple && (
+            <div className="mt-2">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                Creating multiple agents...
+              </Badge>
+            </div>
+          )}
         </div>
         
         <CardContent className="p-6">
@@ -293,6 +300,93 @@ export default function CreateAgent() {
                   )}
                 />
               </div>
+              
+              {/* Platform Selection */}
+              <FormField
+                control={form.control}
+                name="selectedPlatforms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Platforms *</FormLabel>
+                    <div className="text-sm text-gray-600 mb-4">
+                      Choose one or more platforms to create agents for. Selecting multiple platforms will create separate agents for each.
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {platformTypes.map((platform) => {
+                        const IconComponent = platform.icon;
+                        const isSelected = field.value?.includes(platform.id);
+                        
+                        return (
+                          <div
+                            key={platform.id}
+                            className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                              isSelected 
+                                ? 'border-blue-500 bg-blue-50 shadow-sm' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => {
+                              const current = field.value || [];
+                              const updated = current.includes(platform.id)
+                                ? current.filter(id => id !== platform.id)
+                                : [...current, platform.id];
+                              field.onChange(updated);
+                              setSelectedPlatforms(updated);
+                            }}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <Checkbox
+                                checked={isSelected}
+                                onChange={() => {}} // handled by parent click
+                                className="mt-1"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <IconComponent 
+                                    className="w-5 h-5" 
+                                    style={{ color: platform.color }}
+                                  />
+                                  <h4 className="font-medium text-gray-900">
+                                    {platform.name}
+                                  </h4>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {platform.description}
+                                </p>
+                                <div className="mt-2">
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs"
+                                    style={{ 
+                                      borderColor: platform.color + '40',
+                                      color: platform.color 
+                                    }}
+                                  >
+                                    {platform.defaultMessage}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {field.value && field.value.length > 1 && (
+                      <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <Rocket className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-900">
+                            Bulk Creation Enabled
+                          </span>
+                        </div>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Will create {field.value.length} separate agents, one for each selected platform
+                        </p>
+                      </div>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               {/* LLM Configuration */}
               <FormField
@@ -613,11 +707,13 @@ export default function CreateAgent() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={createAgentMutation.isPending}
+                    disabled={createAgentMutation.isPending || isCreatingMultiple}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Rocket className="w-4 h-4 mr-2" />
-                    Create & Deploy Agent
+                    {isCreatingMultiple ? "Creating Agents..." : 
+                     selectedPlatforms.length > 1 ? `Create ${selectedPlatforms.length} Agents` : 
+                     "Create & Deploy Agent"}
                   </Button>
                 </div>
               </div>
