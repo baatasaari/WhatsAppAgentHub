@@ -44,6 +44,12 @@ export const agents = pgTable("agents", {
   welcomeMessage: text("welcome_message").default("Hi! How can I help you today?"),
   whatsappNumber: text("whatsapp_number"), // WhatsApp Business number
   whatsappMode: text("whatsapp_mode").default("web"), // "web", "api", "hybrid"
+  
+  // WhatsApp Business API configuration
+  whatsappBusinessAccountId: text("whatsapp_business_account_id"),
+  whatsappPhoneNumberId: text("whatsapp_phone_number_id"),
+  whatsappAccessToken: text("whatsapp_access_token"),
+  whatsappWebhookVerifyToken: text("whatsapp_webhook_verify_token"),
   status: text("status").notNull().default("active"), // "active", "paused", "draft"
   apiKey: text("api_key").notNull(), // unique identifier for embedding
   createdAt: timestamp("created_at").defaultNow().notNull(),
