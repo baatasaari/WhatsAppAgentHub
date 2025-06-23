@@ -94,11 +94,11 @@ export default function BusinessTemplates() {
     },
   });
 
-  const filteredTemplates = templates.filter((template: any) =>
-    template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTemplates = Array.isArray(templates) ? templates.filter((template: any) =>
+    template.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    template.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    template.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) : [];
 
   const handleCustomizeTemplate = () => {
     if (!selectedTemplate) return;
@@ -149,7 +149,7 @@ export default function BusinessTemplates() {
 
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {categories.map((category: string) => {
+          {Array.isArray(categories) && categories.map((category: string) => {
             const Icon = categoryIcons[category as keyof typeof categoryIcons];
             return (
               <Badge

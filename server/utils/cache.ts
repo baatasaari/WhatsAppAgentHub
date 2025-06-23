@@ -48,7 +48,8 @@ export class CacheManager {
     const now = Date.now();
     const expiredKeys: string[] = [];
     
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (const [key, entry] of entries) {
       if (now > entry.expires) {
         expiredKeys.push(key);
       }
@@ -66,7 +67,8 @@ export class CacheManager {
     let activeEntries = 0;
     let expiredEntries = 0;
     
-    for (const [_, entry] of this.cache.entries()) {
+    const statsEntries = Array.from(this.cache.entries());
+    for (const [_, entry] of statsEntries) {
       if (now > entry.expires) {
         expiredEntries++;
       } else {

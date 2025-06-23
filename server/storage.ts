@@ -8,6 +8,8 @@ import {
   voiceCalls,
   voiceCallTriggers,
   voiceCallAnalytics,
+  subscriptions,
+  usageMetrics,
   type Agent, 
   type InsertAgent, 
   type Conversation, 
@@ -725,23 +727,135 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Voice calling operations
-  getVoiceCall(id: number): Promise<VoiceCall | undefined>;
-  getVoiceCallByCallId(callId: string): Promise<VoiceCall | undefined>;
-  getVoiceCallsByAgent(agentId: number): Promise<VoiceCall[]>;
-  getVoiceCallsByConversation(conversationId: number): Promise<VoiceCall[]>;
-  createVoiceCall(call: InsertVoiceCall): Promise<VoiceCall>;
-  updateVoiceCall(id: number, updates: Partial<InsertVoiceCall>): Promise<VoiceCall | undefined>;
-  updateVoiceCallStatus(id: number, status: string): Promise<void>;
+  async getVoiceCall(id: number): Promise<VoiceCall | undefined> {
+    try {
+      const [call] = await db.select().from(voiceCalls).where(eq(voiceCalls.id, id));
+      return call;
+    } catch (error) {
+      console.error("Error getting voice call:", error);
+      return undefined;
+    }
+  }
+
+  async getVoiceCallByCallId(callId: string): Promise<VoiceCall | undefined> {
+    try {
+      const [call] = await db.select().from(voiceCalls).where(eq(voiceCalls.callId, callId));
+      return call;
+    } catch (error) {
+      console.error("Error getting voice call by call ID:", error);
+      return undefined;
+    }
+  }
+
+  async getVoiceCallsByAgent(agentId: number): Promise<VoiceCall[]> {
+    try {
+      return await db.select().from(voiceCalls).where(eq(voiceCalls.agentId, agentId));
+    } catch (error) {
+      console.error("Error getting voice calls by agent:", error);
+      return [];
+    }
+  }
+
+  async getVoiceCallsByConversation(conversationId: number): Promise<VoiceCall[]> {
+    try {
+      return await db.select().from(voiceCalls).where(eq(voiceCalls.conversationId, conversationId));
+    } catch (error) {
+      console.error("Error getting voice calls by conversation:", error);
+      return [];
+    }
+  }
+
+  async createVoiceCall(insertCall: InsertVoiceCall): Promise<VoiceCall> {
+    try {
+      const [call] = await db.insert(voiceCalls).values(insertCall).returning();
+      return call;
+    } catch (error) {
+      console.error("Error creating voice call:", error);
+      throw error;
+    }
+  }
+
+  async updateVoiceCall(id: number, updates: Partial<InsertVoiceCall>): Promise<VoiceCall | undefined> {
+    try {
+      const [call] = await db.update(voiceCalls).set(updates).where(eq(voiceCalls.id, id)).returning();
+      return call;
+    } catch (error) {
+      console.error("Error updating voice call:", error);
+      return undefined;
+    }
+  }
+
+  async updateVoiceCallStatus(id: number, status: string): Promise<void> {
+    try {
+      await db.update(voiceCalls).set({ status }).where(eq(voiceCalls.id, id));
+    } catch (error) {
+      console.error("Error updating voice call status:", error);
+      throw error;
+    }
+  }
 
   // Voice call trigger operations
-  getVoiceCallTrigger(agentId: number): Promise<VoiceCallTrigger | undefined>;
-  createVoiceCallTrigger(trigger: InsertVoiceCallTrigger): Promise<VoiceCallTrigger>;
-  updateVoiceCallTrigger(agentId: number, updates: Partial<InsertVoiceCallTrigger>): Promise<VoiceCallTrigger | undefined>;
+  async getVoiceCallTrigger(agentId: number): Promise<VoiceCallTrigger | undefined> {
+    try {
+      const [trigger] = await db.select().from(voiceCallTriggers).where(eq(voiceCallTriggers.agentId, agentId));
+      return trigger;
+    } catch (error) {
+      console.error("Error getting voice call trigger:", error);
+      return undefined;
+    }
+  }
+
+  async createVoiceCallTrigger(insertTrigger: InsertVoiceCallTrigger): Promise<VoiceCallTrigger> {
+    try {
+      const [trigger] = await db.insert(voiceCallTriggers).values(insertTrigger).returning();
+      return trigger;
+    } catch (error) {
+      console.error("Error creating voice call trigger:", error);
+      throw error;
+    }
+  }
+
+  async updateVoiceCallTrigger(agentId: number, updates: Partial<InsertVoiceCallTrigger>): Promise<VoiceCallTrigger | undefined> {
+    try {
+      const [trigger] = await db.update(voiceCallTriggers).set(updates).where(eq(voiceCallTriggers.agentId, agentId)).returning();
+      return trigger;
+    } catch (error) {
+      console.error("Error updating voice call trigger:", error);
+      return undefined;
+    }
+  }
 
   // Voice call analytics operations
-  getVoiceCallAnalytics(agentId: number, date: string): Promise<VoiceCallAnalytics | undefined>;
-  createVoiceCallAnalytics(analytics: InsertVoiceCallAnalytics): Promise<VoiceCallAnalytics>;
-  updateVoiceCallAnalytics(id: number, updates: Partial<InsertVoiceCallAnalytics>): Promise<VoiceCallAnalytics | undefined>;
+  async getVoiceCallAnalytics(agentId: number, date: string): Promise<VoiceCallAnalytics | undefined> {
+    try {
+      const [analytics] = await db.select().from(voiceCallAnalytics)
+        .where(and(eq(voiceCallAnalytics.agentId, agentId), eq(voiceCallAnalytics.date, date)));
+      return analytics;
+    } catch (error) {
+      console.error("Error getting voice call analytics:", error);
+      return undefined;
+    }
+  }
+
+  async createVoiceCallAnalytics(insertAnalytics: InsertVoiceCallAnalytics): Promise<VoiceCallAnalytics> {
+    try {
+      const [analytics] = await db.insert(voiceCallAnalytics).values(insertAnalytics).returning();
+      return analytics;
+    } catch (error) {
+      console.error("Error creating voice call analytics:", error);
+      throw error;
+    }
+  }
+
+  async updateVoiceCallAnalytics(id: number, updates: Partial<InsertVoiceCallAnalytics>): Promise<VoiceCallAnalytics | undefined> {
+    try {
+      const [analytics] = await db.update(voiceCallAnalytics).set(updates).where(eq(voiceCallAnalytics.id, id)).returning();
+      return analytics;
+    } catch (error) {
+      console.error("Error updating voice call analytics:", error);
+      return undefined;
+    }
+  }
 
   async checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }> {
     try {
