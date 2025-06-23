@@ -907,7 +907,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     await storage.createWhatsappMessage({
                       agentId: agent.id,
                       whatsappMessageId: sendResult.messageId,
-                      fromPhoneNumber: agent.whatsappPhoneNumber || change.value.metadata.display_phone_number,
+                      fromPhoneNumber: agent.whatsappNumber || change.value.metadata.display_phone_number,
                       toPhoneNumber: message.from,
                       messageType: 'text',
                       content: response,
@@ -1004,7 +1004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createWhatsappMessage({
           agentId: agent.id,
           whatsappMessageId: result.messageId,
-          fromPhoneNumber: agent.whatsappPhoneNumber || agent.whatsappPhoneNumberId,
+          fromPhoneNumber: agent.whatsappNumber || (agent.whatsappPhoneNumberId || ""),
           toPhoneNumber: phoneNumber,
           messageType: 'text',
           content: message,
