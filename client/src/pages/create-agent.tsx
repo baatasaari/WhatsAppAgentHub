@@ -19,58 +19,76 @@ import { useLocation } from "wouter";
 // Platform definitions with configuration options
 const platformTypes = [
   {
-    id: 'whatsapp',
-    name: 'WhatsApp Business',
+    id: 'whatsapp-business-api',
+    name: 'WhatsApp Business API',
     icon: MessageCircle,
     color: '#25D366',
-    description: 'Connect through WhatsApp Business for direct messaging',
+    description: 'Official WhatsApp Business API for automated conversations',
     defaultMessage: 'Hi! How can I help you today?',
-    fields: ['whatsappNumber', 'whatsappMode']
+    fields: ['whatsappNumber', 'whatsappApiKey', 'whatsappWebhook']
   },
   {
-    id: 'chatbot',
-    name: 'Website Chatbot',
-    icon: Bot,
-    color: '#2563eb',
-    description: 'Embedded chat widget for your website',
-    defaultMessage: 'Hello! I\'m here to assist you.',
-    fields: ['widgetPosition', 'widgetColor']
+    id: 'facebook-messenger',
+    name: 'Facebook Messenger',
+    icon: MessageCircle,
+    color: '#1877F2',
+    description: 'Facebook Messenger bot for customer engagement',
+    defaultMessage: 'Hello! Welcome to our Messenger support.',
+    fields: ['facebookPageId', 'facebookAccessToken', 'facebookWebhook']
   },
   {
-    id: 'telegram',
+    id: 'instagram-direct',
+    name: 'Instagram Direct Messages',
+    icon: MessageCircle,
+    color: '#E4405F',
+    description: 'Instagram Direct Messages automation for business',
+    defaultMessage: 'Thanks for reaching out on Instagram!',
+    fields: ['instagramBusinessId', 'instagramAccessToken']
+  },
+  {
+    id: 'line-messaging',
+    name: 'LINE Messaging API',
+    icon: MessageCircle,
+    color: '#00B900',
+    description: 'LINE messaging platform integration',
+    defaultMessage: 'Hello! How can we assist you today?',
+    fields: ['lineChannelId', 'lineChannelSecret', 'lineChannelToken']
+  },
+  {
+    id: 'wechat-work',
+    name: 'WeChat Work',
+    icon: MessageCircle,
+    color: '#07C160',
+    description: 'WeChat Work integration for business communication',
+    defaultMessage: 'Welcome to our WeChat support!',
+    fields: ['wechatCorpId', 'wechatSecret', 'wechatAgentId']
+  },
+  {
+    id: 'telegram-bot',
     name: 'Telegram Bot',
     icon: Send,
     color: '#0088cc',
-    description: 'Automated bot for Telegram messaging',
-    defaultMessage: 'Welcome to our Telegram support bot!',
+    description: 'Automated Telegram bot for customer support',
+    defaultMessage: 'Hello! How can I assist you today?',
     fields: ['telegramBotToken', 'telegramUsername']
   },
   {
-    id: 'webchat',
-    name: 'Live Web Chat',
-    icon: Globe,
-    color: '#10b981',
-    description: 'Real-time chat support on your website',
-    defaultMessage: 'Hi there! Need help with anything?',
-    fields: ['chatTheme', 'operatingHours']
+    id: 'viber-business',
+    name: 'Viber Business Messages',
+    icon: MessageCircle,
+    color: '#665CAC',
+    description: 'Viber Business Messages integration',
+    defaultMessage: 'Hi! Thanks for contacting us on Viber.',
+    fields: ['viberBotId', 'viberApiKey', 'viberWebhook']
   },
   {
-    id: 'sms',
-    name: 'SMS Support',
-    icon: Smartphone,
-    color: '#7c3aed',
-    description: 'Text message based customer support',
-    defaultMessage: 'Thanks for texting us! How can we help?',
-    fields: ['smsNumber', 'smsProvider']
-  },
-  {
-    id: 'voice',
-    name: 'Voice Assistant',
-    icon: Phone,
-    color: '#dc2626',
-    description: 'AI-powered phone support system',
-    defaultMessage: 'Hello, thanks for calling!',
-    fields: ['voiceProvider', 'voiceModel', 'callScript']
+    id: 'discord-bot',
+    name: 'Discord Bot',
+    icon: MessageCircle,
+    color: '#5865F2',
+    description: 'Discord server bot for community support',
+    defaultMessage: 'Hello! How can I help you in Discord?',
+    fields: ['discordBotToken', 'discordGuildId', 'discordChannelId']
   }
 ];
 
@@ -82,22 +100,50 @@ const createAgentSchema = z.object({
   selectedPlatforms: z.array(z.string()).min(1, "Select at least one platform"),
   leadQualificationQuestions: z.array(z.string()).default([]),
   
-  // Platform-specific fields
-  voiceProvider: z.string().default("elevenlabs"),
-  voiceModel: z.string().default("professional-male"),
-  callScript: z.string().optional(),
+  // Widget and general settings
   widgetPosition: z.string().default("bottom-right"),
   widgetColor: z.string().default("#25D366"),
   welcomeMessage: z.string().default("Hi! How can I help you today?"),
+  status: z.string().default("active"),
+  
+  // WhatsApp Business API
   whatsappNumber: z.string().optional(),
-  whatsappMode: z.string().default("web"),
+  whatsappApiKey: z.string().optional(),
+  whatsappWebhook: z.string().optional(),
+  whatsappMode: z.string().default("api"),
+  
+  // Facebook Messenger
+  facebookPageId: z.string().optional(),
+  facebookAccessToken: z.string().optional(),
+  facebookWebhook: z.string().optional(),
+  
+  // Instagram Direct
+  instagramBusinessId: z.string().optional(),
+  instagramAccessToken: z.string().optional(),
+  
+  // LINE Messaging
+  lineChannelId: z.string().optional(),
+  lineChannelSecret: z.string().optional(),
+  lineChannelToken: z.string().optional(),
+  
+  // WeChat Work
+  wechatCorpId: z.string().optional(),
+  wechatSecret: z.string().optional(),
+  wechatAgentId: z.string().optional(),
+  
+  // Telegram Bot
   telegramBotToken: z.string().optional(),
   telegramUsername: z.string().optional(),
-  chatTheme: z.string().default("modern"),
-  operatingHours: z.string().default("24/7"),
-  smsNumber: z.string().optional(),
-  smsProvider: z.string().default("twilio"),
-  status: z.string().default("active"),
+  
+  // Viber Business
+  viberBotId: z.string().optional(),
+  viberApiKey: z.string().optional(),
+  viberWebhook: z.string().optional(),
+  
+  // Discord Bot
+  discordBotToken: z.string().optional(),
+  discordGuildId: z.string().optional(),
+  discordChannelId: z.string().optional(),
 });
 
 type CreateAgentForm = z.infer<typeof createAgentSchema>;
@@ -129,21 +175,41 @@ export default function CreateAgent() {
       systemPrompt: "",
       selectedPlatforms: [],
       leadQualificationQuestions: [],
-      voiceProvider: "elevenlabs",
-      voiceModel: "professional-male",
-      callScript: "",
       widgetPosition: "bottom-right",
       widgetColor: "#25D366",
       welcomeMessage: "Hi! How can I help you today?",
+      status: "active",
+      // WhatsApp Business API
       whatsappNumber: "",
-      whatsappMode: "web",
+      whatsappApiKey: "",
+      whatsappWebhook: "",
+      whatsappMode: "api",
+      // Facebook Messenger
+      facebookPageId: "",
+      facebookAccessToken: "",
+      facebookWebhook: "",
+      // Instagram Direct
+      instagramBusinessId: "",
+      instagramAccessToken: "",
+      // LINE Messaging
+      lineChannelId: "",
+      lineChannelSecret: "",
+      lineChannelToken: "",
+      // WeChat Work
+      wechatCorpId: "",
+      wechatSecret: "",
+      wechatAgentId: "",
+      // Telegram Bot
       telegramBotToken: "",
       telegramUsername: "",
-      chatTheme: "modern",
-      operatingHours: "24/7",
-      smsNumber: "",
-      smsProvider: "twilio",
-      status: "active",
+      // Viber Business
+      viberBotId: "",
+      viberApiKey: "",
+      viberWebhook: "",
+      // Discord Bot
+      discordBotToken: "",
+      discordGuildId: "",
+      discordChannelId: "",
     },
   });
 
@@ -336,7 +402,14 @@ export default function CreateAgent() {
                             <div className="flex items-start space-x-3">
                               <Checkbox
                                 checked={isSelected}
-                                onCheckedChange={() => {}} // handled by parent click
+                                onCheckedChange={(checked) => {
+                                  const current = field.value || [];
+                                  const updated = checked
+                                    ? [...current, platform.id]
+                                    : current.filter(id => id !== platform.id);
+                                  field.onChange(updated);
+                                  setSelectedPlatforms(updated);
+                                }}
                                 className="mt-1"
                               />
                               <div className="flex-1">
