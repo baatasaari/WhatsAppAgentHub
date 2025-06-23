@@ -1,6 +1,16 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const pageData = {
   "/": {
@@ -19,23 +29,39 @@ const pageData = {
     title: "Analytics",
     subtitle: "Performance insights and metrics"
   },
-  "/embed": {
+  "/embed-code": {
     title: "Embed Code",
     subtitle: "Generate code for your website"
+  },
+  "/model-config": {
+    title: "Model Configuration",
+    subtitle: "Manage AI models and settings"
   }
 };
 
 export default function Header() {
   const [location, setLocation] = useLocation();
+  const { user, logout } = useAuth();
   
   const currentPage = pageData[location as keyof typeof pageData] || pageData["/"];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">{currentPage.title}</h2>
-          <p className="text-gray-600">{currentPage.subtitle}</p>
+        <div className="flex items-center space-x-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">{currentPage.title}</h2>
+            <p className="text-gray-600">{currentPage.subtitle}</p>
+          </div>
+          {user?.role === 'admin' && (
+            <Badge variant="secondary" className="text-xs">
+              Admin
+            </Badge>
+          )}
         </div>
         <div className="flex items-center space-x-3">
           <Button 
@@ -45,6 +71,40 @@ export default function Header() {
             <Plus className="w-4 h-4 mr-2" />
             New Agent
           </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              {user?.role === 'admin' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>User Management</DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
