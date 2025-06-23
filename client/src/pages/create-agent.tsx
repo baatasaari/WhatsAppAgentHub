@@ -144,6 +144,11 @@ const createAgentSchema = z.object({
   discordBotToken: z.string().optional(),
   discordGuildId: z.string().optional(),
   discordChannelId: z.string().optional(),
+  
+  // Voice calling settings
+  voiceProvider: z.string().optional(),
+  voiceModel: z.string().optional(),
+  callScript: z.string().optional(),
 });
 
 type CreateAgentForm = z.infer<typeof createAgentSchema>;

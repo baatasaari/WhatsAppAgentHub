@@ -1,0 +1,46 @@
+The above error occurred in the <button> component:
+
+    at button
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PALV7G7K.js?v=0de69fbd:42:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXTJ4TFU.js?v=0de69fbd:79:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXTJ4TFU.js?v=0de69fbd:56:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PALV7G7K.js?v=0de69fbd:42:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVQKS5GZ.js?v=0de69fbd:1929:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=0de69fbd:186:13
+    at _c (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/select.tsx:26:11)
+    at Provider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=0de69fbd:38:15)
+    at Provider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=0de69fbd:38:15)
+    at CollectionProvider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IYHFZU6K.js?v=0de69fbd:29:13)
+    at Provider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=0de69fbd:38:15)
+    at Provider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=0de69fbd:38:15)
+    at Popper (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVQKS5GZ.js?v=0de69fbd:1921:11)
+    at Select (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=0de69fbd:88:5)
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXTJ4TFU.js?v=0de69fbd:79:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXTJ4TFU.js?v=0de69fbd:56:13
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/form.tsx:130:9
+    at div
+    at https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/form.tsx:72:6
+    at Controller (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXJMC5RA.js?v=0de69fbd:298:35)
+    at FormField (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/form.tsx:33:6)
+    at div
+    at form
+    at FormProvider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXJMC5RA.js?v=0de69fbd:102:11)
+    at div
+    at _c9 (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at CreateAgent (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/pages/create-agent.tsx:155:27)
+    at Route (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0de69fbd:265:16)
+    at Switch (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0de69fbd:321:17)
+    at main
+    at div
+    at div
+    at Router (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/App.tsx?v=yJovJQGFDJlr44mC2TRAP:44:42)
+    at Provider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=0de69fbd:38:15)
+    at TooltipProvider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=0de69fbd:61:5)
+    at AuthProvider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/src/hooks/useAuth.tsx:20:32)
+    at QueryClientProvider (https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=0de69fbd:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
