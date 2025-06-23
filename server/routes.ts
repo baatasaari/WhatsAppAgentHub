@@ -710,11 +710,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate API key for the agent
       const apiKey = randomBytes(32).toString('hex');
       
-      const validatedData = insertAgentSchema.parse({
-        ...req.body,
-        apiKey
-      });
-      const agentData = { ...validatedData, userId: req.user!.id };
+      const validatedData = insertAgentSchema.parse(req.body);
+      const agentData = { ...validatedData, userId: req.user!.id, apiKey };
       const agent = await storage.createAgent(agentData);
       res.status(201).json(agent);
     } catch (error: any) {

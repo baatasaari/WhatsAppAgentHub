@@ -633,8 +633,8 @@ export class DatabaseStorage implements IStorage {
 
       // Calculate business metrics
       const totalConversations = conversations.length;
-      const qualifiedLeads = conversations.filter(c => c.conversionScore > 70).length;
-      const averageConversionScore = conversations.reduce((sum, c) => sum + c.conversionScore, 0) / totalConversations || 0;
+      const qualifiedLeads = conversations.filter(c => (c.conversionScore || 0) > 70).length;
+      const averageConversionScore = conversations.reduce((sum, c) => sum + (c.conversionScore || 0), 0) / totalConversations || 0;
 
       // Product interest analysis
       let productInterests: Record<string, number> = {};

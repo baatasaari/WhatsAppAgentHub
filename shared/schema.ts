@@ -341,7 +341,11 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
 
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users);
-export const insertAgentSchema = createInsertSchema(agents);
+export const insertAgentSchema = createInsertSchema(agents).omit({ 
+  id: true, 
+  createdAt: true, 
+  apiKey: true 
+});
 export const insertConversationSchema = createInsertSchema(conversations);
 export const insertAnalyticsSchema = createInsertSchema(analytics);
 export const insertWhatsappMessageSchema = createInsertSchema(whatsappMessages);
