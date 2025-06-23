@@ -155,7 +155,7 @@ export default function WhatsAppConfig() {
               </div>
             ) : (
               <div className="space-y-2">
-                {agents.map((agent: any) => (
+                {(agents as any[]).map((agent: any) => (
                   <Button
                     key={agent.id}
                     variant={selectedAgent === agent.id ? "default" : "outline"}
@@ -359,7 +359,7 @@ export default function WhatsAppConfig() {
                       <AlertDescription>
                         <strong>Setup Instructions:</strong>
                         <ol className="list-decimal list-inside mt-2 space-y-1">
-                          <li>Go to your Meta App → WhatsApp → Configuration</li>
+                          <li>Go to your Meta App &gt; WhatsApp &gt; Configuration</li>
                           <li>Add the webhook URL above</li>
                           <li>Enter the verify token</li>
                           <li>Subscribe to 'messages' webhook field</li>
@@ -387,13 +387,13 @@ export default function WhatsAppConfig() {
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="w-6 h-6 animate-spin" />
                       </div>
-                    ) : messages.length === 0 ? (
+                    ) : (messages as any[]).length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
                         No WhatsApp messages yet. Send a test message to see it here.
                       </div>
                     ) : (
                       <div className="space-y-3 max-h-96 overflow-y-auto">
-                        {messages.map((message: any) => (
+                        {(messages as any[]).map((message: any) => (
                           <div
                             key={message.id}
                             className={`p-3 rounded-lg ${

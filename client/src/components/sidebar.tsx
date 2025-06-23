@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -8,6 +8,7 @@ const navigation = [
   { name: "Widget Preview", href: "/preview", icon: Eye },
   { name: "Embed Code", href: "/embed-code", icon: Code },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "WhatsApp API", href: "/whatsapp-config", icon: MessageSquare },
   { name: "Model Config", href: "/model-config", icon: Settings },
   { name: "Platform Test", href: "/test", icon: TestTube },
 ];
