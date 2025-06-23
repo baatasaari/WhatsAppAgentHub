@@ -336,7 +336,7 @@ export default function CreateAgent() {
                             <div className="flex items-start space-x-3">
                               <Checkbox
                                 checked={isSelected}
-                                onChange={() => {}} // handled by parent click
+                                onCheckedChange={() => {}} // handled by parent click
                                 className="mt-1"
                               />
                               <div className="flex-1">
