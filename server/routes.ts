@@ -101,7 +101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      // First validate the input (expecting password, not passwordHash)
+      const { password, ...otherData } = req.body;
+      if (!password) {
+        return res.status(400).json({ message: 'Password is required' });
+      }
+
+      // Hash the password
+      const passwordHash = await AuthService.hashPassword(password);
+      
+      // Create userData with hashed password
+      const userData = insertUserSchema.parse({
+        ...otherData,
+        passwordHash
+      });
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
