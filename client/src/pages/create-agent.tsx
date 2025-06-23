@@ -156,19 +156,9 @@ type CreateAgentForm = z.infer<typeof createAgentSchema>;
 export default function CreateAgent() {
   const [, setLocation] = useLocation();
   const [selectedLLM, setSelectedLLM] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [qualificationQuestions, setQualificationQuestions] = useState<string[]>([]);
   const [isCreatingMultiple, setIsCreatingMultiple] = useState(false);
   const { toast } = useToast();
-
-  // Optimized platform selection handler to prevent infinite loops
-  const handlePlatformToggle = useCallback((platformId: string, currentPlatforms: string[]) => {
-    const updated = currentPlatforms.includes(platformId)
-      ? currentPlatforms.filter(id => id !== platformId)
-      : [...currentPlatforms, platformId];
-    setSelectedPlatforms(updated);
-    return updated;
-  }, []);
 
   // Fetch available LLM models from configuration
   const { data: availableModels, isLoading: modelsLoading } = useQuery({
@@ -403,20 +393,11 @@ export default function CreateAgent() {
                         return (
                           <div
                             key={platform.id}
-                            className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                            className={`relative rounded-lg border-2 p-4 transition-all hover:shadow-md ${
                               isSelected 
                                 ? 'border-blue-500 bg-blue-50 shadow-sm' 
                                 : 'border-gray-200 hover:border-gray-300'
                             }`}
-                            onClick={(e) => {
-                              // Prevent double triggering from checkbox click
-                              const target = e.target as HTMLElement;
-                              if (target === e.currentTarget || !target.closest('[role="checkbox"]')) {
-                                const current = field.value || [];
-                                const updated = handlePlatformToggle(platform.id, current);
-                                field.onChange(updated);
-                              }
-                            }}
                           >
                             <div className="flex items-start space-x-3">
                               <Checkbox
@@ -427,7 +408,6 @@ export default function CreateAgent() {
                                     ? [...current, platform.id]
                                     : current.filter(id => id !== platform.id);
                                   field.onChange(updated);
-                                  setSelectedPlatforms(updated);
                                 }}
                                 className="mt-1"
                               />
@@ -804,8 +784,8 @@ export default function CreateAgent() {
                   >
                     <Rocket className="w-4 h-4 mr-2" />
                     {isCreatingMultiple ? "Creating Agents..." : 
-                     selectedPlatforms.length > 1 ? `Create ${selectedPlatforms.length} Agents` : 
-                     "Create & Deploy Agent"}
+                     (form.watch("selectedPlatforms")?.length || 0) > 1 ? `Create ${form.watch("selectedPlatforms")?.length || 1} Agents` : 
+                     "Create Agent"}
                   </Button>
                 </div>
               </div>
