@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -209,12 +209,21 @@ export default function AgentWizard() {
     },
   });
 
-  // Use local state for platform selection to avoid form state issues
+  // Use local state for platform selection
   const [localSelectedPlatforms, setLocalSelectedPlatforms] = useState<string[]>([]);
   
-  // Platform selection managed independently of form state
+  // Memoized platform toggle handler to prevent infinite re-renders
+  const togglePlatform = useCallback((platformId: string, checked: boolean) => {
+    setLocalSelectedPlatforms(prev => {
+      if (checked) {
+        return prev.includes(platformId) ? prev : [...prev, platformId];
+      } else {
+        return prev.filter(id => id !== platformId);
+      }
+    });
+  }, []);
   
-  // Watch LLM provider to force re-render when it changes
+  // Watch LLM provider for model options
   const selectedLlmProvider = form.watch("llmProvider");
 
   const createAgentsMutation = useMutation({
@@ -416,12 +425,7 @@ export default function AgentWizard() {
                             <div className="flex items-start space-x-3 flex-1">
                               <Checkbox
                                 checked={isSelected}
-                                onCheckedChange={(checked) => {
-                                  const updated = checked
-                                    ? [...localSelectedPlatforms, platform.id]
-                                    : localSelectedPlatforms.filter(id => id !== platform.id);
-                                  setLocalSelectedPlatforms(updated);
-                                }}
+                                onCheckedChange={(checked) => togglePlatform(platform.id, !!checked)}
                                 className="mt-1"
                               />
                               <div className="flex-1">
