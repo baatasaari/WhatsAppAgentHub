@@ -108,8 +108,8 @@ const wizardSchema = z.object({
   businessCategory: z.string().optional(),
   description: z.string().optional(),
   
-  // Step 2: Platform Selection
-  selectedPlatforms: z.array(z.string()).min(1, "Select at least one platform"),
+  // Step 2: Platform Selection (handled by local state, not form)
+  // selectedPlatforms: z.array(z.string()).min(1, "Select at least one platform"),
   
   // Step 3: AI Configuration
   llmProvider: z.string().min(1, "LLM provider is required"),
@@ -184,7 +184,6 @@ export default function AgentWizard() {
       name: "",
       businessCategory: "",
       description: "",
-      selectedPlatforms: [],
       llmProvider: "",
       systemPrompt: "",
       widgetColor: "#25D366",
@@ -213,10 +212,7 @@ export default function AgentWizard() {
   // Use local state for platform selection to avoid form state issues
   const [localSelectedPlatforms, setLocalSelectedPlatforms] = useState<string[]>([]);
   
-  // Sync local state with form
-  useEffect(() => {
-    form.setValue("selectedPlatforms", localSelectedPlatforms);
-  }, [localSelectedPlatforms, form]);
+  // Platform selection managed independently of form state
   
   // Watch LLM provider to force re-render when it changes
   const selectedLlmProvider = form.watch("llmProvider");
@@ -402,12 +398,7 @@ export default function AgentWizard() {
               <p className="text-gray-600">Select where you want your agents to be available</p>
             </div>
             
-            <FormField
-              control={form.control}
-              name="selectedPlatforms"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {platformTypes.map((platform) => {
                       const IconComponent = platform.icon;
                       const isSelected = localSelectedPlatforms.includes(platform.id);
@@ -460,11 +451,7 @@ export default function AgentWizard() {
                         </div>
                       );
                     })}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            </div>
             
             <div className="mt-6">
               {localSelectedPlatforms.length > 0 ? (
