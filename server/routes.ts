@@ -101,14 +101,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post('/api/auth/register', async (req, res) => {
     try {
+      console.log('Registration request body:', req.body);
+      
       // First validate the input (expecting password, not passwordHash)
       const { password, ...otherData } = req.body;
-      if (!password) {
-        return res.status(400).json({ message: 'Password is required' });
+      
+      console.log('Extracted password:', password);
+      console.log('Other data:', otherData);
+      
+      if (!password || typeof password !== 'string' || password.trim().length === 0) {
+        return res.status(400).json({ message: 'Valid password is required' });
       }
 
       // Hash the password
-      const passwordHash = await AuthService.hashPassword(password);
+      console.log('About to hash password...');
+      const passwordHash = await AuthService.hashPassword(password.trim());
+      console.log('Password hashed successfully');
       
       // Create userData with hashed password
       const userData = insertUserSchema.parse({
