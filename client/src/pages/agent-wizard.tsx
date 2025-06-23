@@ -212,6 +212,9 @@ export default function AgentWizard() {
 
   // Watch selected platforms to force re-render when they change
   const selectedPlatforms = form.watch("selectedPlatforms") || [];
+  
+  // Watch LLM provider to force re-render when it changes
+  const selectedLlmProvider = form.watch("llmProvider");
 
   const createAgentsMutation = useMutation({
     mutationFn: async (data: WizardFormData) => {
@@ -489,21 +492,25 @@ export default function AgentWizard() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>AI Model *</FormLabel>
+                  {console.log('Available models:', availableModels, 'Type:', typeof availableModels, 'Is array:', Array.isArray(availableModels))}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {modelsLoading ? (
                       Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
                       ))
                     ) : (
-                      Array.isArray(availableModels) ? availableModels.map((model: any) => (
+                      availableModels && Array.isArray(availableModels) ? availableModels.map((model: any) => (
                         <div
                           key={model.id}
                           className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                            field.value === model.id 
+                            selectedLlmProvider === model.id 
                               ? 'border-blue-500 bg-blue-50' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
-                          onClick={() => field.onChange(model.id)}
+                          onClick={() => {
+                            console.log('Model selected:', model.id);
+                            field.onChange(model.id);
+                          }}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="font-medium text-sm text-gray-900">{model.name}</h4>
@@ -513,7 +520,11 @@ export default function AgentWizard() {
                           </div>
                           <p className="text-xs text-gray-600">{model.description}</p>
                         </div>
-                      )) : []
+                      )) : (
+                        <div className="col-span-full text-center py-8">
+                          <p className="text-gray-500">No AI models available. Please check your configuration.</p>
+                        </div>
+                      )
                     )}
                   </div>
                   <FormMessage />
