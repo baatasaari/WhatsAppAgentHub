@@ -2,32 +2,27 @@ import { Request, Response } from 'express';
 import { DatabaseHealth } from '../config/database';
 import { pool } from '../db';
 
-export interface HealthCheck {
-  status: 'healthy' | 'degraded' | 'down';
+export interface HealthStatus {
+  status: 'healthy' | 'unhealthy' | 'degraded';
   timestamp: string;
   uptime: number;
-  checks: {
-    database: {
-      status: 'healthy' | 'degraded' | 'down';
-      responseTime?: number;
-      lastCheck?: number;
-    };
-    memory: {
-      status: 'healthy' | 'degraded' | 'down';
-      usage: {
-        used: number;
-        total: number;
-        percentage: number;
-      };
-    };
-    services: {
-      openai: boolean;
-      anthropic: boolean;
-      whatsapp: boolean;
-    };
-  };
   version: string;
   environment: string;
+  services: {
+    database: {
+      status: 'healthy' | 'unhealthy';
+      responseTime?: number;
+      error?: string;
+    };
+    memory: {
+      usage: number;
+      limit: number;
+      percentage: number;
+    };
+    cpu: {
+      usage: number;
+    };
+  };
 }
 
 export class HealthMonitor {
@@ -41,112 +36,99 @@ export class HealthMonitor {
     return HealthMonitor.instance;
   }
 
-  async getHealthStatus(): Promise<HealthCheck> {
-    const memoryUsage = process.memoryUsage();
+  async getHealthStatus(): Promise<HealthStatus> {
     const dbHealth = DatabaseHealth.getInstance();
+    const memUsage = process.memoryUsage();
     
-    // Check database connectivity
-    const dbStartTime = Date.now();
-    let dbStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
-    let dbResponseTime: number | undefined;
+    // Test database connection with timing
+    const dbStart = Date.now();
+    const isDatabaseHealthy = await dbHealth.checkHealth(pool);
+    const dbResponseTime = Date.now() - dbStart;
     
-    try {
-      const client = await pool.connect();
-      await client.query('SELECT 1');
-      client.release();
-      dbResponseTime = Date.now() - dbStartTime;
-      dbStatus = dbResponseTime > 1000 ? 'degraded' : 'healthy';
-    } catch (error) {
-      dbStatus = 'down';
-    }
-
-    // Check memory usage
-    const memoryPercentage = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
-    const memoryStatus = memoryPercentage > 90 ? 'down' : memoryPercentage > 70 ? 'degraded' : 'healthy';
-
-    // Check external services
-    const services = {
-      openai: !!process.env.OPENAI_API_KEY,
-      anthropic: !!process.env.ANTHROPIC_API_KEY,
-      whatsapp: true, // Simplified check
-    };
-
-    // Overall status determination
-    let overallStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
-    if (dbStatus === 'down' || memoryStatus === 'down') {
-      overallStatus = 'down';
-    } else if (dbStatus === 'degraded' || memoryStatus === 'degraded') {
-      overallStatus = 'degraded';
-    }
-
-    return {
-      status: overallStatus,
+    const dbStatus = dbHealth.getHealthStatus();
+    
+    const status: HealthStatus = {
+      status: isDatabaseHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: Date.now() - this.startTime,
-      checks: {
-        database: {
-          status: dbStatus,
-          responseTime: dbResponseTime,
-          lastCheck: Date.now(),
-        },
-        memory: {
-          status: memoryStatus,
-          usage: {
-            used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
-            total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
-            percentage: Math.round(memoryPercentage),
-          },
-        },
-        services,
-      },
       version: process.env.npm_package_version || '1.0.0',
       environment: process.env.NODE_ENV || 'development',
+      services: {
+        database: {
+          status: isDatabaseHealthy ? 'healthy' : 'unhealthy',
+          responseTime: dbResponseTime,
+          error: dbStatus.lastError,
+        },
+        memory: {
+          usage: memUsage.heapUsed,
+          limit: memUsage.heapTotal,
+          percentage: Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100),
+        },
+        cpu: {
+          usage: process.cpuUsage().user / 1000000, // Convert to seconds
+        },
+      },
     };
+
+    return status;
   }
 
-  async handleHealthCheck(req: Request, res: Response) {
+  async handleHealthCheck(req: Request, res: Response): Promise<void> {
     try {
       const health = await this.getHealthStatus();
-      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      const statusCode = health.status === 'healthy' ? 200 : 503;
       
       res.status(statusCode).json(health);
     } catch (error) {
       res.status(503).json({
-        status: 'down',
+        status: 'unhealthy',
         timestamp: new Date().toISOString(),
         error: 'Health check failed',
       });
     }
   }
 
-  async handleReadiness(req: Request, res: Response) {
+  async handleReadiness(req: Request, res: Response): Promise<void> {
     try {
-      const health = await this.getHealthStatus();
-      if (health.status === 'down') {
-        res.status(503).json({ ready: false, reason: 'Service unavailable' });
+      const dbHealth = DatabaseHealth.getInstance();
+      const isDatabaseReady = await dbHealth.checkHealth(pool);
+      
+      if (isDatabaseReady) {
+        res.status(200).json({
+          status: 'ready',
+          timestamp: new Date().toISOString(),
+          services: ['database'],
+        });
       } else {
-        res.status(200).json({ ready: true });
+        res.status(503).json({
+          status: 'not ready',
+          timestamp: new Date().toISOString(),
+          reason: 'Database not available',
+        });
       }
     } catch (error) {
-      res.status(503).json({ ready: false, reason: 'Readiness check failed' });
+      res.status(503).json({
+        status: 'not ready',
+        timestamp: new Date().toISOString(),
+        error: 'Readiness check failed',
+      });
     }
   }
 
-  handleLiveness(req: Request, res: Response) {
-    // Simple liveness check - if we can respond, we're alive
-    res.status(200).json({ 
-      alive: true,
+  async handleLiveness(req: Request, res: Response): Promise<void> {
+    // Simple liveness check - if this endpoint responds, the app is alive
+    res.status(200).json({
+      status: 'alive',
       timestamp: new Date().toISOString(),
       uptime: Date.now() - this.startTime,
     });
   }
 }
 
-// Metrics collection for monitoring
 export class MetricsCollector {
   private static instance: MetricsCollector;
-  private metrics = new Map<string, any>();
-  private counters = new Map<string, number>();
+  private metrics = new Map<string, number>();
+  private startTime = Date.now();
 
   static getInstance(): MetricsCollector {
     if (!MetricsCollector.instance) {
@@ -155,41 +137,83 @@ export class MetricsCollector {
     return MetricsCollector.instance;
   }
 
-  incrementCounter(name: string, value: number = 1) {
-    const current = this.counters.get(name) || 0;
-    this.counters.set(name, current + value);
+  incrementCounter(name: string, value = 1): void {
+    const current = this.metrics.get(name) || 0;
+    this.metrics.set(name, current + value);
   }
 
-  setGauge(name: string, value: number) {
-    this.metrics.set(name, { value, timestamp: Date.now() });
+  setGauge(name: string, value: number): void {
+    this.metrics.set(name, value);
   }
 
-  recordTiming(name: string, duration: number) {
-    const timings = this.metrics.get(`${name}_timings`) || [];
-    timings.push({ duration, timestamp: Date.now() });
+  getMetrics(): Record<string, any> {
+    const memUsage = process.memoryUsage();
+    const uptime = Date.now() - this.startTime;
     
-    // Keep only last 100 measurements
-    if (timings.length > 100) {
-      timings.shift();
-    }
-    
-    this.metrics.set(`${name}_timings`, timings);
-  }
-
-  getMetrics() {
     return {
-      counters: Object.fromEntries(this.counters),
-      gauges: Object.fromEntries(this.metrics),
-      timestamp: new Date().toISOString(),
+      // System metrics
+      'system_uptime_ms': uptime,
+      'system_memory_heap_used_bytes': memUsage.heapUsed,
+      'system_memory_heap_total_bytes': memUsage.heapTotal,
+      'system_memory_external_bytes': memUsage.external,
+      'system_memory_rss_bytes': memUsage.rss,
+      
+      // Application metrics
+      ...Object.fromEntries(this.metrics),
+      
+      // Timestamp
+      'metrics_timestamp': new Date().toISOString(),
     };
   }
 
-  async handleMetrics(req: Request, res: Response) {
+  async handleMetrics(req: Request, res: Response): Promise<void> {
     try {
       const metrics = this.getMetrics();
-      res.status(200).json(metrics);
+      
+      // Return in Prometheus format if requested
+      if (req.headers.accept?.includes('text/plain')) {
+        const prometheusMetrics = Object.entries(metrics)
+          .filter(([_, value]) => typeof value === 'number')
+          .map(([key, value]) => `${key} ${value}`)
+          .join('\n');
+        
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(prometheusMetrics);
+      } else {
+        res.json(metrics);
+      }
     } catch (error) {
-      res.status(500).json({ error: 'Failed to collect metrics' });
+      res.status(500).json({
+        error: 'Failed to collect metrics',
+        timestamp: new Date().toISOString(),
+      });
     }
+  }
+
+  // Track HTTP requests
+  trackRequest(method: string, path: string, statusCode: number, duration: number): void {
+    this.incrementCounter(`http_requests_total`);
+    this.incrementCounter(`http_requests_${method.toLowerCase()}_total`);
+    this.incrementCounter(`http_responses_${statusCode}_total`);
+    this.setGauge(`http_request_duration_ms`, duration);
+  }
+
+  // Track database operations
+  trackDatabaseOperation(operation: string, duration: number, success: boolean): void {
+    this.incrementCounter(`database_operations_total`);
+    this.incrementCounter(`database_operations_${operation}_total`);
+    this.incrementCounter(`database_operations_${success ? 'success' : 'error'}_total`);
+    this.setGauge(`database_operation_duration_ms`, duration);
+  }
+
+  // Track business metrics
+  trackAgentInteraction(agentId: number): void {
+    this.incrementCounter('agent_interactions_total');
+    this.incrementCounter(`agent_${agentId}_interactions_total`);
+  }
+
+  trackConversion(agentId: number): void {
+    this.incrementCounter('conversions_total');
+    this.incrementCounter(`agent_${agentId}_conversions_total`);
   }
 }

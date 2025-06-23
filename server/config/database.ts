@@ -1,30 +1,58 @@
 import { Pool } from '@neondatabase/serverless';
+import { config } from './environment';
 
-// Database configuration with connection pooling and retry logic
 export interface DatabaseConfig {
   connectionString: string;
-  maxConnections: number;
-  idleTimeout: number;
-  connectionTimeout: number;
-  retryAttempts: number;
-  retryDelay: number;
+  pool: {
+    min: number;
+    max: number;
+    idleTimeoutMillis: number;
+    connectionTimeoutMillis: number;
+  };
 }
 
 export const databaseConfig: DatabaseConfig = {
-  connectionString: process.env.DATABASE_URL!,
-  maxConnections: parseInt(process.env.DB_MAX_CONNECTIONS || '20'),
-  idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'),
-  connectionTimeout: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000'),
-  retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3'),
-  retryDelay: parseInt(process.env.DB_RETRY_DELAY || '1000'),
+  connectionString: config.database.url,
+  pool: {
+    min: config.database.pool.min,
+    max: config.database.pool.max,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  },
 };
 
-// Connection health monitoring
+export async function createConnectionWithRetry(retries = 3): Promise<Pool> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const pool = new Pool(databaseConfig);
+      
+      // Test the connection
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+      
+      console.log(`✓ Database connection established (attempt ${attempt})`);
+      return pool;
+    } catch (error) {
+      console.error(`Database connection attempt ${attempt} failed:`, error);
+      
+      if (attempt === retries) {
+        throw new Error(`Failed to connect to database after ${retries} attempts`);
+      }
+      
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+  
+  throw new Error('Unexpected error in connection retry logic');
+}
+
 export class DatabaseHealth {
   private static instance: DatabaseHealth;
-  private connectionStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
-  private lastCheck: number = 0;
-  private checkInterval: number = 30000; // 30 seconds
+  private healthCheckInterval?: NodeJS.Timeout;
+  private isHealthy = true;
+  private lastError?: Error;
 
   static getInstance(): DatabaseHealth {
     if (!DatabaseHealth.instance) {
@@ -33,78 +61,53 @@ export class DatabaseHealth {
     return DatabaseHealth.instance;
   }
 
-  async checkConnection(pool: Pool): Promise<boolean> {
+  async checkHealth(pool: Pool): Promise<boolean> {
     try {
       const client = await pool.connect();
       await client.query('SELECT 1');
       client.release();
-      this.connectionStatus = 'healthy';
-      this.lastCheck = Date.now();
+      
+      this.isHealthy = true;
+      this.lastError = undefined;
       return true;
     } catch (error) {
+      this.isHealthy = false;
+      this.lastError = error as Error;
       console.error('Database health check failed:', error);
-      this.connectionStatus = 'down';
-      this.lastCheck = Date.now();
       return false;
     }
   }
 
-  getStatus() {
-    return {
-      status: this.connectionStatus,
-      lastCheck: this.lastCheck,
-      nextCheck: this.lastCheck + this.checkInterval,
-    };
+  startHealthChecks(pool: Pool, intervalMs = 30000): void {
+    this.healthCheckInterval = setInterval(async () => {
+      await this.checkHealth(pool);
+    }, intervalMs);
+    
+    console.log(`✓ Database health monitoring started (${intervalMs}ms interval)`);
   }
 
-  startHealthChecks(pool: Pool) {
-    setInterval(async () => {
-      await this.checkConnection(pool);
-    }, this.checkInterval);
-  }
-}
-
-// Connection retry mechanism
-export async function createConnectionWithRetry(config: DatabaseConfig): Promise<Pool> {
-  let attempts = 0;
-  
-  while (attempts < config.retryAttempts) {
-    try {
-      const pool = new Pool({
-        connectionString: config.connectionString,
-        max: config.maxConnections,
-        idleTimeoutMillis: config.idleTimeout,
-        connectionTimeoutMillis: config.connectionTimeout,
-      });
-
-      // Test connection
-      const client = await pool.connect();
-      await client.query('SELECT 1');
-      client.release();
-
-      console.log('Database connection established successfully');
-      return pool;
-    } catch (error) {
-      attempts++;
-      console.error(`Database connection attempt ${attempts} failed:`, error);
-      
-      if (attempts >= config.retryAttempts) {
-        throw new Error(`Failed to connect to database after ${config.retryAttempts} attempts`);
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, config.retryDelay * attempts));
+  stopHealthChecks(): void {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = undefined;
     }
   }
-  
-  throw new Error('Maximum connection attempts exceeded');
+
+  getHealthStatus(): { healthy: boolean; lastError?: string } {
+    return {
+      healthy: this.isHealthy,
+      lastError: this.lastError?.message,
+    };
+  }
 }
 
-// Graceful shutdown handler
 export async function gracefulShutdown(pool: Pool): Promise<void> {
-  console.log('Initiating database connection shutdown...');
+  console.log('Closing database connections...');
+  
   try {
+    DatabaseHealth.getInstance().stopHealthChecks();
     await pool.end();
-    console.log('Database connections closed successfully');
+    console.log('✓ Database connections closed gracefully');
   } catch (error) {
     console.error('Error during database shutdown:', error);
   }
