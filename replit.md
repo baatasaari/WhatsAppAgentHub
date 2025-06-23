@@ -131,6 +131,11 @@ Changelog:
 - June 16, 2025. Added 7 popular open source models to LLM configuration: Llama 3.1 (405B/70B), Mistral 7B, Qwen 2.5 72B, Phi-3.5 Mini, Code Llama 34B, DeepSeek Coder 33B
 - June 16, 2025. Enhanced model diversity with specialized coding models and efficient deployment options for self-hosted environments
 - June 16, 2025. Created comprehensive README.md with installation guide, API documentation, deployment instructions, and feature overview
+- June 23, 2025. Implemented comprehensive RBAC system with Admin and Business User roles, user registration workflow, and approval system
+- June 23, 2025. Added authentication middleware, session management, and protected API endpoints with role-based access control
+- June 23, 2025. Created user management system with pending approval workflow and admin-only user administration features
+- June 23, 2025. Enhanced database schema with users, sessions, and user-owned agent relationships for multi-tenant architecture
+- June 23, 2025. Implemented secure password hashing, JWT-style session tokens, and comprehensive authorization middleware
 ```
 
 ## User Preferences
