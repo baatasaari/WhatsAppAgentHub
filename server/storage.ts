@@ -520,6 +520,71 @@ export class DatabaseStorage implements IStorage {
       };
     }
   }
+
+  // WhatsApp message operations
+  async createWhatsappMessage(insertMessage: InsertWhatsappMessage): Promise<WhatsappMessage> {
+    try {
+      const [message] = await db
+        .insert(whatsappMessages)
+        .values(insertMessage)
+        .returning();
+      return message;
+    } catch (error) {
+      console.error("Error creating WhatsApp message:", error);
+      throw error;
+    }
+  }
+
+  async getWhatsappMessagesByAgent(agentId: number): Promise<WhatsappMessage[]> {
+    try {
+      return await db
+        .select()
+        .from(whatsappMessages)
+        .where(eq(whatsappMessages.agentId, agentId))
+        .orderBy(whatsappMessages.timestamp);
+    } catch (error) {
+      console.error("Error getting WhatsApp messages by agent:", error);
+      return [];
+    }
+  }
+
+  async getWhatsappMessagesByConversation(conversationId: number): Promise<WhatsappMessage[]> {
+    try {
+      return await db
+        .select()
+        .from(whatsappMessages)
+        .where(eq(whatsappMessages.conversationId, conversationId))
+        .orderBy(whatsappMessages.timestamp);
+    } catch (error) {
+      console.error("Error getting WhatsApp messages by conversation:", error);
+      return [];
+    }
+  }
+
+  async updateWhatsappMessageStatus(whatsappMessageId: string, status: string): Promise<void> {
+    try {
+      await db
+        .update(whatsappMessages)
+        .set({ status })
+        .where(eq(whatsappMessages.whatsappMessageId, whatsappMessageId));
+    } catch (error) {
+      console.error("Error updating WhatsApp message status:", error);
+      throw error;
+    }
+  }
+
+  async getWhatsappMessageById(whatsappMessageId: string): Promise<WhatsappMessage | undefined> {
+    try {
+      const [message] = await db
+        .select()
+        .from(whatsappMessages)
+        .where(eq(whatsappMessages.whatsappMessageId, whatsappMessageId));
+      return message;
+    } catch (error) {
+      console.error("Error getting WhatsApp message by ID:", error);
+      return undefined;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

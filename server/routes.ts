@@ -6,6 +6,7 @@ import { generateChatResponse, qualifyLead } from "./services/llm-providers";
 import { authenticate, requireAdmin, requireApproved, AuthenticatedRequest, AuthService } from "./auth";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
+import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -821,6 +822,203 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating embed code:", error);
       res.status(500).json({ message: "Failed to generate embed code" });
+    }
+  });
+
+  // WhatsApp Business API Webhook verification
+  app.get("/webhook/whatsapp/:agentId", async (req, res) => {
+    try {
+      const { agentId } = req.params;
+      const mode = req.query['hub.mode'];
+      const token = req.query['hub.verify_token'];
+      const challenge = req.query['hub.challenge'];
+
+      const agent = await storage.getAgent(parseInt(agentId));
+      if (!agent) {
+        return res.status(404).send('Agent not found');
+      }
+
+      if (mode === 'subscribe' && token === agent.whatsappWebhookVerifyToken) {
+        console.log('WhatsApp webhook verified for agent:', agentId);
+        res.status(200).send(challenge);
+      } else {
+        res.status(403).send('Verification failed');
+      }
+    } catch (error) {
+      console.error('Error verifying WhatsApp webhook:', error);
+      res.status(500).send('Internal server error');
+    }
+  });
+
+  // WhatsApp Business API Webhook for incoming messages
+  app.post("/webhook/whatsapp/:agentId", async (req, res) => {
+    try {
+      const { agentId } = req.params;
+      const webhookData: WhatsAppWebhookPayload = req.body;
+
+      const agent = await storage.getAgent(parseInt(agentId));
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Process each entry in the webhook payload
+      for (const entry of webhookData.entry) {
+        for (const change of entry.changes) {
+          if (change.field === 'messages') {
+            const { messages, contacts, statuses } = change.value;
+
+            // Handle incoming messages
+            if (messages) {
+              for (const message of messages) {
+                // Get sender contact info
+                const senderContact = contacts?.find(contact => contact.wa_id === message.from);
+                const senderName = senderContact?.profile?.name || 'Unknown';
+
+                // Store incoming message
+                await storage.createWhatsappMessage({
+                  agentId: agent.id,
+                  whatsappMessageId: message.id,
+                  fromPhoneNumber: message.from,
+                  toPhoneNumber: change.value.metadata.phone_number_id,
+                  messageType: message.type,
+                  content: message.text?.body || `[${message.type} message]`,
+                  direction: 'inbound',
+                  webhookData: message
+                });
+
+                // Process message with AI agent
+                const { response, shouldSend } = await whatsappService.processIncomingMessage(
+                  agent,
+                  message,
+                  senderName
+                );
+
+                // Send AI response if needed
+                if (shouldSend && agent.whatsappAccessToken && agent.whatsappPhoneNumberId) {
+                  const sendResult = await whatsappService.sendMessage(
+                    agent.whatsappAccessToken,
+                    agent.whatsappPhoneNumberId,
+                    message.from,
+                    response
+                  );
+
+                  if (sendResult.success && sendResult.messageId) {
+                    // Store outgoing message
+                    await storage.createWhatsappMessage({
+                      agentId: agent.id,
+                      whatsappMessageId: sendResult.messageId,
+                      fromPhoneNumber: agent.whatsappPhoneNumber || change.value.metadata.display_phone_number,
+                      toPhoneNumber: message.from,
+                      messageType: 'text',
+                      content: response,
+                      direction: 'outbound',
+                      status: 'sent'
+                    });
+                  }
+                }
+
+                // Mark original message as read
+                if (agent.whatsappAccessToken && agent.whatsappPhoneNumberId) {
+                  await whatsappService.markMessageAsRead(
+                    agent.whatsappAccessToken,
+                    agent.whatsappPhoneNumberId,
+                    message.id
+                  );
+                }
+              }
+            }
+
+            // Handle message status updates
+            if (statuses) {
+              for (const status of statuses) {
+                await storage.updateWhatsappMessageStatus(status.id, status.status);
+              }
+            }
+          }
+        }
+      }
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error processing WhatsApp webhook:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // WhatsApp message history endpoint
+  app.get("/api/agents/:id/whatsapp-messages", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Check if user owns this agent (unless admin)
+      if (req.user?.role !== 'admin' && agent.userId !== req.user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const messages = await storage.getWhatsappMessagesByAgent(agentId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching WhatsApp messages:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Send WhatsApp message manually
+  app.post("/api/agents/:id/send-whatsapp", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { phoneNumber, message } = req.body;
+
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ error: "Phone number and message are required" });
+      }
+
+      const agent = await storage.getAgent(agentId);
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      // Check if user owns this agent (unless admin)
+      if (req.user?.role !== 'admin' && agent.userId !== req.user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      if (!agent.whatsappAccessToken || !agent.whatsappPhoneNumberId) {
+        return res.status(400).json({ error: "WhatsApp Business API not configured for this agent" });
+      }
+
+      const result = await whatsappService.sendMessage(
+        agent.whatsappAccessToken,
+        agent.whatsappPhoneNumberId,
+        phoneNumber,
+        message
+      );
+
+      if (result.success && result.messageId) {
+        // Store outgoing message
+        await storage.createWhatsappMessage({
+          agentId: agent.id,
+          whatsappMessageId: result.messageId,
+          fromPhoneNumber: agent.whatsappPhoneNumber || agent.whatsappPhoneNumberId,
+          toPhoneNumber: phoneNumber,
+          messageType: 'text',
+          content: message,
+          direction: 'outbound',
+          status: 'sent'
+        });
+
+        res.json({ success: true, messageId: result.messageId });
+      } else {
+        res.status(400).json({ error: result.error || "Failed to send message" });
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp message:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
