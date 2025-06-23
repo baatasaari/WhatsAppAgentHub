@@ -91,6 +91,86 @@ export const analytics = pgTable("analytics", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Advanced analytics tables
+export const conversionEvents = pgTable("conversion_events", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  conversationId: integer("conversation_id").references(() => conversations.id),
+  eventType: text("event_type").notNull(), // "widget_view", "chat_start", "lead_qualified", "conversion", "call_scheduled"
+  eventData: jsonb("event_data").$type<Record<string, any>>().default({}),
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  referrer: text("referrer"),
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  sessionId: text("session_id"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull().unique(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  firstSeen: timestamp("first_seen").defaultNow().notNull(),
+  lastSeen: timestamp("last_seen").defaultNow().notNull(),
+  pageViews: integer("page_views").default(1),
+  totalTimeSpent: integer("total_time_spent").default(0), // seconds
+  deviceType: text("device_type"), // "desktop", "mobile", "tablet"
+  browser: text("browser"),
+  os: text("os"),
+  country: text("country"),
+  city: text("city"),
+  source: text("source"), // "organic", "paid", "social", "direct", "referral"
+  landingPage: text("landing_page"),
+  exitPage: text("exit_page"),
+  converted: boolean("converted").default(false),
+  conversionValue: integer("conversion_value").default(0), // cents
+});
+
+export const funnelSteps = pgTable("funnel_steps", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  sessionId: text("session_id").notNull(),
+  step: text("step").notNull(), // "widget_view", "chat_open", "message_sent", "lead_captured", "conversion"
+  stepOrder: integer("step_order").notNull(),
+  completedAt: timestamp("completed_at").defaultNow().notNull(),
+  timeFromPrevious: integer("time_from_previous").default(0), // milliseconds
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+});
+
+export const performanceMetrics = pgTable("performance_metrics", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  hour: integer("hour").notNull(), // 0-23
+  
+  // Engagement metrics
+  uniqueVisitors: integer("unique_visitors").default(0),
+  pageViews: integer("page_views").default(0),
+  avgSessionDuration: integer("avg_session_duration").default(0), // seconds
+  bounceRate: integer("bounce_rate").default(0), // percentage * 100
+  
+  // Conversion funnel
+  widgetViews: integer("widget_views").default(0),
+  chatInitiations: integer("chat_initiations").default(0),
+  messagesExchanged: integer("messages_exchanged").default(0),
+  leadsGenerated: integer("leads_generated").default(0),
+  conversionsCompleted: integer("conversions_completed").default(0),
+  
+  // Quality metrics
+  avgConversationLength: integer("avg_conversation_length").default(0), // number of messages
+  avgTimeToResponse: integer("avg_time_to_response").default(0), // milliseconds
+  customerSatisfactionScore: integer("customer_satisfaction_score").default(0), // 1-5 scale * 100
+  
+  // Business metrics
+  totalRevenue: integer("total_revenue").default(0), // cents
+  avgOrderValue: integer("avg_order_value").default(0), // cents
+  customerLifetimeValue: integer("customer_lifetime_value").default(0), // cents
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // User schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
