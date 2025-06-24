@@ -3,6 +3,7 @@ import { Agent } from "@shared/schema";
 import { generateChatResponse } from "./llm-providers";
 import { storage } from "../storage";
 import { logger } from "./logging";
+import { conversationFlowService } from "./conversation-flow";
 
 export interface DiscordMessage {
   id: string;

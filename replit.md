@@ -169,6 +169,11 @@ Changelog:
 - June 24, 2025. Enhanced database schema with platform-specific credential fields and updated agent creation to support all promised platforms
 - June 24, 2025. Created platform testing API endpoints with validation for bot tokens, page access tokens, and service connectivity
 - June 24, 2025. Completed end-to-end testing of all platform integrations confirming proper webhook processing and conversation creation
+- June 24, 2025. Implemented Intelligent Conversation Flow Designer with visual flow builder using ReactFlow
+- June 24, 2025. Added conversation flow schema with nodes, edges, and variables support for complex conversation logic
+- June 24, 2025. Created conversation flow service for executing flows with conditions, actions, and message interpolation
+- June 24, 2025. Integrated flow processing into all platform services (Telegram, Messenger, Instagram, Discord, WhatsApp)
+- June 24, 2025. Added conversation flow designer to agent management with visual drag-drop interface and flow templates
 ```
 
 ## User Preferences

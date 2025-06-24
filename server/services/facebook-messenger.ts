@@ -3,6 +3,7 @@ import { Agent } from "@shared/schema";
 import { generateChatResponse } from "./llm-providers";
 import { storage } from "../storage";
 import { logger } from "./logging";
+import { conversationFlowService } from "./conversation-flow";
 
 export interface MessengerMessage {
   mid: string;
@@ -169,13 +170,30 @@ export class FacebookMessengerService {
 
       const updatedMessages = [...(conversation.messages || []), userMessage];
 
-      // Generate AI response
-      const aiResponse = await generateChatResponse(
-        agent.llmProvider,
-        agent.model || 'gpt-4o',
-        agent.systemPrompt,
-        updatedMessages
-      );
+      // Check if flow is enabled and process accordingly
+      let aiResponse: string;
+      
+      if (agent.flowEnabled && agent.conversationFlow) {
+        const flowContext = {
+          userId: senderId,
+          userName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Facebook User',
+          userInput: messageText,
+          conversationCount: updatedMessages.filter(m => m.role === 'user').length,
+          variables: {},
+          leadData: conversation.leadData
+        };
+
+        const flowResult = await conversationFlowService.executeFlow(agent, flowContext);
+        aiResponse = flowResult.message;
+      } else {
+        // Generate AI response using traditional method
+        aiResponse = await generateChatResponse(
+          agent.llmProvider,
+          agent.model || 'gpt-4o',
+          agent.systemPrompt,
+          updatedMessages
+        );
+      }
 
       // Add AI response to conversation
       const assistantMessage = {

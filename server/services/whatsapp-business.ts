@@ -1,6 +1,7 @@
 import { Agent } from "@shared/schema";
 import { generateChatResponse } from "./llm-providers";
 import { storage } from "../storage";
+import { conversationFlowService } from "./conversation-flow";
 
 export interface WhatsAppMessage {
   id: string;
