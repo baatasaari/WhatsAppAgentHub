@@ -25,6 +25,46 @@ const pageData = {
     title: "Agent Wizard",
     subtitle: "Build a new agentic workflow"
   },
+  "/ai-training": {
+    title: "AI Training",
+    subtitle: "Train your agents with custom knowledge"
+  },
+  "/business-onboarding": {
+    title: "Business Onboarding", 
+    subtitle: "Complete your business setup"
+  },
+  "/business-templates": {
+    title: "Business Templates",
+    subtitle: "Choose pre-built agent templates"
+  },
+  "/conversation-flow-designer": {
+    title: "Conversation Designer",
+    subtitle: "Design conversation flows"
+  },
+  "/voice-calling": {
+    title: "Voice Calling",
+    subtitle: "AI voice call management"
+  },
+  "/test": {
+    title: "Platform Test",
+    subtitle: "Test platform integrations"
+  },
+  "/whatsapp-config": {
+    title: "WhatsApp Config",
+    subtitle: "Configure WhatsApp Business API"
+  },
+  "/whatsapp-diagnostics": {
+    title: "WhatsApp Diagnostics", 
+    subtitle: "Diagnose WhatsApp integration"
+  },
+  "/system-logs": {
+    title: "System Logs",
+    subtitle: "Monitor system activity"
+  },
+  "/settings": {
+    title: "Settings",
+    subtitle: "Manage your account and preferences"
+  },
   "/analytics": {
     title: "Analytics",
     subtitle: "Performance insights and metrics"

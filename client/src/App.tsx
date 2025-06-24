@@ -26,6 +26,7 @@ import ConversationFlow from "@/pages/conversation-flow";
 import ConversationFlowDesigner from "@/pages/conversation-flow-designer";
 import BusinessOnboarding from "@/pages/business-onboarding";
 import AITraining from "@/pages/ai-training";
+import WhatsAppDiagnostics from "@/pages/whatsapp-diagnostics";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -71,6 +72,7 @@ function Router() {
             <Route path="/preview" component={WidgetPreview} />
             <Route path="/model-config" component={ModelConfig} />
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
+            <Route path="/whatsapp-diagnostics" component={WhatsAppDiagnostics} />
             <Route path="/conversation-flow/:id" component={ConversationFlow} />
             <Route path="/conversation-flow-designer" component={ConversationFlowDesigner} />
             <Route path="/business-onboarding" component={BusinessOnboarding} />
