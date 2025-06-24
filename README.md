@@ -1,321 +1,525 @@
-# AgentFlow - AI Conversational Agent Platform
+# AgentFlow - Enterprise AI Conversational Agent Platform
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org/)
+[![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)](https://github.com/agentflow/agentflow)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 
-AgentFlow is a comprehensive SaaS platform for creating and managing AI-powered conversational agents that integrate seamlessly with WhatsApp Business. Transform your website visitors into qualified leads through intelligent, customizable chat widgets that redirect conversations directly to WhatsApp Business.
+AgentFlow is a comprehensive enterprise-grade B2B SaaS platform for creating, managing, and deploying intelligent conversational agents across multiple messaging platforms. Built with modern web technologies and designed for scalability, AgentFlow enables businesses to automate customer interactions while maintaining personalized, context-aware conversations.
 
-## 🚀 Features
+## 🚀 Key Features
 
-### Core Platform
-- **Multi-LLM Support**: Integration with OpenAI GPT-4o, Anthropic Claude Sonnet 4, Google Gemini 1.5 Pro, and 7+ open source models
-- **WhatsApp Business Integration**: Direct conversation routing with real-time webhook processing
-- **Encrypted Widget Security**: Base64-encoded configuration for secure deployment
-- **Real-time Analytics**: Comprehensive cost tracking and performance metrics across all time periods
-- **Role-Based Access Control**: System Admin, Business Manager, and Business User roles with granular permissions
-- **Advanced User Management**: Complete approval workflow, user administration, and role assignment
-- **Drag-and-Drop Model Management**: Professional interface for managing AI model configurations
+### Multi-Platform Integration
+- **WhatsApp Business API** - Interactive buttons, rich media, business profiles
+- **Telegram Bot API** - Inline keyboards, group management, file sharing
+- **Discord Bot API** - Rich embeds, server integration, voice announcements
+- **Facebook Messenger** - Generic templates, quick replies, social engagement
+- **Instagram Direct** - Visual communication, story integration, DM automation
 
-### AI Capabilities
-- **Intelligent Lead Qualification**: Automated lead scoring and qualification
-- **Multilingual Support**: Global conversation capabilities
-- **Cost Optimization**: Real-time token usage and cost tracking across hourly, daily, weekly, monthly periods
-- **Custom Prompts**: Tailored conversation flows for different business needs
+### Custom AI Training System
+- **Knowledge Base Management** - Semantic search with OpenAI embeddings
+- **Training Data Collection** - Interactive conversation examples with categories
+- **Brand Voice Configuration** - Tone, personality, communication style customization
+- **Business Context Integration** - Industry-specific context and value propositions
+- **Real-Time Learning** - Automatic improvement from successful conversations
 
-### Developer Experience
-- **RESTful API**: Full-featured API for all platform operations
-- **TypeScript Throughout**: Complete type safety from frontend to backend
-- **Modern Tech Stack**: React 18, Node.js, PostgreSQL, Drizzle ORM
-- **Comprehensive Testing**: Stress-tested with 45+ concurrent requests
+### Data Source Integrations
+- **File Imports** - CSV training data, JSON knowledge bases
+- **CRM Systems** - Salesforce, HubSpot, Pipedrive connectivity
+- **Help Desk Systems** - Zendesk, Intercom, Freshdesk integration
+- **Website Scraping** - Automated content extraction from web pages
+- **Google Sheets** - Direct spreadsheet data import
+- **API Webhooks** - Real-time data synchronization
+
+### Enterprise Features
+- **Role-Based Access Control** - System Admin, Business Manager, Business User roles
+- **Multi-Tenant Architecture** - Secure user isolation and data privacy
+- **Comprehensive Analytics** - Performance metrics, cost tracking, conversion analysis
+- **Voice Calling Integration** - AI-powered phone calls for failed conversations
+- **Business Onboarding** - Guided setup workflow for new organizations
+- **System Monitoring** - Health checks, audit logging, performance metrics
+
+### Intelligent Conversation Flow Designer
+- **Visual Flow Builder** - Drag-and-drop conversation design using ReactFlow
+- **Pre-built Templates** - Lead qualification, customer support, appointment booking
+- **Conditional Logic** - Dynamic conversation paths based on user responses
+- **Variable Management** - Context preservation across conversation steps
+- **Multi-Platform Execution** - Platform-specific flow adaptations
 
 ## 🏗️ Architecture
 
+### Technology Stack
+- **Frontend**: React 18 + TypeScript + Vite
+- **Backend**: Node.js + Express + TypeScript
+- **Database**: PostgreSQL with Drizzle ORM
+- **UI Components**: shadcn/ui + Radix UI + Tailwind CSS
+- **State Management**: TanStack Query (React Query)
+- **Authentication**: JWT-style sessions with database persistence
+- **AI Services**: OpenAI GPT-4o, Anthropic Claude Sonnet 4, Google Gemini 1.5 Pro
+
+### System Components
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   React App     │    │   Express API    │    │   PostgreSQL    │
-│   (Frontend)    │◄──►│   (Backend)      │◄──►│   (Database)    │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Client  │    │  Express Server │    │   PostgreSQL    │
+│                 │◄──►│                 │◄──►│                 │
+│ • Agent Manager │    │ • API Routes    │    │ • User Data     │
+│ • AI Training   │    │ • Auth System   │    │ • Agent Config  │
+│ • Analytics     │    │ • AI Services   │    │ • Conversations │
+│ • Flow Designer │    │ • Integrations  │    │ • Analytics     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
-         │              ┌────────▼────────┐             │
-         │              │  LLM Providers  │             │
-         │              │ OpenAI/Claude/  │             │
-         │              │ Google/OSS      │             │
-         │              └─────────────────┘             │
-         │                                              │
-┌────────▼────────┐                           ┌────────▼────────┐
-│ Website Widget  │                           │    Analytics    │
-│ (Embedded JS)   │                           │   & Reporting   │
-└─────────────────┘                           └─────────────────┘
+         └───────────────────────┼───────────────────────┘
+                                 │
+                    ┌─────────────────┐
+                    │  External APIs  │
+                    │                 │
+                    │ • OpenAI        │
+                    │ • Anthropic     │
+                    │ • Google AI     │
+                    │ • Platform APIs │
+                    └─────────────────┘
 ```
 
-## 🛠️ Installation
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 - Node.js 20 or higher
 - PostgreSQL database
-- OpenAI API key (required)
-- Anthropic API key (optional)
-- Google AI API key (optional)
+- OpenAI API key
+- Git
+
+### Environment Variables
+Create a `.env` file in the root directory:
+
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# AI Service API Keys
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key (optional)
+GOOGLE_AI_API_KEY=your_google_ai_api_key (optional)
+
+# Session Management
+SESSION_SECRET=your_secure_session_secret
+
+# Platform API Keys (optional)
+WHATSAPP_ACCESS_TOKEN=your_whatsapp_token
+TELEGRAM_BOT_TOKEN=your_telegram_token
+DISCORD_BOT_TOKEN=your_discord_token
+FACEBOOK_PAGE_ACCESS_TOKEN=your_facebook_token
+INSTAGRAM_ACCESS_TOKEN=your_instagram_token
+
+# External Integrations (optional)
+SALESFORCE_API_KEY=your_salesforce_key
+HUBSPOT_API_KEY=your_hubspot_key
+ZENDESK_API_KEY=your_zendesk_key
+GOOGLE_SHEETS_API_KEY=your_google_sheets_key
+```
 
 ### Quick Start
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/agentflow.git
-   cd agentflow
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Configure your `.env` file:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/agentflow
-   OPENAI_API_KEY=your_openai_api_key
-   ANTHROPIC_API_KEY=your_anthropic_api_key  # Optional
-   GOOGLE_AI_API_KEY=your_google_ai_api_key  # Optional
-   ```
-
-4. **Set up the database**
-   ```bash
-   npm run db:push
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Access the application**
-   - Frontend: http://localhost:5000
-   - API: http://localhost:5000/api
-
-## 📱 Usage
-
-### Creating Your First Agent
-
-1. **Navigate to the Dashboard**
-   - Access the main dashboard at http://localhost:5000
-
-2. **Create a New Agent**
-   - Click "Create Agent" 
-   - Configure your agent settings:
-     - Business category and industry vertical
-     - LLM provider and model selection
-     - Custom system prompts
-     - WhatsApp Business number
-     - Widget appearance and positioning
-
-3. **Deploy Your Widget**
-   - Copy the generated embed code
-   - Paste it into your website's HTML
-   - The widget will appear and redirect visitors to WhatsApp Business
-
-### Embedding the Widget
-
-Add this code to your website:
-
-```html
-<script>
-  window.AgentFlowConfig = {
-    apiKey: 'your_agent_api_key',
-    encrypted: true
-  };
-</script>
-<script src="https://yourdomain.com/widget/agentflow-widget.js"></script>
+```bash
+git clone https://github.com/your-org/agentflow.git
+cd agentflow
 ```
 
-The widget automatically handles:
-- Secure configuration loading
-- WhatsApp Business integration
-- Click tracking and analytics
-- Mobile-responsive design
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Set up the database**
+```bash
+npm run db:push
+```
+
+4. **Start the development server**
+```bash
+npm run dev
+```
+
+5. **Access the application**
+Open http://localhost:5000 in your browser
+
+### Initial Setup
+
+1. **Create Admin User**: The system automatically creates an initial admin user on first startup
+2. **Configure AI Models**: Visit `/model-config` to set up available LLM providers
+3. **Create Your First Agent**: Use the guided agent creation wizard
+4. **Set Up Training Data**: Add knowledge base items and training examples
+5. **Deploy Widgets**: Generate embed codes for your website integration
+
+## 📚 Usage Guide
+
+### Creating an AI Agent
+
+1. **Basic Configuration**
+   - Choose agent name and description
+   - Select LLM provider (OpenAI, Anthropic, Google)
+   - Configure system prompt and welcome message
+   - Set platform type and widget appearance
+
+2. **Knowledge Base Setup**
+   - Add company information and FAQs
+   - Import data from external sources
+   - Configure semantic search with embeddings
+
+3. **Training Data**
+   - Create conversation examples
+   - Set up brand voice guidelines
+   - Define business context and value proposition
+
+4. **Platform Integration**
+   - Configure platform-specific credentials
+   - Set up webhooks for real-time messaging
+   - Customize response formats per platform
+
+### Multi-Platform Deployment
+
+#### WhatsApp Business API
+```javascript
+// Webhook endpoint
+POST /api/whatsapp/webhook
+
+// Interactive button response
+{
+  "messaging_product": "whatsapp",
+  "to": "phone_number",
+  "type": "interactive",
+  "interactive": {
+    "type": "button",
+    "body": { "text": "How can I help you?" },
+    "action": {
+      "buttons": [
+        { "type": "reply", "reply": { "id": "support", "title": "Support" }},
+        { "type": "reply", "reply": { "id": "sales", "title": "Sales" }}
+      ]
+    }
+  }
+}
+```
+
+#### Telegram Bot
+```javascript
+// Bot command handling
+app.post('/api/telegram/webhook', (req, res) => {
+  const { message } = req.body;
+  
+  // Process with AI training
+  const response = await EnhancedAIService.getEnhancedResponse(
+    agentId, 
+    message.text,
+    { platform: 'telegram' }
+  );
+  
+  // Send with inline keyboard
+  await bot.sendMessage(message.chat.id, response.text, {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: "Learn More", callback_data: "info" }
+      ]]
+    }
+  });
+});
+```
+
+#### Discord Bot
+```javascript
+// Rich embed response
+const embed = {
+  title: "AgentFlow Response",
+  description: aiResponse.text,
+  color: 0x0099ff,
+  fields: [
+    { name: "Category", value: "Support", inline: true }
+  ]
+};
+
+await interaction.reply({ 
+  embeds: [embed],
+  components: [{
+    type: 1,
+    components: [
+      { type: 2, style: 2, label: "Get Help", custom_id: "help" }
+    ]
+  }]
+});
+```
+
+### API Documentation
+
+#### Authentication
+```bash
+# Login
+POST /api/auth/login
+{
+  "email": "user@company.com",
+  "password": "your_password"
+}
+
+# Get current user
+GET /api/auth/me
+Authorization: Bearer <session_token>
+```
+
+#### Agent Management
+```bash
+# Create agent
+POST /api/agents
+{
+  "name": "Customer Support Bot",
+  "model": "gpt-4o",
+  "llmProvider": "openai",
+  "platformType": "whatsapp",
+  "systemPrompt": "You are a helpful customer support assistant."
+}
+
+# Get all agents
+GET /api/agents
+
+# Update agent
+PUT /api/agents/:id
+{
+  "name": "Updated Agent Name",
+  "systemPrompt": "Updated system prompt"
+}
+
+# Delete agent
+DELETE /api/agents/:id
+```
+
+#### AI Training
+```bash
+# Add knowledge item
+POST /api/agents/:id/knowledge
+{
+  "title": "Product Information",
+  "content": "Our flagship product is...",
+  "category": "product",
+  "tags": ["product", "features"]
+}
+
+# Start training session
+POST /api/agents/:id/training
+{
+  "sessionName": "Customer Service Training",
+  "trainingData": [
+    {
+      "input": "What are your hours?",
+      "expectedOutput": "We're open 24/7 for support",
+      "category": "hours",
+      "weight": 1
+    }
+  ]
+}
+
+# Get enhanced response
+POST /api/agents/:id/enhanced-response
+{
+  "message": "What products do you offer?",
+  "context": { "platform": "whatsapp" }
+}
+```
+
+#### Data Source Integration
+```bash
+# Import CSV data
+POST /api/agents/:id/import/csv
+{
+  "csvData": "input,expected_output,category\nHello,Hi there!,greeting"
+}
+
+# Connect to CRM
+POST /api/agents/:id/connect/crm
+{
+  "type": "salesforce",
+  "apiKey": "your_api_key",
+  "baseUrl": "your_instance.salesforce.com"
+}
+
+# Import from Google Sheets
+POST /api/agents/:id/import/google-sheets
+{
+  "spreadsheetId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+  "range": "Sheet1!A1:D100",
+  "apiKey": "your_google_api_key"
+}
+```
 
 ## 🔧 Configuration
 
-### Supported LLM Models
+### LLM Provider Configuration
+Located in `models/llm-models.yaml`:
 
-#### Commercial Models
-- **OpenAI**: GPT-4o, GPT-3.5 Turbo
-- **Anthropic**: Claude Sonnet 4, Claude 3.7 Sonnet  
-- **Google**: Gemini 1.5 Pro
-
-#### Open Source Models
-- **Meta**: Llama 3.1 (405B, 70B)
-- **Mistral AI**: Mistral 7B v0.3
-- **Alibaba**: Qwen 2.5 72B
-- **Microsoft**: Phi-3.5 Mini
-- **Specialized**: Code Llama 34B, DeepSeek Coder 33B
-
-### Industry Verticals
-Pre-configured business categories including:
-- E-commerce & Retail
-- Technology & Software
-- Healthcare & Medical
-- Financial Services
-- Education & Training
-- Real Estate
-- And many more...
-
-## 📊 Analytics & Monitoring
-
-### Cost Analytics
-- **Real-time Tracking**: Monitor API costs across all time periods
-- **Token Usage**: Detailed prompt and completion token consumption
-- **Model Comparison**: Cost efficiency analysis across different models
-- **Budget Alerts**: Set spending limits and notifications
-
-### Performance Metrics
-- **Conversation Analytics**: Track engagement and conversion rates
-- **Lead Qualification**: Automated scoring and qualification insights
-- **Response Times**: Monitor AI response latency and performance
-- **Usage Statistics**: Agent activity and utilization reports
-
-## 🛡️ Security
-
-### Data Protection
-- **Encrypted Configurations**: All widget settings use base64 encoding
-- **Secure API Keys**: Environment-based secret management  
-- **Database Security**: PostgreSQL with connection pooling and SSL
-- **GDPR Compliance**: Built-in privacy and data protection features
-
-### Authentication & Authorization
-- **Role-Based Access Control**: Three-tier permission system with System Admin, Business Manager, and Business User roles
-- **User Registration Workflow**: Approval-based registration with admin oversight
-- **Session Management**: Secure JWT-style token authentication with PostgreSQL session storage
-- **API Key Management**: Secure agent-specific authentication with encrypted configurations
-- **Rate Limiting**: Built-in request throttling and abuse prevention
-- **Input Validation**: Comprehensive Zod schema validation throughout the application
-- **Error Handling**: Graceful failure modes and comprehensive error recovery
-
-## 🚀 Deployment
-
-### Development
-```bash
-npm run dev          # Start development server
-npm run db:push      # Push database schema changes
-npm run build        # Build for production
+```yaml
+providers:
+  openai:
+    name: "OpenAI"
+    models:
+      - id: "gpt-4o"
+        name: "GPT-4o"
+        maxTokens: 128000
+        costPer1KTokens: 0.03
+        inputCostPer1K: 0.015
+        outputCostPer1K: 0.06
+        
+  anthropic:
+    name: "Anthropic"
+    models:
+      - id: "claude-sonnet-4-20250514"
+        name: "Claude Sonnet 4"
+        maxTokens: 200000
+        costPer1KTokens: 0.025
 ```
 
-### Production
+### Industry Verticals Configuration
+Located in `models/industry-verticals.yaml`:
 
-The application is optimized for Replit autoscale deployment:
+```yaml
+industries:
+  - name: "E-Commerce & Retail"
+    description: "Online and offline selling of goods and services"
+    commonUseCases:
+      - "Product recommendations"
+      - "Order status inquiries"
+      - "Return and refund support"
+      
+  - name: "Healthcare & Medical"
+    description: "Medical services, telemedicine, and health information"
+    commonUseCases:
+      - "Appointment scheduling"
+      - "Symptom assessment"
+      - "Insurance verification"
+```
+
+### Database Schema
+Key tables and relationships:
+
+```sql
+-- Core entities
+users (id, email, role, status, created_at)
+agents (id, user_id, name, model, platform_type, custom_training)
+conversations (id, agent_id, messages, lead_data, conversion_score)
+knowledge_items (id, agent_id, title, content, embedding, category)
+training_sessions (id, agent_id, status, progress_percentage, metrics)
+
+-- Relationships
+agents.user_id → users.id
+conversations.agent_id → agents.id
+knowledge_items.agent_id → agents.id
+training_sessions.agent_id → agents.id
+```
+
+## 🚦 Deployment
+
+### Production Deployment
 
 1. **Environment Setup**
-   - Configure production environment variables
-   - Set up PostgreSQL database connection
-   - Add required API keys
+   - Set `NODE_ENV=production`
+   - Configure production database
+   - Set secure session secrets
+   - Enable SSL/TLS
 
-2. **Database Migration**
-   ```bash
-   npm run db:push
-   ```
+2. **Build Application**
+```bash
+npm run build
+```
 
-3. **Build and Deploy**
-   ```bash
-   npm run build
-   npm start
-   ```
+3. **Database Migration**
+```bash
+npm run db:push
+```
 
-### Docker Deployment (Optional)
+4. **Start Production Server**
+```bash
+npm start
+```
 
+### Docker Deployment
 ```dockerfile
 FROM node:20-alpine
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
+
 COPY . .
 RUN npm run build
+
 EXPOSE 5000
 CMD ["npm", "start"]
 ```
 
-## 📋 API Reference
+### Health Monitoring
+The platform includes comprehensive health endpoints:
 
-### Agents
-```http
-GET    /api/agents              # List all agents
-POST   /api/agents              # Create new agent
-GET    /api/agents/:id          # Get agent details
-PUT    /api/agents/:id          # Update agent
-DELETE /api/agents/:id          # Delete agent
-```
+- `GET /api/health` - Overall system health
+- `GET /api/health/ready` - Readiness check
+- `GET /api/health/live` - Liveness probe
+- `GET /api/metrics` - Performance metrics
 
-### Widget Integration
-```http
-POST   /api/widget/chat         # Process chat message
-GET    /api/widget/config/:key  # Get widget configuration
-```
+## 🔒 Security
 
-### Analytics
-```http
-GET    /api/dashboard/stats     # Dashboard statistics
-GET    /api/analytics/agent/:id/costs  # Cost analytics
-GET    /api/analytics/agent/:id # Performance metrics
-```
+### Authentication & Authorization
+- JWT-style session tokens with database persistence
+- Role-based access control (System Admin, Business Manager, Business User)
+- Session timeout and automatic cleanup
+- API rate limiting and request validation
 
-### User Management (Admin)
-```http
-GET    /api/admin/users         # List all users (Business Manager+)
-GET    /api/admin/users/pending # List pending approvals (Business Manager+)
-POST   /api/admin/users/:id/approve     # Approve user (Business Manager+)
-POST   /api/admin/users/:id/suspend     # Suspend user (Business Manager+)
-POST   /api/admin/users/:id/reactivate  # Reactivate user (Business Manager+)
-PUT    /api/admin/users/:id/role        # Update user role (System Admin only)
-DELETE /api/admin/users/:id             # Delete user (System Admin only)
-```
+### Data Protection
+- Encrypted widget configurations
+- Secure API key storage
+- Database connection pooling with SSL
+- CORS protection and security headers
+- Audit logging for all user actions
 
-### Model Management (System Admin)
-```http
-GET    /api/models              # List available models
-POST   /api/models              # Add new model (System Admin only)
-PUT    /api/models/:id          # Update model (System Admin only)
-DELETE /api/models/:id          # Remove model (System Admin only)
-PUT    /api/models/reorder      # Reorder models (System Admin only)
-```
+### Platform Security
+- Input validation and sanitization
+- SQL injection prevention with Drizzle ORM
+- XSS protection with Content Security Policy
+- Environment variable validation
+- Secure session management
 
-### WhatsApp Business Integration
-```http
-POST   /api/webhook/whatsapp    # WhatsApp webhook endpoint
-GET    /api/agents/:id/whatsapp-messages  # Get message history
-GET    /api/agents/:id/whatsapp-status    # Get integration status
-POST   /api/agents/:id/test-whatsapp      # Test WhatsApp configuration
-POST   /api/agents/:id/send-whatsapp      # Send WhatsApp message
-```
+## 📊 Analytics & Monitoring
+
+### Performance Metrics
+- Response times and throughput
+- Memory usage and CPU utilization
+- Database connection health
+- API error rates and success metrics
+
+### Business Analytics
+- Conversation volume and trends
+- Lead qualification rates
+- Platform-specific engagement metrics
+- Cost tracking per LLM provider
+- User activity and retention
+
+### Cost Management
+- Token usage tracking across all LLM providers
+- Cost breakdown by agent and time period
+- Budget alerts and usage limits
+- ROI analysis and conversion tracking
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+### Development Setup
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and add tests
+4. Ensure all tests pass: `npm test`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-### Development Workflow
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes**
-4. **Add tests and ensure they pass**
-5. **Commit with conventional commits**
-   ```bash
-   git commit -m "feat: add amazing feature"
-   ```
-6. **Push and create a Pull Request**
-
-### Code Style
-- TypeScript for all code
-- ESLint and Prettier for formatting
-- Conventional commits for git messages
-- Comprehensive JSDoc documentation
+### Code Standards
+- TypeScript for type safety
+- ESLint and Prettier for code formatting
+- Comprehensive error handling
+- Unit tests for critical functionality
+- Documentation for public APIs
 
 ## 📝 License
 
@@ -324,40 +528,44 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 ### Documentation
-- [API Documentation](./docs/api.md)
-- [Widget Integration Guide](./docs/widget.md)
-- [Deployment Guide](./docs/deployment.md)
+- [API Reference](docs/api.md)
+- [Platform Integration Guide](docs/platforms.md)
+- [AI Training Best Practices](docs/training.md)
+- [Deployment Guide](docs/deployment.md)
 
 ### Community
-- [GitHub Issues](https://github.com/your-username/agentflow/issues)
-- [Discussions](https://github.com/your-username/agentflow/discussions)
+- [GitHub Issues](https://github.com/your-org/agentflow/issues)
+- [Discussions](https://github.com/your-org/agentflow/discussions)
 - [Discord Community](https://discord.gg/agentflow)
 
 ### Enterprise Support
-For enterprise support, custom integrations, or consulting services, contact us at enterprise@agentflow.com
+For enterprise customers, we offer:
+- Priority technical support
+- Custom integration assistance
+- Training and onboarding
+- SLA guarantees
 
-## 🎯 Roadmap
+Contact: enterprise@agentflow.com
 
-### Q1 2025
-- [x] WhatsApp Business API webhooks ✅ Completed
-- [x] Role-based access control ✅ Completed
-- [x] Advanced user management ✅ Completed
-- [ ] Voice integration with ElevenLabs
-- [ ] Multi-language admin interface
+## 🗺️ Roadmap
 
-### Q2 2025
-- [ ] Team collaboration features
-- [ ] Advanced A/B testing
-- [ ] Custom branding options
-- [ ] Integration marketplace
-- [ ] Advanced compliance features
-
-### Future
+### Upcoming Features
+- [ ] Advanced conversation analytics with sentiment analysis
+- [ ] Multi-language support with automatic translation
+- [ ] Voice message processing and synthesis
+- [ ] Advanced workflow automation with Zapier integration
+- [ ] White-label deployment options
 - [ ] Mobile app for agent management
-- [ ] Advanced AI training capabilities
-- [ ] Enterprise SSO integration
-- [ ] Advanced compliance features
+- [ ] Advanced A/B testing for conversation flows
+- [ ] Integration with major e-commerce platforms
+
+### Version History
+- **v2.0.0** (Current) - Custom AI training, multi-platform integration, enterprise features
+- **v1.5.0** - Conversation flow designer, business templates
+- **v1.0.0** - Initial release with basic agent management and WhatsApp integration
 
 ---
 
-Built with ❤️ by the AgentFlow team. Transform your website visitors into qualified leads with AI-powered conversations.
+**AgentFlow** - Empowering businesses with intelligent conversational AI across all platforms.
+
+Built with ❤️ by the AgentFlow Team
