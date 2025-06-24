@@ -151,6 +151,50 @@ export const agents = pgTable("agents", {
       defaultValue?: any;
     }>;
   }>(),
+  customTraining: jsonb("custom_training").$type<{
+    trainingData: Array<{
+      id: string;
+      input: string;
+      expectedOutput: string;
+      category: string;
+      weight: number;
+      createdAt: string;
+    }>;
+    brandVoice: {
+      tone: string;
+      personality: string;
+      communicationStyle: string;
+      dosList: string[];
+      dontsList: string[];
+    };
+    businessContext: {
+      industry: string;
+      companySize: string;
+      targetAudience: string;
+      keyProducts: string[];
+      valueProposition: string;
+    };
+    trainingStatus: 'not_trained' | 'training' | 'trained' | 'failed';
+    lastTrainingDate?: string;
+    modelVersion?: string;
+  }>().default({
+    trainingData: [],
+    brandVoice: {
+      tone: 'professional',
+      personality: 'helpful',
+      communicationStyle: 'concise',
+      dosList: [],
+      dontsList: []
+    },
+    businessContext: {
+      industry: '',
+      companySize: '',
+      targetAudience: '',
+      keyProducts: [],
+      valueProposition: ''
+    },
+    trainingStatus: 'not_trained'
+  }),
   flowEnabled: boolean("flow_enabled").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

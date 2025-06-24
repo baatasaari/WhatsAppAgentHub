@@ -2171,6 +2171,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced AI response endpoint
+  app.post("/api/agents/:id/enhanced-response", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { message, context } = req.body;
+
+      const { EnhancedAIService } = await import('./services/enhanced-ai-service');
+      const response = await EnhancedAIService.getEnhancedResponse(agentId, message, context);
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error getting enhanced response:", error);
+      res.status(500).json({ error: "Failed to get enhanced response" });
+    }
+  });
+
+  // Training analysis endpoint
+  app.post("/api/agents/:id/analyze-training", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { conversations } = req.body;
+
+      const { EnhancedAIService } = await import('./services/enhanced-ai-service');
+      const analysis = await EnhancedAIService.analyzeConversationForTraining(agentId, conversations);
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing training:", error);
+      res.status(500).json({ error: "Failed to analyze training" });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);
