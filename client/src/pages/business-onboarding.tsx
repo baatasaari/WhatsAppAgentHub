@@ -101,8 +101,9 @@ export default function BusinessOnboarding() {
   const { toast } = useToast();
 
   // Fetch onboarding progress
-  const { data: onboardingData, isLoading } = useQuery({
+  const { data: onboardingData, isLoading, error } = useQuery({
     queryKey: ["/api/onboarding"],
+    retry: false,
   });
 
   // Load saved progress

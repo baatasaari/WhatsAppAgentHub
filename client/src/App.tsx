@@ -19,6 +19,7 @@ import SystemLogs from "@/pages/system-logs";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import AuthDemo from "@/pages/auth-demo";
 import BusinessTemplates from "@/pages/business-templates";
 import VoiceCalling from "@/pages/voice-calling";
 import ConversationFlow from "@/pages/conversation-flow";
