@@ -195,6 +195,10 @@ Changelog:
 - June 24, 2025. Added detailed API documentation covering all endpoints, authentication, data source integrations, and platform-specific features
 - June 24, 2025. Documented complete deployment guide with Docker, Kubernetes, cloud platform options, and production best practices
 - June 24, 2025. Removed LiteLLM integration at user request to maintain platform simplicity and focus on core WhatsApp Business functionality
+- June 24, 2025. Enhanced Conversation Flow Designer with intelligent drag-and-drop interface using ReactFlow library
+- June 24, 2025. Added visual node-based conversation builder with custom node types (Start, Message, Condition, Action, End)
+- June 24, 2025. Implemented real-time flow editing with node property dialogs and visual connection system
+- June 24, 2025. Created tabbed interface switching between template browsing and visual flow designer modes
 - June 24, 2025. Implemented comprehensive multi-platform integrations with dedicated service classes for Telegram, Facebook Messenger, Instagram Direct, and Discord
 - June 24, 2025. Added webhook endpoints for all platforms with proper message processing, conversation management, and AI response generation
 - June 24, 2025. Enhanced database schema with platform-specific credential fields and updated agent creation to support all promised platforms
