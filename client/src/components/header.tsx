@@ -21,8 +21,8 @@ const pageData = {
     title: "My Agents",
     subtitle: "Manage and monitor your AI agents"
   },
-  "/create": {
-    title: "Create Agent",
+  "/wizard": {
+    title: "Agent Wizard",
     subtitle: "Build a new agentic workflow"
   },
   "/analytics": {
@@ -65,11 +65,11 @@ export default function Header() {
         </div>
         <div className="flex items-center space-x-3">
           <Button 
-            onClick={() => setLocation("/create")}
+            onClick={() => setLocation("/wizard")}
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />
-            New Agent
+            Agent Wizard
           </Button>
           
           <DropdownMenu>

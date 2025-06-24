@@ -178,7 +178,7 @@ export default function ConversationFlowDesigner() {
                   You need to create agents first before designing conversation flows. 
                   Start by creating your first AI agent.
                 </p>
-                <Link href="/create">
+                <Link href="/wizard">
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Agent

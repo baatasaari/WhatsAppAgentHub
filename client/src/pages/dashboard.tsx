@@ -48,11 +48,11 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={() => setLocation('/create')}
+              onClick={() => setLocation('/wizard')}
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create Agent
+              Agent Wizard
             </Button>
             <Button 
               onClick={() => setLocation('/preview')}

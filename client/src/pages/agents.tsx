@@ -102,7 +102,7 @@ export default function Agents() {
                 ? "You haven't created any agents yet." 
                 : `No ${statusFilter} agents found.`}
             </p>
-            <Button onClick={() => window.location.href = "/create"}>
+            <Button onClick={() => window.location.href = "/wizard"}>
               Create Your First Agent
             </Button>
           </div>

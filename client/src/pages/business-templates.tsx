@@ -81,9 +81,9 @@ export default function BusinessTemplates() {
         widgetColor: customizedTemplate.customizations?.widgetColor,
       };
       
-      // Store in localStorage and redirect to create agent
+      // Store in localStorage and redirect to agent wizard
       localStorage.setItem('templateAgentData', JSON.stringify(agentData));
-      window.location.href = '/create?fromTemplate=true';
+      window.location.href = '/wizard?fromTemplate=true';
     },
     onError: (error: any) => {
       toast({

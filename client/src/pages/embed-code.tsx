@@ -70,8 +70,8 @@ export default function EmbedCode() {
               <Bot className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500 mb-2">No active agents available</p>
               <p className="text-sm text-gray-400">Create and activate an agent first to generate embed code</p>
-              <Button className="mt-4" onClick={() => window.location.href = "/create"}>
-                Create Agent
+              <Button className="mt-4" onClick={() => window.location.href = "/wizard"}>
+                Agent Wizard
               </Button>
             </div>
           ) : (

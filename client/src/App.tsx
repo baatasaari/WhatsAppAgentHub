@@ -62,7 +62,7 @@ function Router() {
             <Route path="/" component={Dashboard} />
             <Route path="/business-templates" component={BusinessTemplates} />
             <Route path="/agents" component={Agents} />
-            <Route path="/create" component={CreateAgent} />
+            <Route path="/wizard" component={AgentWizard} />
             <Route path="/wizard" component={AgentWizard} />
             <Route path="/voice-calling" component={VoiceCalling} />
             <Route path="/analytics" component={Analytics} />
