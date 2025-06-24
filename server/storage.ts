@@ -10,9 +10,7 @@ import {
   voiceCallAnalytics,
   subscriptions,
   usageMetrics,
-  litellmModels,
-  litellmUsage,
-  litellmAnalytics,
+
   type Agent, 
   type InsertAgent, 
   type Conversation, 
@@ -32,12 +30,8 @@ import {
   type InsertVoiceCallTrigger,
   type VoiceCallAnalytics,
   type InsertVoiceCallAnalytics,
-  type LiteLLMModel,
-  type LiteLLMUsage,
-  type LiteLLMAnalytics,
-  type InsertLiteLLMModel,
-  type InsertLiteLLMUsage,
-  type InsertLiteLLMAnalytics
+
+
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, count, sql, desc, gte, lte } from "drizzle-orm";
@@ -106,14 +100,7 @@ export interface IStorage {
   createOrUpdateUsageMetrics(userId: number, agentId: number, metrics: any): Promise<void>;
   checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }>;
 
-  // LiteLLM operations
-  createLiteLLMUsage(usage: InsertLiteLLMUsage): Promise<LiteLLMUsage>;
-  getLiteLLMUsageByUser(userId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]>;
-  getLiteLLMUsageByAgent(agentId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]>;
-  createOrUpdateLiteLLMAnalytics(analytics: InsertLiteLLMAnalytics): Promise<LiteLLMAnalytics>;
-  getLiteLLMAnalyticsByUser(userId: number, agentId?: number): Promise<LiteLLMAnalytics[]>;
-  syncLiteLLMModels(models: InsertLiteLLMModel[]): Promise<void>;
-  getLiteLLMModels(): Promise<LiteLLMModel[]>;
+
 }
 
 export class DatabaseStorage implements IStorage {
@@ -885,127 +872,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // LiteLLM operations
-  async createLiteLLMUsage(insertUsage: InsertLiteLLMUsage): Promise<LiteLLMUsage> {
-    const [usage] = await db
-      .insert(litellmUsage)
-      .values(insertUsage)
-      .returning();
-    return usage;
-  }
 
-  async getLiteLLMUsageByUser(userId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]> {
-    const conditions = [eq(litellmUsage.userId, userId)];
-    
-    if (startDate) {
-      conditions.push(gte(litellmUsage.timestamp, startDate));
-    }
-    if (endDate) {
-      conditions.push(lte(litellmUsage.timestamp, endDate));
-    }
-
-    return await db
-      .select()
-      .from(litellmUsage)
-      .where(and(...conditions))
-      .orderBy(desc(litellmUsage.timestamp));
-  }
-
-  async getLiteLLMUsageByAgent(agentId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]> {
-    const conditions = [eq(litellmUsage.agentId, agentId)];
-    
-    if (startDate) {
-      conditions.push(gte(litellmUsage.timestamp, startDate));
-    }
-    if (endDate) {
-      conditions.push(lte(litellmUsage.timestamp, endDate));
-    }
-
-    return await db
-      .select()
-      .from(litellmUsage)
-      .where(and(...conditions))
-      .orderBy(desc(litellmUsage.timestamp));
-  }
-
-  async createOrUpdateLiteLLMAnalytics(insertAnalytics: InsertLiteLLMAnalytics): Promise<LiteLLMAnalytics> {
-    const existing = await db
-      .select()
-      .from(litellmAnalytics)
-      .where(and(
-        eq(litellmAnalytics.userId, insertAnalytics.userId || 0),
-        eq(litellmAnalytics.agentId, insertAnalytics.agentId || 0),
-        eq(litellmAnalytics.modelId, insertAnalytics.modelId),
-        eq(litellmAnalytics.date, insertAnalytics.date)
-      ))
-      .limit(1);
-
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(litellmAnalytics)
-        .set({
-          totalRequests: (existing[0].totalRequests || 0) + (insertAnalytics.totalRequests || 0),
-          successfulRequests: (existing[0].successfulRequests || 0) + (insertAnalytics.successfulRequests || 0),
-          failedRequests: (existing[0].failedRequests || 0) + (insertAnalytics.failedRequests || 0),
-          totalTokens: (existing[0].totalTokens || 0) + (insertAnalytics.totalTokens || 0),
-          totalCost: (existing[0].totalCost || 0) + (insertAnalytics.totalCost || 0),
-          avgResponseTime: ((existing[0].avgResponseTime || 0) + (insertAnalytics.avgResponseTime || 0)) / 2,
-        })
-        .where(eq(litellmAnalytics.id, existing[0].id))
-        .returning();
-      return updated;
-    }
-
-    const [created] = await db
-      .insert(litellmAnalytics)
-      .values(insertAnalytics)
-      .returning();
-    return created;
-  }
-
-  async getLiteLLMAnalyticsByUser(userId: number, agentId?: number): Promise<LiteLLMAnalytics[]> {
-    const conditions = [eq(litellmAnalytics.userId, userId)];
-    
-    if (agentId) {
-      conditions.push(eq(litellmAnalytics.agentId, agentId));
-    }
-
-    return await db
-      .select()
-      .from(litellmAnalytics)
-      .where(and(...conditions))
-      .orderBy(desc(litellmAnalytics.date));
-  }
-
-  async syncLiteLLMModels(models: InsertLiteLLMModel[]): Promise<void> {
-    for (const model of models) {
-      await db
-        .insert(litellmModels)
-        .values(model)
-        .onConflictDoUpdate({
-          target: litellmModels.id,
-          set: {
-            name: model.name,
-            provider: model.provider,
-            inputCostPer1k: model.inputCostPer1k,
-            outputCostPer1k: model.outputCostPer1k,
-            maxTokens: model.maxTokens,
-            capabilities: model.capabilities,
-            status: model.status,
-            metadata: model.metadata,
-            lastUpdated: new Date(),
-          },
-        });
-    }
-  }
-
-  async getLiteLLMModels(): Promise<LiteLLMModel[]> {
-    return await db
-      .select()
-      .from(litellmModels)
-      .where(eq(litellmModels.status, 'active'))
-      .orderBy(litellmModels.provider, litellmModels.name);
-  }
 }
 
 export const storage = new DatabaseStorage();

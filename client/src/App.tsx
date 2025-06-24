@@ -68,7 +68,7 @@ function Router() {
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
             <Route path="/settings" component={Settings} />
             <Route path="/system-logs" component={SystemLogs} />
-        <Route path="/litellm-dashboard" component={LiteLLMDashboard} />
+
             <Route path="/test" component={PlatformTest} />
             <Route component={NotFound} />
           </Switch>

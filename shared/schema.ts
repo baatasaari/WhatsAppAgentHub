@@ -356,66 +356,7 @@ export const logs = pgTable("logs", {
 export type InsertLog = typeof logs.$inferInsert;
 export type Log = typeof logs.$inferSelect;
 
-// LiteLLM Models table
-export const litellmModels = pgTable("litellm_models", {
-  id: varchar("id").primaryKey(),
-  name: varchar("name").notNull(),
-  provider: varchar("provider").notNull(),
-  inputCostPer1k: real("input_cost_per_1k").default(0),
-  outputCostPer1k: real("output_cost_per_1k").default(0),
-  maxTokens: integer("max_tokens").default(4096),
-  capabilities: text("capabilities").array(),
-  status: varchar("status", { length: 20 }).default("active"),
-  metadata: jsonb("metadata"),
-  lastUpdated: timestamp("last_updated").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// LiteLLM Usage Tracking
-export const litellmUsage = pgTable("litellm_usage", {
-  id: varchar("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
-  agentId: integer("agent_id").references(() => agents.id, { onDelete: "cascade" }),
-  modelId: varchar("model_id").notNull(),
-  provider: varchar("provider").notNull(),
-  promptTokens: integer("prompt_tokens").default(0),
-  completionTokens: integer("completion_tokens").default(0),
-  totalTokens: integer("total_tokens").default(0),
-  inputCost: real("input_cost").default(0),
-  outputCost: real("output_cost").default(0),
-  totalCost: real("total_cost").default(0),
-  currency: varchar("currency", { length: 3 }).default("USD"),
-  responseTime: integer("response_time"), // milliseconds
-  requestMetadata: jsonb("request_metadata"),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
-// LiteLLM Analytics Aggregation
-export const litellmAnalytics = pgTable("litellm_analytics", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
-  agentId: integer("agent_id").references(() => agents.id, { onDelete: "cascade" }),
-  modelId: varchar("model_id").notNull(),
-  provider: varchar("provider").notNull(),
-  date: varchar("date").notNull(), // YYYY-MM-DD format
-  totalRequests: integer("total_requests").default(0),
-  successfulRequests: integer("successful_requests").default(0),
-  failedRequests: integer("failed_requests").default(0),
-  totalTokens: integer("total_tokens").default(0),
-  totalCost: real("total_cost").default(0),
-  avgResponseTime: real("avg_response_time").default(0),
-  currency: varchar("currency", { length: 3 }).default("USD"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export type InsertLiteLLMModel = typeof litellmModels.$inferInsert;
-export type LiteLLMModel = typeof litellmModels.$inferSelect;
-
-export type InsertLiteLLMUsage = typeof litellmUsage.$inferInsert;
-export type LiteLLMUsage = typeof litellmUsage.$inferSelect;
-
-export type InsertLiteLLMAnalytics = typeof litellmAnalytics.$inferInsert;
-export type LiteLLMAnalytics = typeof litellmAnalytics.$inferSelect;
 
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users);
@@ -435,9 +376,7 @@ export const insertSubscriptionSchema = createInsertSchema(subscriptions);
 export const insertUsageMetricsSchema = createInsertSchema(usageMetrics);
 export const insertBusinessTemplateSchema = createInsertSchema(businessTemplates);
 export const insertAuditLogSchema = createInsertSchema(auditLogs);
-export const insertLiteLLMModelSchema = createInsertSchema(litellmModels);
-export const insertLiteLLMUsageSchema = createInsertSchema(litellmUsage);
-export const insertLiteLLMAnalyticsSchema = createInsertSchema(litellmAnalytics);
+
 
 // Login schema for authentication
 export const loginSchema = z.object({
