@@ -1694,6 +1694,272 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Multi-platform webhook endpoints
+  app.post("/webhook/telegram/:agentId", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      await telegramService.processWebhookPayload(req.body, agent);
+      res.status(200).json({ status: "success" });
+    } catch (error) {
+      console.error("Telegram webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/webhook/messenger/:agentId", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      await facebookMessengerService.processWebhookPayload(req.body, agent);
+      res.status(200).json({ status: "success" });
+    } catch (error) {
+      console.error("Messenger webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/webhook/messenger/:agentId", async (req, res) => {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe') {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (agent && agent.facebookAccessToken && token === `verify_${agentId}`) {
+        res.status(200).send(challenge);
+      } else {
+        res.status(403).send('Forbidden');
+      }
+    } else {
+      res.status(400).send('Bad Request');
+    }
+  });
+
+  app.post("/webhook/instagram/:agentId", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      await instagramService.processWebhookPayload(req.body, agent);
+      res.status(200).json({ status: "success" });
+    } catch (error) {
+      console.error("Instagram webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/webhook/instagram/:agentId", async (req, res) => {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe') {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (agent && agent.instagramAccessToken && token === `verify_${agentId}`) {
+        res.status(200).send(challenge);
+      } else {
+        res.status(403).send('Forbidden');
+      }
+    } else {
+      res.status(400).send('Bad Request');
+    }
+  });
+
+  app.post("/webhook/discord/:agentId", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.agentId);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      await discordService.processWebhookPayload(req.body, agent);
+      res.status(200).json({ status: "success" });
+    } catch (error) {
+      console.error("Discord webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Platform testing endpoint
+  app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { platform } = req.body;
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      if (req.user?.role !== 'admin' && req.user?.role !== 'system_admin' && agent.userId !== req.user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const testResults: any = {
+        platform,
+        success: false,
+        tests: [],
+        webhookUrl: `${req.protocol}://${req.get('host')}/webhook/${platform}/${agentId}`
+      };
+
+      switch (platform) {
+        case 'telegram':
+          if (agent.telegramBotToken) {
+            try {
+              const botInfo = await telegramService.getBotInfo(agent.telegramBotToken);
+              testResults.tests.push({
+                name: "Bot Token Validation",
+                passed: true,
+                details: `Bot: ${botInfo.result.first_name} (@${botInfo.result.username})`
+              });
+              testResults.success = true;
+            } catch (error: any) {
+              testResults.tests.push({
+                name: "Bot Token Validation",
+                passed: false,
+                error: error.message
+              });
+            }
+          } else {
+            testResults.tests.push({
+              name: "Configuration Check",
+              passed: false,
+              error: "Telegram bot token not configured"
+            });
+          }
+          break;
+
+        case 'messenger':
+          if (agent.facebookAccessToken) {
+            try {
+              const pageInfo = await facebookMessengerService.getPageInfo(agent.facebookAccessToken);
+              testResults.tests.push({
+                name: "Page Access Token Validation",
+                passed: true,
+                details: `Page: ${pageInfo.name} (ID: ${pageInfo.id})`
+              });
+              testResults.success = true;
+            } catch (error: any) {
+              testResults.tests.push({
+                name: "Page Access Token Validation",
+                passed: false,
+                error: error.message
+              });
+            }
+          } else {
+            testResults.tests.push({
+              name: "Configuration Check",
+              passed: false,
+              error: "Facebook access token not configured"
+            });
+          }
+          break;
+
+        case 'instagram':
+          if (agent.instagramAccessToken && agent.instagramBusinessId) {
+            try {
+              const businessInfo = await instagramService.getBusinessAccountInfo(
+                agent.instagramAccessToken, 
+                agent.instagramBusinessId
+              );
+              testResults.tests.push({
+                name: "Business Account Validation",
+                passed: true,
+                details: `Account: ${businessInfo.name} (@${businessInfo.username})`
+              });
+              testResults.success = true;
+            } catch (error: any) {
+              testResults.tests.push({
+                name: "Business Account Validation",
+                passed: false,
+                error: error.message
+              });
+            }
+          } else {
+            testResults.tests.push({
+              name: "Configuration Check",
+              passed: false,
+              error: "Instagram access token or business ID not configured"
+            });
+          }
+          break;
+
+        case 'discord':
+          if (agent.discordBotToken) {
+            try {
+              const botUser = await discordService.getBotUser(agent.discordBotToken);
+              testResults.tests.push({
+                name: "Bot Token Validation",
+                passed: true,
+                details: `Bot: ${botUser.username}#${botUser.discriminator}`
+              });
+              
+              if (agent.discordGuildId) {
+                try {
+                  const guild = await discordService.getGuild(agent.discordBotToken, agent.discordGuildId);
+                  testResults.tests.push({
+                    name: "Guild Access",
+                    passed: true,
+                    details: `Guild: ${guild.name}`
+                  });
+                } catch (error: any) {
+                  testResults.tests.push({
+                    name: "Guild Access",
+                    passed: false,
+                    error: error.message
+                  });
+                }
+              }
+              
+              testResults.success = true;
+            } catch (error: any) {
+              testResults.tests.push({
+                name: "Bot Token Validation",
+                passed: false,
+                error: error.message
+              });
+            }
+          } else {
+            testResults.tests.push({
+              name: "Configuration Check",
+              passed: false,
+              error: "Discord bot token not configured"
+            });
+          }
+          break;
+
+        default:
+          return res.status(400).json({ error: "Unsupported platform" });
+      }
+
+      res.json(testResults);
+    } catch (error) {
+      console.error("Platform test error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
