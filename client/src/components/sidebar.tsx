@@ -10,6 +10,7 @@ const getNavigationForRole = (userRole: string) => {
     { name: "My Agents", href: "/agents", icon: Bot },
     { name: "Agent Wizard", href: "/wizard", icon: Wand2 },
     { name: "Create Agent", href: "/create", icon: Plus },
+    { name: "Conversation Designer", href: "/conversation-flow-designer", icon: GitBranch },
     { name: "AI Training", href: "/ai-training", icon: Brain },
     { name: "AI Voice Calling", href: "/voice-calling", icon: Phone },
     { name: "Widget Preview", href: "/preview", icon: Eye },

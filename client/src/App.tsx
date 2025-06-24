@@ -23,6 +23,7 @@ import AuthDemo from "@/pages/auth-demo";
 import BusinessTemplates from "@/pages/business-templates";
 import VoiceCalling from "@/pages/voice-calling";
 import ConversationFlow from "@/pages/conversation-flow";
+import ConversationFlowDesigner from "@/pages/conversation-flow-designer";
 import BusinessOnboarding from "@/pages/business-onboarding";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
@@ -70,6 +71,7 @@ function Router() {
             <Route path="/model-config" component={ModelConfig} />
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
             <Route path="/conversation-flow/:id" component={ConversationFlow} />
+            <Route path="/conversation-flow-designer" component={ConversationFlowDesigner} />
             <Route path="/business-onboarding" component={BusinessOnboarding} />
             <Route path="/settings" component={Settings} />
             <Route path="/system-logs" component={SystemLogs} />
