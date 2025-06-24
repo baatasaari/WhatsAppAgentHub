@@ -25,6 +25,7 @@ import VoiceCalling from "@/pages/voice-calling";
 import ConversationFlow from "@/pages/conversation-flow";
 import ConversationFlowDesigner from "@/pages/conversation-flow-designer";
 import BusinessOnboarding from "@/pages/business-onboarding";
+import AITraining from "@/pages/ai-training";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -63,7 +64,7 @@ function Router() {
             <Route path="/business-templates" component={BusinessTemplates} />
             <Route path="/agents" component={Agents} />
             <Route path="/wizard" component={AgentWizard} />
-            <Route path="/wizard" component={AgentWizard} />
+            <Route path="/ai-training" component={AITraining} />
             <Route path="/voice-calling" component={VoiceCalling} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/embed-code" component={EmbedCode} />
