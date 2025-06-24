@@ -111,6 +111,20 @@ export interface IStorage {
   markStepCompleted(userId: number, step: number): Promise<BusinessOnboarding | undefined>;
   completeOnboarding(userId: number): Promise<BusinessOnboarding | undefined>;
 
+  // AI Training operations
+  addKnowledgeItem(agentId: number, userId: number, data: InsertKnowledgeItem): Promise<KnowledgeItem>;
+  getKnowledgeItems(agentId: number): Promise<KnowledgeItem[]>;
+  updateKnowledgeItem(id: number, updates: Partial<InsertKnowledgeItem>): Promise<KnowledgeItem | undefined>;
+  deleteKnowledgeItem(id: number): Promise<boolean>;
+  
+  createTrainingSession(data: InsertTrainingSession): Promise<TrainingSession>;
+  getTrainingSessions(agentId: number): Promise<TrainingSession[]>;
+  getTrainingSession(id: number): Promise<TrainingSession | undefined>;
+  updateTrainingSession(id: number, updates: Partial<InsertTrainingSession>): Promise<TrainingSession | undefined>;
+  
+  addTrainingExample(data: InsertTrainingExample): Promise<TrainingExample>;
+  getTrainingExamples(agentId: number): Promise<TrainingExample[]>;
+
 }
 
 export class DatabaseStorage implements IStorage {

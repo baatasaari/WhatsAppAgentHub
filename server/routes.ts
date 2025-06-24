@@ -2083,6 +2083,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Training endpoints
+  app.post("/api/agents/:id/knowledge", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { title, content, category, tags, metadata } = req.body;
+
+      const knowledgeItem = await storage.addKnowledgeItem(agentId, userId, {
+        title,
+        content,
+        category,
+        tags: tags || [],
+        metadata: metadata || {},
+      });
+
+      res.json(knowledgeItem);
+    } catch (error) {
+      console.error("Error adding knowledge item:", error);
+      res.status(500).json({ error: "Failed to add knowledge item" });
+    }
+  });
+
+  app.get("/api/agents/:id/knowledge", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const knowledgeItems = await storage.getKnowledgeItems(agentId);
+      res.json(knowledgeItems);
+    } catch (error) {
+      console.error("Error getting knowledge items:", error);
+      res.status(500).json({ error: "Failed to get knowledge items" });
+    }
+  });
+
+  app.post("/api/agents/:id/training", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { sessionName, trainingData, brandVoiceConfig, businessContextConfig } = req.body;
+
+      const session = await storage.createTrainingSession({
+        agentId,
+        userId,
+        sessionName,
+        trainingData,
+        brandVoiceConfig,
+        businessContextConfig,
+        status: 'pending',
+        progressPercentage: 0,
+      });
+
+      // Start training process asynchronously
+      const { AITrainingService } = await import('./services/ai-training');
+      AITrainingService.processTrainingSession(session.id);
+
+      res.json(session);
+    } catch (error) {
+      console.error("Error starting training:", error);
+      res.status(500).json({ error: "Failed to start training" });
+    }
+  });
+
+  app.get("/api/agents/:id/training-sessions", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const sessions = await storage.getTrainingSessions(agentId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error getting training sessions:", error);
+      res.status(500).json({ error: "Failed to get training sessions" });
+    }
+  });
+
+  app.get("/api/training-sessions/:id/status", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const session = await storage.getTrainingSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Training session not found" });
+      }
+
+      res.json(session);
+    } catch (error) {
+      console.error("Error getting training session status:", error);
+      res.status(500).json({ error: "Failed to get training session status" });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);

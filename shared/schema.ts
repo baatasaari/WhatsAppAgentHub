@@ -339,6 +339,79 @@ export const auditLogs = pgTable("audit_logs", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+// Knowledge Base Management
+export const knowledgeItems = pgTable("knowledge_items", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  embedding: jsonb("embedding").$type<number[]>(),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Training Sessions
+export const trainingSessions = pgTable("training_sessions", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  sessionName: text("session_name").notNull(),
+  trainingData: jsonb("training_data").$type<Array<{
+    id: string;
+    input: string;
+    expectedOutput: string;
+    category: string;
+    weight: number;
+  }>>().default([]),
+  brandVoiceConfig: jsonb("brand_voice_config").$type<{
+    tone: string;
+    personality: string;
+    communicationStyle: string;
+    dosList: string[];
+    dontsList: string[];
+  }>(),
+  businessContextConfig: jsonb("business_context_config").$type<{
+    industry: string;
+    companySize: string;
+    targetAudience: string;
+    keyProducts: string[];
+    valueProposition: string;
+  }>(),
+  status: text("status").notNull(), // 'pending', 'processing', 'completed', 'failed'
+  progressPercentage: integer("progress_percentage").default(0),
+  metrics: jsonb("metrics").$type<{
+    accuracy: number;
+    trainingTime: number;
+    dataPoints: number;
+    improvementScore: number;
+  }>(),
+  errorLog: text("error_log"),
+  modelCheckpoint: text("model_checkpoint"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Training Examples
+export const trainingExamples = pgTable("training_examples", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  sessionId: integer("session_id").references(() => trainingSessions.id),
+  inputText: text("input_text").notNull(),
+  expectedOutput: text("expected_output").notNull(),
+  category: text("category").notNull(),
+  weight: integer("weight").default(1),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  isValidated: boolean("is_validated").default(false),
+  validationScore: integer("validation_score"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -386,6 +459,15 @@ export const businessOnboarding = pgTable("business_onboarding", {
 
 export type BusinessOnboarding = typeof businessOnboarding.$inferSelect;
 export type InsertBusinessOnboarding = typeof businessOnboarding.$inferInsert;
+
+export type KnowledgeItem = typeof knowledgeItems.$inferSelect;
+export type InsertKnowledgeItem = typeof knowledgeItems.$inferInsert;
+
+export type TrainingSession = typeof trainingSessions.$inferSelect;
+export type InsertTrainingSession = typeof trainingSessions.$inferInsert;
+
+export type TrainingExample = typeof trainingExamples.$inferSelect;
+export type InsertTrainingExample = typeof trainingExamples.$inferInsert;
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
