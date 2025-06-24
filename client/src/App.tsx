@@ -75,6 +75,7 @@ function Router() {
             <Route path="/system-logs" component={SystemLogs} />
 
             <Route path="/test" component={PlatformTest} />
+            <Route path="/auth-demo" component={AuthDemo} />
             <Route component={NotFound} />
           </Switch>
         </main>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,6 +114,45 @@ export default function BusinessOnboarding() {
       setCompletedSteps(onboardingData.completedSteps || []);
     }
   }, [onboardingData]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading onboarding...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state (authentication required)
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6 text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Authentication Required</h3>
+            <p className="text-red-700 mb-4">
+              You need to be logged in to access the business onboarding process.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/auth-demo'}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Go to Login Demo
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Save step mutation
   const saveStepMutation = useMutation({
@@ -576,9 +615,10 @@ export default function BusinessOnboarding() {
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-3">
-            {React.createElement(onboardingSteps[currentStep - 1]?.icon, {
-              className: "w-6 h-6 text-blue-600"
-            })}
+            {(() => {
+              const Icon = onboardingSteps[currentStep - 1]?.icon;
+              return Icon ? <Icon className="w-6 h-6 text-blue-600" /> : null;
+            })()}
             <div>
               <CardTitle>{onboardingSteps[currentStep - 1]?.title}</CardTitle>
               <p className="text-sm text-gray-600 mt-1">
