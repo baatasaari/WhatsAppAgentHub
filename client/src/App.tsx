@@ -68,6 +68,7 @@ function Router() {
             <Route path="/model-config" component={ModelConfig} />
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
             <Route path="/conversation-flow/:id" component={ConversationFlow} />
+            <Route path="/business-onboarding" component={BusinessOnboarding} />
             <Route path="/settings" component={Settings} />
             <Route path="/system-logs" component={SystemLogs} />
 

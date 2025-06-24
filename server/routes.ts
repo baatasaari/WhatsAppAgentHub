@@ -2014,6 +2014,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Business onboarding routes
+  app.get("/api/onboarding", authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const onboarding = await storage.getBusinessOnboarding(userId);
+      
+      if (!onboarding) {
+        // Return default onboarding state
+        res.json({
+          currentStep: 1,
+          totalSteps: 5,
+          stepData: {},
+          completedSteps: [],
+          status: 'not_started'
+        });
+      } else {
+        res.json(onboarding);
+      }
+    } catch (error) {
+      console.error('Error fetching onboarding:', error);
+      res.status(500).json({ error: 'Failed to fetch onboarding progress' });
+    }
+  });
+
+  app.post("/api/onboarding/save-step", authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const { step, stepData } = req.body;
+      
+      if (!step || !stepData) {
+        return res.status(400).json({ error: 'Step number and step data are required' });
+      }
+
+      const onboarding = await storage.saveOnboardingStep(userId, step, stepData);
+      res.json(onboarding);
+    } catch (error) {
+      console.error('Error saving onboarding step:', error);
+      res.status(500).json({ error: 'Failed to save onboarding step' });
+    }
+  });
+
+  app.post("/api/onboarding/complete-step", authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const { step } = req.body;
+      
+      if (!step) {
+        return res.status(400).json({ error: 'Step number is required' });
+      }
+
+      const onboarding = await storage.markStepCompleted(userId, step);
+      res.json(onboarding);
+    } catch (error) {
+      console.error('Error completing onboarding step:', error);
+      res.status(500).json({ error: 'Failed to complete onboarding step' });
+    }
+  });
+
+  app.post("/api/onboarding/complete", authenticate, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const onboarding = await storage.completeOnboarding(userId);
+      res.json(onboarding);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      res.status(500).json({ error: 'Failed to complete onboarding' });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);
