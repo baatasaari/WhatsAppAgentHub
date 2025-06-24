@@ -369,6 +369,24 @@ export type InsertVoiceCallTrigger = typeof voiceCallTriggers.$inferInsert;
 export type VoiceCallAnalytics = typeof voiceCallAnalytics.$inferSelect;
 export type InsertVoiceCallAnalytics = typeof voiceCallAnalytics.$inferInsert;
 
+// Business onboarding progress table
+export const businessOnboarding = pgTable("business_onboarding", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  currentStep: integer("current_step").default(1),
+  totalSteps: integer("total_steps").default(5),
+  stepData: jsonb("step_data").default({}), // Store form data for each step
+  completedSteps: integer("completed_steps").array().default([]),
+  onboardingType: varchar("onboarding_type").default("business"), // business, agent, platform
+  status: varchar("status").default("in_progress"), // in_progress, completed, paused
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BusinessOnboarding = typeof businessOnboarding.$inferSelect;
+export type InsertBusinessOnboarding = typeof businessOnboarding.$inferInsert;
+
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 
