@@ -46,14 +46,14 @@ import {
   Square,
   Circle,
   ArrowRight,
-  Template,
   FileText,
   Users,
   ShoppingCart,
   HeadphonesIcon,
   Calendar,
   Star,
-  UserPlus
+  UserPlus,
+  Layout
 } from 'lucide-react';
 
 // Custom node types
@@ -291,7 +291,7 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="text-sm flex items-center">
-          <Template className="w-4 h-4 mr-2" />
+          <Layout className="w-4 h-4 mr-2" />
           Flow Templates
         </CardTitle>
       </CardHeader>
