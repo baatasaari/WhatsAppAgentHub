@@ -10,6 +10,9 @@ import {
   voiceCallAnalytics,
   subscriptions,
   usageMetrics,
+  litellmModels,
+  litellmUsage,
+  litellmAnalytics,
   type Agent, 
   type InsertAgent, 
   type Conversation, 
@@ -28,10 +31,16 @@ import {
   type VoiceCallTrigger,
   type InsertVoiceCallTrigger,
   type VoiceCallAnalytics,
-  type InsertVoiceCallAnalytics
+  type InsertVoiceCallAnalytics,
+  type LiteLLMModel,
+  type LiteLLMUsage,
+  type LiteLLMAnalytics,
+  type InsertLiteLLMModel,
+  type InsertLiteLLMUsage,
+  type InsertLiteLLMAnalytics
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count, sql, desc, gte, lte } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { AuthService } from "./auth";
 
@@ -96,6 +105,15 @@ export interface IStorage {
   getBusinessInsights(agentId: number): Promise<any>;
   createOrUpdateUsageMetrics(userId: number, agentId: number, metrics: any): Promise<void>;
   checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }>;
+
+  // LiteLLM operations
+  createLiteLLMUsage(usage: InsertLiteLLMUsage): Promise<LiteLLMUsage>;
+  getLiteLLMUsageByUser(userId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]>;
+  getLiteLLMUsageByAgent(agentId: number, startDate?: Date, endDate?: Date): Promise<LiteLLMUsage[]>;
+  createOrUpdateLiteLLMAnalytics(analytics: InsertLiteLLMAnalytics): Promise<LiteLLMAnalytics>;
+  getLiteLLMAnalyticsByUser(userId: number, agentId?: number): Promise<LiteLLMAnalytics[]>;
+  syncLiteLLMModels(models: InsertLiteLLMModel[]): Promise<void>;
+  getLiteLLMModels(): Promise<LiteLLMModel[]>;
 }
 
 export class DatabaseStorage implements IStorage {
