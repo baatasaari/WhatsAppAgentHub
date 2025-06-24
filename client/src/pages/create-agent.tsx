@@ -467,40 +467,43 @@ export default function CreateAgent() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Choose LLM Provider *</FormLabel>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {modelsLoading ? (
-                        Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-24"></div>
-                        ))
-                      ) : (
-                        Array.isArray(availableModels) ? availableModels.map((llm: any) => (
-                          <div
-                            key={llm.id}
-                            className={`llm-option ${field.value === llm.id ? 'selected' : ''}`}
-                            onClick={() => {
-                              field.onChange(llm.id);
-                              setSelectedLLM(llm.id);
-                            }}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900">{llm.name}</h4>
-                              <input
-                                type="radio"
-                                checked={field.value === llm.id}
-                                onChange={() => {}}
-                                className="text-primary"
-                              />
-                            </div>
-                            <p className="text-sm text-gray-600">{llm.description}</p>
-                            <p className={`text-xs mt-2 ${llm.badge_color}`}>{llm.badge}</p>
-                          </div>
-                        )) : []
-                      )}
-                    </div>
+                    <FormControl>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={(value) => {
+                          // Find the selected model from availableModels
+                          const selectedModel = availableModels?.find((m: any) => m.id === value);
+                          if (selectedModel) {
+                            field.onChange(selectedModel.provider);
+                            setSelectedLLM(selectedModel.provider);
+                            form.setValue("model", selectedModel.id);
+                          }
+                        }}
+                        disabled={modelsLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={modelsLoading ? "Loading providers..." : "Select LLM provider"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableModels && Array.isArray(availableModels) && availableModels.map((model: any) => (
+                            <SelectItem key={model.id} value={model.id}>
+                              <div className="flex items-center gap-2">
+                                {model.id.includes('openai') && <span className="text-green-600">🤖</span>}
+                                {model.id.includes('anthropic') && <span className="text-purple-600">🧠</span>}
+                                {model.id.includes('google') && <span className="text-blue-600">🔍</span>}
+                                {model.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Model Selection is now combined with provider selection above */}
               
               {/* System Prompt */}
               <FormField

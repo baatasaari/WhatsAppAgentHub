@@ -441,7 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // LLM Models configuration endpoints - System Admin only for modifications
-  app.get("/api/models", authenticate, requireApproved, async (req, res) => {
+  app.get("/api/models", async (req, res) => {
     try {
       const configPath = path.join(process.cwd(), 'models', 'llm_config.yaml');
       const fileContents = fs.readFileSync(configPath, 'utf8');
