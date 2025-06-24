@@ -471,12 +471,18 @@ export default function CreateAgent() {
                       <Select 
                         value={field.value} 
                         onValueChange={(value) => {
-                          // Find the selected model from availableModels
+                          // Set both llmProvider and model based on selection
                           const selectedModel = availableModels?.find((m: any) => m.id === value);
                           if (selectedModel) {
-                            field.onChange(selectedModel.provider);
-                            setSelectedLLM(selectedModel.provider);
-                            form.setValue("model", selectedModel.id);
+                            // Extract provider from model name or use a mapping
+                            let provider = 'openai'; // default
+                            if (value.includes('gpt')) provider = 'openai';
+                            else if (value.includes('claude')) provider = 'anthropic';
+                            else if (value.includes('gemini')) provider = 'google';
+                            
+                            field.onChange(provider);
+                            setSelectedLLM(provider);
+                            form.setValue("model", value);
                           }
                         }}
                         disabled={modelsLoading}
@@ -488,9 +494,10 @@ export default function CreateAgent() {
                           {availableModels && Array.isArray(availableModels) && availableModels.map((model: any) => (
                             <SelectItem key={model.id} value={model.id}>
                               <div className="flex items-center gap-2">
-                                {model.id.includes('openai') && <span className="text-green-600">🤖</span>}
-                                {model.id.includes('anthropic') && <span className="text-purple-600">🧠</span>}
-                                {model.id.includes('google') && <span className="text-blue-600">🔍</span>}
+                                {model.id.includes('gpt') && <span className="text-green-600">🤖</span>}
+                                {model.id.includes('claude') && <span className="text-purple-600">🧠</span>}
+                                {model.id.includes('gemini') && <span className="text-blue-600">🔍</span>}
+                                {model.id.includes('llama') && <span className="text-orange-600">🦙</span>}
                                 {model.name}
                               </div>
                             </SelectItem>
