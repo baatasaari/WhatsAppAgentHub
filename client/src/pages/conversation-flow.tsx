@@ -124,6 +124,7 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
   onLoadTemplate: (template: any) => void; 
   onClearFlow: () => void; 
 }) => {
+  const { toast } = useToast();
   const templates = [
     {
       id: 'lead-qualification',
@@ -177,9 +178,10 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
 
   const loadTemplateFlow = async (templateId: string) => {
     try {
-      const response = await apiRequest(`/api/conversation-flow-templates/${templateId}`);
-      if (response) {
-        onLoadTemplate(response);
+      const response = await apiRequest("GET", `/api/conversation-flow-templates/${templateId}`);
+      const data = await response.json();
+      if (data) {
+        onLoadTemplate(data);
       }
     } catch (error) {
       // Fallback to basic templates
@@ -283,6 +285,16 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
       const template = basicTemplates[templateId];
       if (template) {
         onLoadTemplate(template);
+        toast({
+          title: "Template Loaded",
+          description: `${templateId.replace('-', ' ')} template has been loaded successfully.`,
+        });
+      } else {
+        toast({
+          title: "Template Not Found",
+          description: "The requested template could not be loaded.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -347,6 +359,31 @@ export default function ConversationFlow() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Add template loading functions
+  const onLoadTemplate = useCallback((template: any) => {
+    if (template.nodes) {
+      setNodes(template.nodes);
+    }
+    if (template.edges) {
+      setEdges(template.edges);
+    }
+    toast({
+      title: "Template Loaded",
+      description: "Flow template has been applied successfully.",
+    });
+  }, [setNodes, setEdges, toast]);
+
+  const onClearFlow = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+    setSelectedNode(null);
+    setSelectedEdge(null);
+    toast({
+      title: "Flow Cleared",
+      description: "All nodes and edges have been removed.",
+    });
+  }, [setNodes, setEdges, toast]);
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -354,9 +391,10 @@ export default function ConversationFlow() {
   const [isFlowEnabled, setIsFlowEnabled] = useState(false);
 
   // Fetch agent data
-  const { data: agent, isLoading } = useQuery({
+  const { data: agent, isLoading, error } = useQuery({
     queryKey: ['/api/agents', id],
     enabled: !!id,
+    retry: false,
   });
 
   // Load existing flow
@@ -371,16 +409,13 @@ export default function ConversationFlow() {
   // Save flow mutation
   const saveFlowMutation = useMutation({
     mutationFn: async (flowData: any) => {
-      return apiRequest(`/api/agents/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          conversationFlow: {
-            nodes,
-            edges,
-            variables: flowData.variables || []
-          },
-          flowEnabled: isFlowEnabled
-        }),
+      return apiRequest("PUT", `/api/agents/${id}`, {
+        conversationFlow: {
+          nodes,
+          edges,
+          variables: flowData.variables || []
+        },
+        flowEnabled: isFlowEnabled
       });
     },
     onSuccess: () => {
@@ -454,12 +489,60 @@ export default function ConversationFlow() {
     }
   }, [selectedEdge, setEdges]);
 
+  // Handle loading and error states
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading conversation flow...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="border-red-200 bg-red-50 max-w-md">
+          <CardContent className="p-6 text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Authentication Required</h3>
+            <p className="text-red-700 mb-4">
+              You need to be logged in to access conversation flows.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/auth-demo'}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!agent) {
-    return <div className="text-center">Agent not found</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Agent Not Found</h3>
+            <p className="text-gray-600 mb-4">
+              The requested agent could not be found or you don't have access to it.
+            </p>
+            <Button onClick={() => setLocation('/agents')}>
+              Back to Agents
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
