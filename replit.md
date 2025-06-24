@@ -178,6 +178,10 @@ Changelog:
 - June 24, 2025. Implemented template system for Lead Qualification, Customer Support, Appointment Booking, Product Recommendations, Feedback Collection, and Customer Onboarding
 - June 24, 2025. Added template API endpoints for loading and managing conversation flow templates with category organization
 - June 24, 2025. Enhanced flow designer UI with template gallery showing descriptions, categories, and preview workflows
+- June 24, 2025. Implemented platform-specific widget generation system with separate JavaScript files for each messaging platform
+- June 24, 2025. Created dedicated widget files for WhatsApp, Telegram, Facebook Messenger, Instagram, and Discord with platform-specific styling and functionality
+- June 24, 2025. Enhanced embed code generation to reference appropriate platform-specific widget files based on agent's platformType
+- June 24, 2025. Added platform-specific configuration API endpoints returning relevant credentials and URLs for each messaging service
 ```
 
 ## User Preferences
