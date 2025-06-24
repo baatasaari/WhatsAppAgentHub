@@ -8,6 +8,7 @@ import {
   voiceCalls,
   voiceCallTriggers,
   voiceCallAnalytics,
+  businessOnboarding,
   subscriptions,
   usageMetrics,
 
@@ -30,6 +31,8 @@ import {
   type InsertVoiceCallTrigger,
   type VoiceCallAnalytics,
   type InsertVoiceCallAnalytics,
+  type BusinessOnboarding,
+  type InsertBusinessOnboarding,
 
 
 } from "@shared/schema";
@@ -100,6 +103,13 @@ export interface IStorage {
   createOrUpdateUsageMetrics(userId: number, agentId: number, metrics: any): Promise<void>;
   checkSubscriptionLimits(userId: number): Promise<{ withinLimits: boolean; usage: any; limits: any }>;
 
+  // Business onboarding operations
+  getBusinessOnboarding(userId: number): Promise<BusinessOnboarding | undefined>;
+  createBusinessOnboarding(onboarding: InsertBusinessOnboarding): Promise<BusinessOnboarding>;
+  updateBusinessOnboarding(userId: number, updates: Partial<InsertBusinessOnboarding>): Promise<BusinessOnboarding | undefined>;
+  saveOnboardingStep(userId: number, step: number, stepData: any): Promise<BusinessOnboarding | undefined>;
+  markStepCompleted(userId: number, step: number): Promise<BusinessOnboarding | undefined>;
+  completeOnboarding(userId: number): Promise<BusinessOnboarding | undefined>;
 
 }
 
@@ -872,7 +882,108 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Business onboarding operations
+  async getBusinessOnboarding(userId: number): Promise<BusinessOnboarding | undefined> {
+    try {
+      const [onboarding] = await db
+        .select()
+        .from(businessOnboarding)
+        .where(eq(businessOnboarding.userId, userId))
+        .orderBy(desc(businessOnboarding.createdAt))
+        .limit(1);
+      return onboarding;
+    } catch (error) {
+      console.error('Error getting business onboarding:', error);
+      return undefined;
+    }
+  }
 
+  async createBusinessOnboarding(insertOnboarding: InsertBusinessOnboarding): Promise<BusinessOnboarding> {
+    const [onboarding] = await db
+      .insert(businessOnboarding)
+      .values(insertOnboarding)
+      .returning();
+    return onboarding;
+  }
+
+  async updateBusinessOnboarding(userId: number, updates: Partial<InsertBusinessOnboarding>): Promise<BusinessOnboarding | undefined> {
+    try {
+      const [onboarding] = await db
+        .update(businessOnboarding)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(businessOnboarding.userId, userId))
+        .returning();
+      return onboarding;
+    } catch (error) {
+      console.error('Error updating business onboarding:', error);
+      return undefined;
+    }
+  }
+
+  async saveOnboardingStep(userId: number, step: number, stepData: any): Promise<BusinessOnboarding | undefined> {
+    try {
+      // Get current onboarding
+      let onboarding = await this.getBusinessOnboarding(userId);
+      
+      if (!onboarding) {
+        // Create new onboarding if it doesn't exist
+        onboarding = await this.createBusinessOnboarding({
+          userId,
+          currentStep: step,
+          stepData: { [step]: stepData },
+          lastActiveAt: new Date()
+        });
+      } else {
+        // Update existing onboarding
+        const currentStepData = onboarding.stepData as any || {};
+        currentStepData[step] = stepData;
+        
+        onboarding = await this.updateBusinessOnboarding(userId, {
+          currentStep: step,
+          stepData: currentStepData,
+          lastActiveAt: new Date()
+        });
+      }
+      
+      return onboarding;
+    } catch (error) {
+      console.error('Error saving onboarding step:', error);
+      return undefined;
+    }
+  }
+
+  async markStepCompleted(userId: number, step: number): Promise<BusinessOnboarding | undefined> {
+    try {
+      const onboarding = await this.getBusinessOnboarding(userId);
+      if (!onboarding) return undefined;
+
+      const completedSteps = onboarding.completedSteps || [];
+      if (!completedSteps.includes(step)) {
+        completedSteps.push(step);
+      }
+
+      return await this.updateBusinessOnboarding(userId, {
+        completedSteps,
+        currentStep: step + 1,
+        lastActiveAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error marking step completed:', error);
+      return undefined;
+    }
+  }
+
+  async completeOnboarding(userId: number): Promise<BusinessOnboarding | undefined> {
+    try {
+      return await this.updateBusinessOnboarding(userId, {
+        status: 'completed',
+        lastActiveAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      return undefined;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

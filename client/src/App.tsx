@@ -22,6 +22,7 @@ import Register from "@/pages/register";
 import BusinessTemplates from "@/pages/business-templates";
 import VoiceCalling from "@/pages/voice-calling";
 import ConversationFlow from "@/pages/conversation-flow";
+import BusinessOnboarding from "@/pages/business-onboarding";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
