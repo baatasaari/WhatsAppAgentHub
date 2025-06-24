@@ -2235,6 +2235,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data source integration endpoints
+  app.post("/api/agents/:id/import/csv", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { csvData } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.importFromCSV(agentId, userId, csvData);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing CSV:", error);
+      res.status(500).json({ error: "Failed to import CSV data" });
+    }
+  });
+
+  app.post("/api/agents/:id/import/json", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { jsonData } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.importKnowledgeFromJSON(agentId, userId, jsonData);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing JSON:", error);
+      res.status(500).json({ error: "Failed to import JSON knowledge base" });
+    }
+  });
+
+  app.post("/api/agents/:id/connect/crm", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { type, apiKey, baseUrl } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.connectToCRM(agentId, userId, { type, apiKey, baseUrl });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error connecting to CRM:", error);
+      res.status(500).json({ error: "Failed to connect to CRM system" });
+    }
+  });
+
+  app.post("/api/agents/:id/import/website", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { url, selectors, maxPages } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.importFromWebsite(agentId, userId, { url, selectors, maxPages });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing from website:", error);
+      res.status(500).json({ error: "Failed to import website content" });
+    }
+  });
+
+  app.post("/api/agents/:id/connect/helpdesk", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { type, apiKey, domain } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.connectToHelpDesk(agentId, userId, { type, apiKey, domain });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error connecting to help desk:", error);
+      res.status(500).json({ error: "Failed to connect to help desk system" });
+    }
+  });
+
+  app.post("/api/agents/:id/import/google-sheets", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { spreadsheetId, range, apiKey } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.importFromGoogleSheets(agentId, userId, { spreadsheetId, range, apiKey });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing from Google Sheets:", error);
+      res.status(500).json({ error: "Failed to import from Google Sheets" });
+    }
+  });
+
+  app.post("/api/agents/:id/enable-real-time-learning", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const { autoApprove, feedbackThreshold, learningRate } = req.body;
+
+      const { DataSourceIntegrations } = await import('./services/data-source-integrations');
+      const result = await DataSourceIntegrations.enableRealTimeLearning(agentId, userId, {
+        autoApprove: autoApprove || false,
+        feedbackThreshold: feedbackThreshold || 0.7,
+        learningRate: learningRate || 0.5
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error enabling real-time learning:", error);
+      res.status(500).json({ error: "Failed to enable real-time learning" });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);

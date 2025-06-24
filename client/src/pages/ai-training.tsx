@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Plus, Upload, Download, BookOpen, Zap, Target, MessageSquare, Trash2, Edit, Play, Check, AlertCircle, FileText, Bot, Smartphone } from "lucide-react";
+import { Brain, Plus, Upload, Download, BookOpen, Zap, Target, MessageSquare, Trash2, Edit, Play, Check, AlertCircle, FileText, Bot, Smartphone, Globe } from "lucide-react";
 import { PlatformTrainingGuide } from "@/components/platform-training-guide";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -262,11 +262,12 @@ export default function AITraining() {
 
       {selectedAgent && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="training">Training Examples</TabsTrigger>
             <TabsTrigger value="voice">Brand Voice</TabsTrigger>
             <TabsTrigger value="platforms">Platform Guide</TabsTrigger>
+            <TabsTrigger value="sources">Data Sources</TabsTrigger>
             <TabsTrigger value="sessions">Training Sessions</TabsTrigger>
           </TabsList>
 
@@ -922,6 +923,205 @@ export default function AITraining() {
                 </Alert>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Data Sources Tab */}
+          <TabsContent value="sources" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Data Source Integrations</h3>
+              <p className="text-sm text-gray-600">Connect external data sources to automatically enhance your agent's knowledge and training</p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="h-5 w-5" />
+                    File Imports
+                  </CardTitle>
+                  <CardDescription>
+                    Import training data and knowledge from files
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">CSV Training Data</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Import conversation examples from CSV files
+                      </p>
+                      <Button size="sm" variant="outline">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import CSV
+                      </Button>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">JSON Knowledge Base</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Import structured knowledge from JSON files
+                      </p>
+                      <Button size="sm" variant="outline">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import JSON
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    CRM Systems
+                  </CardTitle>
+                  <CardDescription>
+                    Connect to your customer relationship management systems
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">Salesforce</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Import customer interactions and knowledge articles
+                      </p>
+                      <Button size="sm" variant="outline">
+                        Connect Salesforce
+                      </Button>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">HubSpot</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Sync customer conversations and support tickets
+                      </p>
+                      <Button size="sm" variant="outline">
+                        Connect HubSpot
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Help Desk Systems
+                  </CardTitle>
+                  <CardDescription>
+                    Import support tickets and knowledge base articles
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">Zendesk</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Import tickets and help center articles
+                      </p>
+                      <Button size="sm" variant="outline">
+                        Connect Zendesk
+                      </Button>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <h5 className="font-medium">Intercom</h5>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Sync conversations and resolution bot articles
+                      </p>
+                      <Button size="sm" variant="outline">
+                        Connect Intercom
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5" />
+                    Real-Time Learning
+                  </CardTitle>
+                  <CardDescription>
+                    Automatically learn from live conversations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-3 border rounded-lg">
+                    <h5 className="font-medium">Conversation Learning</h5>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Automatically extract training examples from successful conversations
+                    </p>
+                    <div className="space-y-2">
+                      <label className="flex items-center space-x-2">
+                        <input type="checkbox" className="rounded" />
+                        <span className="text-sm">Auto-approve high-rated conversations</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input type="checkbox" className="rounded" />
+                        <span className="text-sm">Learn from positive feedback</span>
+                      </label>
+                    </div>
+                    <Button size="sm" className="mt-3">
+                      Enable Learning
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>External Integrations</CardTitle>
+                <CardDescription>
+                  Additional data sources and integrations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 border rounded-lg text-center">
+                    <Globe className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                    <h5 className="font-medium">Website Scraping</h5>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Extract content from your website pages
+                    </p>
+                    <Button size="sm" variant="outline">
+                      Setup Scraper
+                    </Button>
+                  </div>
+                  <div className="p-4 border rounded-lg text-center">
+                    <FileText className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                    <h5 className="font-medium">Google Sheets</h5>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Import data directly from Google Sheets
+                    </p>
+                    <Button size="sm" variant="outline">
+                      Connect Sheets
+                    </Button>
+                  </div>
+                  <div className="p-4 border rounded-lg text-center">
+                    <Download className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                    <h5 className="font-medium">API Webhooks</h5>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Receive real-time data via webhooks
+                    </p>
+                    <Button size="sm" variant="outline">
+                      Setup Webhook
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Alert>
+              <Brain className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Connected Data Sources:</strong> All imported data is automatically processed with OpenAI embeddings 
+                for semantic search and integrated into your agent's knowledge base. The system maintains data lineage 
+                and allows you to track which responses use which data sources.
+              </AlertDescription>
+            </Alert>
           </TabsContent>
 
           {/* Training Sessions Tab */}
