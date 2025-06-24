@@ -1151,14 +1151,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Agent is not active" });
       }
 
-      res.json({
+      // Return platform-specific configuration
+      const baseConfig = {
         welcomeMessage: agent.welcomeMessage,
         widgetColor: agent.widgetColor,
         widgetPosition: agent.widgetPosition,
-        whatsappNumber: agent.whatsappNumber,
-        whatsappMode: agent.whatsappMode,
-        enableChat: true, // Enable LLM chat functionality
-      });
+        platformType: agent.platformType || 'whatsapp',
+        enableChat: true,
+      };
+
+      // Add platform-specific configuration
+      switch (agent.platformType) {
+        case 'whatsapp':
+          baseConfig.whatsappNumber = agent.whatsappNumber;
+          baseConfig.whatsappMode = agent.whatsappMode;
+          break;
+        case 'telegram':
+          baseConfig.telegramUsername = agent.telegramUsername;
+          baseConfig.telegramBotToken = agent.telegramBotToken;
+          break;
+        case 'facebook-messenger':
+          baseConfig.facebookPageId = agent.facebookPageId;
+          break;
+        case 'instagram':
+          baseConfig.instagramBusinessId = agent.instagramBusinessId;
+          break;
+        case 'discord':
+          baseConfig.discordGuildId = agent.discordGuildId;
+          baseConfig.discordChannelId = agent.discordChannelId;
+          break;
+      }
+
+      res.json(baseConfig);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch widget configuration" });
     }
@@ -1187,25 +1211,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const encryptedConfig = btoa(JSON.stringify(widgetConfig));
 
-      // Generate both secure and legacy embed codes
-      const secureEmbedCode = `<!-- AgentFlow Secure Widget -->
+      // Generate platform-specific embed codes
+      const platformName = agent.platformType || 'whatsapp';
+      const widgetFileName = `agentflow-${platformName}-widget.js`;
+      
+      const secureEmbedCode = `<!-- AgentFlow ${platformName.charAt(0).toUpperCase() + platformName.slice(1)} Widget -->
 <script>
 (function() {
     var agentflowWidget = document.createElement('script');
-    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/agentflow-widget.js';
+    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/${widgetFileName}';
     agentflowWidget.setAttribute('data-agent-config', '${encryptedConfig}');
+    agentflowWidget.setAttribute('data-platform', '${platformName}');
     agentflowWidget.async = true;
     document.head.appendChild(agentflowWidget);
 })();
 </script>
-<!-- End AgentFlow Widget -->`;
+<!-- End AgentFlow ${platformName.charAt(0).toUpperCase() + platformName.slice(1)} Widget -->`;
 
-      const legacyEmbedCode = `<!-- AgentFlow Widget (Legacy) -->
+      const legacyEmbedCode = `<!-- AgentFlow ${platformName.charAt(0).toUpperCase() + platformName.slice(1)} Widget (Legacy) -->
 <script>
 (function() {
     var agentflowWidget = document.createElement('script');
-    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/agentflow-widget.js';
+    agentflowWidget.src = '${req.protocol}://${req.get('host')}/widget/${widgetFileName}';
     agentflowWidget.setAttribute('data-agent-id', '${agent.apiKey}');
+    agentflowWidget.setAttribute('data-platform', '${platformName}');
     agentflowWidget.setAttribute('data-position', '${agent.widgetPosition}');
     agentflowWidget.setAttribute('data-color', '${agent.widgetColor}');
     agentflowWidget.setAttribute('data-welcome-msg', '${agent.welcomeMessage}');
@@ -1213,14 +1242,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     document.head.appendChild(agentflowWidget);
 })();
 </script>
-<!-- End AgentFlow Widget -->`;
+<!-- End AgentFlow ${platformName.charAt(0).toUpperCase() + platformName.slice(1)} Widget -->`;
 
       res.json({
         secureEmbedCode,
         legacyEmbedCode,
+        platform: platformName,
+        widgetFileName,
         agent: {
           id: agent.id,
           name: agent.name,
+          platformType: agent.platformType,
           widgetPosition: agent.widgetPosition,
           widgetColor: agent.widgetColor,
           welcomeMessage: agent.welcomeMessage
