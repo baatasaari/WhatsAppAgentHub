@@ -125,6 +125,33 @@ export const agents = pgTable("agents", {
   targetAudience: text("target_audience"),
   maxMonthlyMessages: integer("max_monthly_messages").default(1000),
   pricingTier: text("pricing_tier").default("starter"),
+  conversationFlow: jsonb("conversation_flow").$type<{
+    nodes: Array<{
+      id: string;
+      type: 'start' | 'message' | 'condition' | 'action' | 'end';
+      position: { x: number; y: number };
+      data: {
+        label?: string;
+        message?: string;
+        condition?: string;
+        action?: string;
+        responses?: Array<{ text: string; nextNodeId: string }>;
+        fallbackMessage?: string;
+      };
+    }>;
+    edges: Array<{
+      id: string;
+      source: string;
+      target: string;
+      label?: string;
+    }>;
+    variables?: Array<{
+      name: string;
+      type: 'text' | 'number' | 'boolean';
+      defaultValue?: any;
+    }>;
+  }>(),
+  flowEnabled: boolean("flow_enabled").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
