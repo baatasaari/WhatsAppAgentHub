@@ -572,16 +572,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Business Templates API for B2B SaaS
-  app.get("/api/business-templates", authenticate, requireApproved, async (req, res) => {
+  app.get("/api/business-templates", async (req, res) => {
     try {
-      const { BusinessTemplateService } = await import('./services/business-templates');
-      const templateService = new BusinessTemplateService();
-      
       const category = req.query.category as string;
-      const templates = category 
-        ? templateService.getTemplatesByCategory(category)
-        : templateService.getAllTemplates();
+      let query = db.select().from(businessTemplates).where(eq(businessTemplates.isActive, true));
       
+      if (category) {
+        query = query.where(eq(businessTemplates.category, category));
+      }
+      
+      const templates = await query;
       res.json(templates);
     } catch (error: any) {
       console.error('Error loading business templates:', error);
@@ -589,11 +589,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/business-templates/categories", authenticate, requireApproved, async (req, res) => {
+  app.get("/api/business-templates/categories", async (req, res) => {
     try {
-      const { BusinessTemplateService } = await import('./services/business-templates');
-      const templateService = new BusinessTemplateService();
-      const categories = templateService.getCategories();
+      const templates = await db.select({ category: businessTemplates.category })
+        .from(businessTemplates)
+        .where(eq(businessTemplates.isActive, true))
+        .groupBy(businessTemplates.category);
+      
+      const categories = templates.map(t => t.category);
       res.json(categories);
     } catch (error: any) {
       console.error('Error loading template categories:', error);
