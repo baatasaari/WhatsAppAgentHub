@@ -359,6 +359,12 @@ export default function ConversationFlow() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [isFlowEnabled, setIsFlowEnabled] = useState(false);
+
   // Add template loading functions
   const onLoadTemplate = useCallback((template: any) => {
     if (template.nodes) {
@@ -383,12 +389,6 @@ export default function ConversationFlow() {
       description: "All nodes and edges have been removed.",
     });
   }, [setNodes, setEdges, toast]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-  const [isFlowEnabled, setIsFlowEnabled] = useState(false);
 
   // Fetch agent data
   const { data: agent, isLoading, error } = useQuery({
@@ -806,16 +806,7 @@ export default function ConversationFlow() {
           )}
 
           {/* Flow Templates */}
-          <FlowTemplates 
-            onLoadTemplate={(template) => {
-              setNodes(template.nodes);
-              setEdges(template.edges);
-            }}
-            onClearFlow={() => {
-              setNodes([]);
-              setEdges([]);
-            }}
-          />
+          <FlowTemplates onLoadTemplate={onLoadTemplate} onClearFlow={onClearFlow} />
         </div>
       </div>
     </div>
