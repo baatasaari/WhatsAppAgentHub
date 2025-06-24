@@ -174,6 +174,10 @@ Changelog:
 - June 24, 2025. Created conversation flow service for executing flows with conditions, actions, and message interpolation
 - June 24, 2025. Integrated flow processing into all platform services (Telegram, Messenger, Instagram, Discord, WhatsApp)
 - June 24, 2025. Added conversation flow designer to agent management with visual drag-drop interface and flow templates
+- June 24, 2025. Created comprehensive conversation flow template library with 6 pre-built templates for different business scenarios
+- June 24, 2025. Implemented template system for Lead Qualification, Customer Support, Appointment Booking, Product Recommendations, Feedback Collection, and Customer Onboarding
+- June 24, 2025. Added template API endpoints for loading and managing conversation flow templates with category organization
+- June 24, 2025. Enhanced flow designer UI with template gallery showing descriptions, categories, and preview workflows
 ```
 
 ## User Preferences

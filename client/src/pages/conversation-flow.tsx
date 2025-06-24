@@ -45,7 +45,15 @@ import {
   Diamond,
   Square,
   Circle,
-  ArrowRight
+  ArrowRight,
+  Template,
+  FileText,
+  Users,
+  ShoppingCart,
+  HeadphonesIcon,
+  Calendar,
+  Star,
+  UserPlus
 } from 'lucide-react';
 
 // Custom node types
@@ -109,6 +117,228 @@ const nodeTypes: NodeTypes = {
   condition: ConditionNode,
   action: ActionNode,
   end: EndNode,
+};
+
+// Flow Templates Component
+const FlowTemplates = ({ onLoadTemplate, onClearFlow }: { 
+  onLoadTemplate: (template: any) => void; 
+  onClearFlow: () => void; 
+}) => {
+  const templates = [
+    {
+      id: 'lead-qualification',
+      name: 'Lead Qualification',
+      description: 'Qualify potential customers by collecting contact information',
+      icon: Users,
+      category: 'sales',
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      id: 'customer-support',
+      name: 'Customer Support',
+      description: 'Route customer inquiries to appropriate support channels',
+      icon: HeadphonesIcon,
+      category: 'support',
+      color: 'bg-green-100 text-green-600'
+    },
+    {
+      id: 'appointment-booking',
+      name: 'Appointment Booking',
+      description: 'Guide customers through booking appointments or consultations',
+      icon: Calendar,
+      category: 'booking',
+      color: 'bg-purple-100 text-purple-600'
+    },
+    {
+      id: 'product-recommendation',
+      name: 'Product Recommendations',
+      description: 'Help customers find the right products based on their needs',
+      icon: ShoppingCart,
+      category: 'sales',
+      color: 'bg-orange-100 text-orange-600'
+    },
+    {
+      id: 'feedback-collection',
+      name: 'Feedback Collection',
+      description: 'Collect customer feedback and handle complaints professionally',
+      icon: Star,
+      category: 'feedback',
+      color: 'bg-yellow-100 text-yellow-600'
+    },
+    {
+      id: 'onboarding-flow',
+      name: 'Customer Onboarding',
+      description: 'Welcome new customers and guide them through initial setup',
+      icon: UserPlus,
+      category: 'onboarding',
+      color: 'bg-indigo-100 text-indigo-600'
+    }
+  ];
+
+  const loadTemplateFlow = async (templateId: string) => {
+    try {
+      const response = await apiRequest(`/api/conversation-flow-templates/${templateId}`);
+      if (response) {
+        onLoadTemplate(response);
+      }
+    } catch (error) {
+      // Fallback to basic templates
+      const basicTemplates: any = {
+        'lead-qualification': {
+          nodes: [
+            {
+              id: 'start-1',
+              type: 'start',
+              position: { x: 100, y: 100 },
+              data: { label: 'Start' }
+            },
+            {
+              id: 'welcome-1',
+              type: 'message',
+              position: { x: 100, y: 200 },
+              data: { 
+                label: 'Welcome Message',
+                message: 'Hello! Welcome to our business. May I get your name?' 
+              }
+            },
+            {
+              id: 'collect-email-1',
+              type: 'message',
+              position: { x: 100, y: 300 },
+              data: { 
+                label: 'Collect Email',
+                message: 'Great! Could you share your email address?' 
+              }
+            },
+            {
+              id: 'save-lead-1',
+              type: 'action',
+              position: { x: 100, y: 400 },
+              data: { 
+                label: 'Save Lead',
+                action: 'save_lead_info' 
+              }
+            }
+          ],
+          edges: [
+            { id: 'e1', source: 'start-1', target: 'welcome-1' },
+            { id: 'e2', source: 'welcome-1', target: 'collect-email-1' },
+            { id: 'e3', source: 'collect-email-1', target: 'save-lead-1' }
+          ]
+        },
+        'customer-support': {
+          nodes: [
+            {
+              id: 'start-1',
+              type: 'start',
+              position: { x: 100, y: 100 },
+              data: { label: 'Support Start' }
+            },
+            {
+              id: 'support-greeting-1',
+              type: 'message',
+              position: { x: 100, y: 200 },
+              data: { 
+                label: 'Support Greeting',
+                message: 'Hi! I\'m here to help. What can I assist you with today?' 
+              }
+            },
+            {
+              id: 'issue-check-1',
+              type: 'condition',
+              position: { x: 100, y: 300 },
+              data: { 
+                label: 'Issue Type',
+                condition: 'user_input contains "billing" or "payment"' 
+              }
+            },
+            {
+              id: 'billing-help-1',
+              type: 'message',
+              position: { x: 250, y: 400 },
+              data: { 
+                label: 'Billing Help',
+                message: 'I\'ll connect you with our billing team right away.' 
+              }
+            },
+            {
+              id: 'general-help-1',
+              type: 'message',
+              position: { x: -50, y: 400 },
+              data: { 
+                label: 'General Help',
+                message: 'Let me help you with that. Can you provide more details?' 
+              }
+            }
+          ],
+          edges: [
+            { id: 'e1', source: 'start-1', target: 'support-greeting-1' },
+            { id: 'e2', source: 'support-greeting-1', target: 'issue-check-1' },
+            { id: 'e3', source: 'issue-check-1', target: 'billing-help-1', label: 'Billing' },
+            { id: 'e4', source: 'issue-check-1', target: 'general-help-1', label: 'Other' }
+          ]
+        }
+      };
+
+      const template = basicTemplates[templateId];
+      if (template) {
+        onLoadTemplate(template);
+      }
+    }
+  };
+
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle className="text-sm flex items-center">
+          <Template className="w-4 h-4 mr-2" />
+          Flow Templates
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid gap-2">
+          {templates.map((template) => (
+            <Button
+              key={template.id}
+              size="sm"
+              variant="outline"
+              className="w-full p-3 h-auto text-left justify-start hover:bg-gray-50"
+              onClick={() => loadTemplateFlow(template.id)}
+            >
+              <div className="flex items-start space-x-3 w-full">
+                <div className={`p-1.5 rounded ${template.color}`}>
+                  <template.icon className="w-3 h-3" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-xs">{template.name}</div>
+                  <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                    {template.description}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {template.category}
+                  </div>
+                </div>
+              </div>
+            </Button>
+          ))}
+        </div>
+        
+        <Separator />
+        
+        <div className="space-y-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full justify-start text-gray-600"
+            onClick={onClearFlow}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Clear Flow
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 export default function ConversationFlow() {
@@ -493,104 +723,16 @@ export default function ConversationFlow() {
           )}
 
           {/* Flow Templates */}
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-sm">Flow Templates</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => {
-                  // Load lead qualification template
-                  const template = {
-                    nodes: [
-                      {
-                        id: 'start-1',
-                        type: 'start',
-                        position: { x: 100, y: 100 },
-                        data: { label: 'Start' }
-                      },
-                      {
-                        id: 'welcome-1',
-                        type: 'message',
-                        position: { x: 100, y: 200 },
-                        data: { 
-                          label: 'Welcome Message',
-                          message: 'Welcome! How can I help you today?' 
-                        }
-                      },
-                      {
-                        id: 'condition-1',
-                        type: 'condition',
-                        position: { x: 100, y: 300 },
-                        data: { 
-                          label: 'Intent Check',
-                          condition: 'user_input contains "buy" or "purchase"' 
-                        }
-                      }
-                    ],
-                    edges: [
-                      { id: 'e1', source: 'start-1', target: 'welcome-1' },
-                      { id: 'e2', source: 'welcome-1', target: 'condition-1' }
-                    ]
-                  };
-                  setNodes(template.nodes);
-                  setEdges(template.edges);
-                }}
-              >
-                Lead Qualification
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => {
-                  // Load customer support template
-                  const template = {
-                    nodes: [
-                      {
-                        id: 'start-1',
-                        type: 'start',
-                        position: { x: 100, y: 100 },
-                        data: { label: 'Start' }
-                      },
-                      {
-                        id: 'support-1',
-                        type: 'message',
-                        position: { x: 100, y: 200 },
-                        data: { 
-                          label: 'Support Greeting',
-                          message: 'Hi! I\'m here to help with your support request.' 
-                        }
-                      }
-                    ],
-                    edges: [
-                      { id: 'e1', source: 'start-1', target: 'support-1' }
-                    ]
-                  };
-                  setNodes(template.nodes);
-                  setEdges(template.edges);
-                }}
-              >
-                Customer Support
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => {
-                  // Clear flow
-                  setNodes([]);
-                  setEdges([]);
-                }}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear Flow
-              </Button>
-            </CardContent>
-          </Card>
+          <FlowTemplates 
+            onLoadTemplate={(template) => {
+              setNodes(template.nodes);
+              setEdges(template.edges);
+            }}
+            onClearFlow={() => {
+              setNodes([]);
+              setEdges([]);
+            }}
+          />
         </div>
       </div>
     </div>

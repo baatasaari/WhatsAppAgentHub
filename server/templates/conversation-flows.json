@@ -1,0 +1,546 @@
+{
+  "templates": [
+    {
+      "id": "lead-qualification",
+      "name": "Lead Qualification Flow",
+      "description": "Qualify potential customers by collecting contact information and understanding their needs",
+      "category": "sales",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-1",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Start Conversation" }
+          },
+          {
+            "id": "welcome-1",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "Welcome Message",
+              "message": "Hello! Welcome to our business. I'm here to help you find exactly what you need. May I start by getting your name?"
+            }
+          },
+          {
+            "id": "name-check-1",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "Has Name?",
+              "condition": "user_input length > 2"
+            }
+          },
+          {
+            "id": "collect-email-1",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "Collect Email",
+              "message": "Great to meet you! Could you please share your email address so we can send you more information?"
+            }
+          },
+          {
+            "id": "ask-again-1",
+            "type": "message",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Ask Name Again",
+              "message": "I'd love to personalize our conversation. Could you please tell me your name?"
+            }
+          },
+          {
+            "id": "save-lead-1",
+            "type": "action",
+            "position": { "x": 300, "y": 510 },
+            "data": {
+              "label": "Save Lead Info",
+              "action": "save_lead_info"
+            }
+          },
+          {
+            "id": "qualify-need-1",
+            "type": "message",
+            "position": { "x": 300, "y": 640 },
+            "data": {
+              "label": "Qualify Needs",
+              "message": "Perfect! Now, what brings you to us today? Are you looking for a specific product or service?"
+            }
+          },
+          {
+            "id": "end-1",
+            "type": "end",
+            "position": { "x": 300, "y": 770 },
+            "data": {
+              "label": "End Flow",
+              "message": "Thank you for your interest! A member of our team will be in touch with you shortly to discuss how we can help."
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-1", "target": "welcome-1" },
+          { "id": "e2", "source": "welcome-1", "target": "name-check-1" },
+          { "id": "e3", "source": "name-check-1", "target": "collect-email-1", "label": "Yes" },
+          { "id": "e4", "source": "name-check-1", "target": "ask-again-1", "label": "No" },
+          { "id": "e5", "source": "ask-again-1", "target": "name-check-1" },
+          { "id": "e6", "source": "collect-email-1", "target": "save-lead-1" },
+          { "id": "e7", "source": "save-lead-1", "target": "qualify-need-1" },
+          { "id": "e8", "source": "qualify-need-1", "target": "end-1" }
+        ]
+      }
+    },
+    {
+      "id": "customer-support",
+      "name": "Customer Support Triage",
+      "description": "Route customer inquiries to appropriate support channels based on issue type",
+      "category": "support",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-2",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Support Start" }
+          },
+          {
+            "id": "support-greeting-2",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "Support Greeting",
+              "message": "Hi! I'm here to help you with any questions or issues. Please describe what you need assistance with, and I'll make sure you get the right help."
+            }
+          },
+          {
+            "id": "issue-type-2",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "Issue Type Check",
+              "condition": "user_input contains 'billing' or 'payment' or 'refund'"
+            }
+          },
+          {
+            "id": "billing-support-2",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "Billing Support",
+              "message": "I understand you have a billing-related question. Let me connect you with our billing specialist who can help resolve this quickly."
+            }
+          },
+          {
+            "id": "technical-check-2",
+            "type": "condition",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Technical Issue?",
+              "condition": "user_input contains 'bug' or 'error' or 'not working' or 'broken'"
+            }
+          },
+          {
+            "id": "technical-support-2",
+            "type": "message",
+            "position": { "x": -300, "y": 480 },
+            "data": {
+              "label": "Technical Support",
+              "message": "I see you're experiencing a technical issue. I'll create a support ticket and our technical team will investigate this right away."
+            }
+          },
+          {
+            "id": "general-support-2",
+            "type": "message",
+            "position": { "x": 100, "y": 480 },
+            "data": {
+              "label": "General Support",
+              "message": "Thank you for reaching out. I'll make sure your inquiry gets to the right person. Can you provide a bit more detail about what you need help with?"
+            }
+          },
+          {
+            "id": "create-ticket-2",
+            "type": "action",
+            "position": { "x": -300, "y": 610 },
+            "data": {
+              "label": "Create Ticket",
+              "action": "create_ticket"
+            }
+          },
+          {
+            "id": "transfer-billing-2",
+            "type": "action",
+            "position": { "x": 300, "y": 510 },
+            "data": {
+              "label": "Transfer to Billing",
+              "action": "transfer_to_human"
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-2", "target": "support-greeting-2" },
+          { "id": "e2", "source": "support-greeting-2", "target": "issue-type-2" },
+          { "id": "e3", "source": "issue-type-2", "target": "billing-support-2", "label": "Billing" },
+          { "id": "e4", "source": "issue-type-2", "target": "technical-check-2", "label": "Other" },
+          { "id": "e5", "source": "technical-check-2", "target": "technical-support-2", "label": "Technical" },
+          { "id": "e6", "source": "technical-check-2", "target": "general-support-2", "label": "General" },
+          { "id": "e7", "source": "technical-support-2", "target": "create-ticket-2" },
+          { "id": "e8", "source": "billing-support-2", "target": "transfer-billing-2" }
+        ]
+      }
+    },
+    {
+      "id": "appointment-booking",
+      "name": "Appointment Booking Flow",
+      "description": "Guide customers through booking an appointment or consultation",
+      "category": "booking",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-3",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Booking Start" }
+          },
+          {
+            "id": "booking-intro-3",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "Booking Introduction",
+              "message": "I'd be happy to help you schedule an appointment! What type of service are you interested in?"
+            }
+          },
+          {
+            "id": "service-type-3",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "Service Type",
+              "condition": "user_input contains 'consultation' or 'meeting'"
+            }
+          },
+          {
+            "id": "consultation-3",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "Consultation Booking",
+              "message": "Perfect! I can schedule a consultation for you. Are you available this week or would you prefer next week?"
+            }
+          },
+          {
+            "id": "other-service-3",
+            "type": "message",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Other Service",
+              "message": "Great! Let me know what specific service you need, and I'll check our availability for you."
+            }
+          },
+          {
+            "id": "collect-contact-3",
+            "type": "message",
+            "position": { "x": 100, "y": 510 },
+            "data": {
+              "label": "Collect Contact Info",
+              "message": "To confirm your appointment, I'll need your name and phone number. Could you please provide those?"
+            }
+          },
+          {
+            "id": "schedule-callback-3",
+            "type": "action",
+            "position": { "x": 100, "y": 640 },
+            "data": {
+              "label": "Schedule Callback",
+              "action": "schedule_callback"
+            }
+          },
+          {
+            "id": "confirmation-3",
+            "type": "message",
+            "position": { "x": 100, "y": 770 },
+            "data": {
+              "label": "Booking Confirmation",
+              "message": "Excellent! I've scheduled a callback for you. Our team will contact you within 24 hours to confirm your appointment details."
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-3", "target": "booking-intro-3" },
+          { "id": "e2", "source": "booking-intro-3", "target": "service-type-3" },
+          { "id": "e3", "source": "service-type-3", "target": "consultation-3", "label": "Consultation" },
+          { "id": "e4", "source": "service-type-3", "target": "other-service-3", "label": "Other" },
+          { "id": "e5", "source": "consultation-3", "target": "collect-contact-3" },
+          { "id": "e6", "source": "other-service-3", "target": "collect-contact-3" },
+          { "id": "e7", "source": "collect-contact-3", "target": "schedule-callback-3" },
+          { "id": "e8", "source": "schedule-callback-3", "target": "confirmation-3" }
+        ]
+      }
+    },
+    {
+      "id": "product-recommendation",
+      "name": "Product Recommendation Engine",
+      "description": "Guide customers to find the right products based on their needs and preferences",
+      "category": "sales",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-4",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Product Start" }
+          },
+          {
+            "id": "product-intro-4",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "Product Introduction",
+              "message": "I'd love to help you find the perfect product! What are you looking for today?"
+            }
+          },
+          {
+            "id": "budget-check-4",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "Budget Mention?",
+              "condition": "user_input contains '$' or 'budget' or 'price' or 'cost'"
+            }
+          },
+          {
+            "id": "budget-range-4",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "Budget Discussion",
+              "message": "Great! Knowing your budget helps me recommend the best options. What price range are you comfortable with?"
+            }
+          },
+          {
+            "id": "need-assessment-4",
+            "type": "message",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Needs Assessment",
+              "message": "Perfect! Let me understand your specific needs better. What features are most important to you?"
+            }
+          },
+          {
+            "id": "premium-check-4",
+            "type": "condition",
+            "position": { "x": 300, "y": 510 },
+            "data": {
+              "label": "Premium Budget?",
+              "condition": "user_input contains 'high' or 'premium' or 'best'"
+            }
+          },
+          {
+            "id": "premium-recommendation-4",
+            "type": "message",
+            "position": { "x": 500, "y": 610 },
+            "data": {
+              "label": "Premium Options",
+              "message": "Excellent! I have some premium options that would be perfect for you. These products offer the best features and quality."
+            }
+          },
+          {
+            "id": "value-recommendation-4",
+            "type": "message",
+            "position": { "x": 100, "y": 610 },
+            "data": {
+              "label": "Value Options",
+              "message": "I have some great value options that provide excellent functionality at a competitive price point."
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-4", "target": "product-intro-4" },
+          { "id": "e2", "source": "product-intro-4", "target": "budget-check-4" },
+          { "id": "e3", "source": "budget-check-4", "target": "budget-range-4", "label": "Budget Mentioned" },
+          { "id": "e4", "source": "budget-check-4", "target": "need-assessment-4", "label": "No Budget" },
+          { "id": "e5", "source": "budget-range-4", "target": "premium-check-4" },
+          { "id": "e6", "source": "need-assessment-4", "target": "value-recommendation-4" },
+          { "id": "e7", "source": "premium-check-4", "target": "premium-recommendation-4", "label": "Premium" },
+          { "id": "e8", "source": "premium-check-4", "target": "value-recommendation-4", "label": "Value" }
+        ]
+      }
+    },
+    {
+      "id": "feedback-collection",
+      "name": "Customer Feedback Collection",
+      "description": "Collect valuable customer feedback and handle complaints professionally",
+      "category": "feedback",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-5",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Feedback Start" }
+          },
+          {
+            "id": "feedback-intro-5",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "Feedback Introduction",
+              "message": "Thank you for taking the time to share your feedback! Your opinion is very important to us. How was your experience?"
+            }
+          },
+          {
+            "id": "sentiment-check-5",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "Positive Feedback?",
+              "condition": "user_input contains 'good' or 'great' or 'excellent' or 'love' or 'amazing'"
+            }
+          },
+          {
+            "id": "positive-response-5",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "Positive Response",
+              "message": "That's wonderful to hear! We're so glad you had a positive experience. Would you mind sharing what you liked most?"
+            }
+          },
+          {
+            "id": "negative-check-5",
+            "type": "condition",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Negative Feedback?",
+              "condition": "user_input contains 'bad' or 'terrible' or 'awful' or 'hate' or 'worst'"
+            }
+          },
+          {
+            "id": "negative-response-5",
+            "type": "message",
+            "position": { "x": -300, "y": 480 },
+            "data": {
+              "label": "Negative Response",
+              "message": "I'm sorry to hear you had a negative experience. We take all feedback seriously and want to make this right. Can you tell me more about what went wrong?"
+            }
+          },
+          {
+            "id": "neutral-response-5",
+            "type": "message",
+            "position": { "x": 100, "y": 480 },
+            "data": {
+              "label": "Neutral Response",
+              "message": "Thank you for sharing your thoughts. We're always looking to improve. Is there anything specific you think we could do better?"
+            }
+          },
+          {
+            "id": "escalate-5",
+            "type": "action",
+            "position": { "x": -300, "y": 610 },
+            "data": {
+              "label": "Escalate to Manager",
+              "action": "transfer_to_human"
+            }
+          },
+          {
+            "id": "save-feedback-5",
+            "type": "action",
+            "position": { "x": 100, "y": 610 },
+            "data": {
+              "label": "Save Feedback",
+              "action": "save_lead_info"
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-5", "target": "feedback-intro-5" },
+          { "id": "e2", "source": "feedback-intro-5", "target": "sentiment-check-5" },
+          { "id": "e3", "source": "sentiment-check-5", "target": "positive-response-5", "label": "Positive" },
+          { "id": "e4", "source": "sentiment-check-5", "target": "negative-check-5", "label": "Not Positive" },
+          { "id": "e5", "source": "negative-check-5", "target": "negative-response-5", "label": "Negative" },
+          { "id": "e6", "source": "negative-check-5", "target": "neutral-response-5", "label": "Neutral" },
+          { "id": "e7", "source": "negative-response-5", "target": "escalate-5" },
+          { "id": "e8", "source": "positive-response-5", "target": "save-feedback-5" },
+          { "id": "e9", "source": "neutral-response-5", "target": "save-feedback-5" }
+        ]
+      }
+    },
+    {
+      "id": "onboarding-flow",
+      "name": "New Customer Onboarding",
+      "description": "Welcome new customers and guide them through initial setup or first steps",
+      "category": "onboarding",
+      "flow": {
+        "nodes": [
+          {
+            "id": "start-6",
+            "type": "start",
+            "position": { "x": 100, "y": 50 },
+            "data": { "label": "Onboarding Start" }
+          },
+          {
+            "id": "welcome-new-6",
+            "type": "message",
+            "position": { "x": 100, "y": 150 },
+            "data": {
+              "label": "New Customer Welcome",
+              "message": "Welcome to our service! I'm excited to help you get started. Are you new to our platform or returning?"
+            }
+          },
+          {
+            "id": "customer-type-6",
+            "type": "condition",
+            "position": { "x": 100, "y": 280 },
+            "data": {
+              "label": "New Customer?",
+              "condition": "user_input contains 'new' or 'first time' or 'never used'"
+            }
+          },
+          {
+            "id": "new-customer-6",
+            "type": "message",
+            "position": { "x": 300, "y": 380 },
+            "data": {
+              "label": "New Customer Path",
+              "message": "Perfect! Let me guide you through the basics. I'll show you how to get the most out of our service. What would you like to learn about first?"
+            }
+          },
+          {
+            "id": "returning-customer-6",
+            "type": "message",
+            "position": { "x": -100, "y": 380 },
+            "data": {
+              "label": "Returning Customer",
+              "message": "Welcome back! Is there something specific you need help with today, or would you like to see what's new since your last visit?"
+            }
+          },
+          {
+            "id": "setup-assistance-6",
+            "type": "message",
+            "position": { "x": 300, "y": 510 },
+            "data": {
+              "label": "Setup Assistance",
+              "message": "I can help you with account setup, feature tutorials, or connecting with our support team. What would be most helpful right now?"
+            }
+          },
+          {
+            "id": "update-profile-6",
+            "type": "action",
+            "position": { "x": 300, "y": 640 },
+            "data": {
+              "label": "Update Customer Profile",
+              "action": "update_user_profile"
+            }
+          }
+        ],
+        "edges": [
+          { "id": "e1", "source": "start-6", "target": "welcome-new-6" },
+          { "id": "e2", "source": "welcome-new-6", "target": "customer-type-6" },
+          { "id": "e3", "source": "customer-type-6", "target": "new-customer-6", "label": "New" },
+          { "id": "e4", "source": "customer-type-6", "target": "returning-customer-6", "label": "Returning" },
+          { "id": "e5", "source": "new-customer-6", "target": "setup-assistance-6" },
+          { "id": "e6", "source": "setup-assistance-6", "target": "update-profile-6" }
+        ]
+      }
+    }
+  ]
+}

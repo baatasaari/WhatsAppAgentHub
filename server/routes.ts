@@ -1802,6 +1802,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Platform testing endpoint
+  // Get conversation flow templates
+  app.get("/api/conversation-flow-templates", async (req, res) => {
+    try {
+      const templates = [
+        {
+          id: 'lead-qualification',
+          name: 'Lead Qualification Flow',
+          description: 'Qualify potential customers by collecting contact information and understanding their needs',
+          category: 'sales',
+          preview: 'Welcome → Name Collection → Email Collection → Lead Qualification → Save'
+        },
+        {
+          id: 'customer-support',
+          name: 'Customer Support Triage',
+          description: 'Route customer inquiries to appropriate support channels based on issue type',
+          category: 'support',
+          preview: 'Greeting → Issue Type Check → Route to Specialist → Create Ticket'
+        },
+        {
+          id: 'appointment-booking',
+          name: 'Appointment Booking Flow',
+          description: 'Guide customers through booking an appointment or consultation',
+          category: 'booking',
+          preview: 'Service Selection → Availability Check → Contact Collection → Confirmation'
+        },
+        {
+          id: 'product-recommendation',
+          name: 'Product Recommendation Engine',
+          description: 'Guide customers to find the right products based on their needs and preferences',
+          category: 'sales',
+          preview: 'Needs Assessment → Budget Discussion → Product Matching → Recommendation'
+        },
+        {
+          id: 'feedback-collection',
+          name: 'Customer Feedback Collection',
+          description: 'Collect valuable customer feedback and handle complaints professionally',
+          category: 'feedback',
+          preview: 'Feedback Request → Sentiment Analysis → Response Routing → Follow-up'
+        },
+        {
+          id: 'onboarding-flow',
+          name: 'New Customer Onboarding',
+          description: 'Welcome new customers and guide them through initial setup or first steps',
+          category: 'onboarding',
+          preview: 'Welcome → Customer Type → Setup Guidance → Profile Update'
+        }
+      ];
+      
+      res.json(templates);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      res.status(500).json({ error: 'Failed to fetch templates' });
+    }
+  });
+
+  // Get specific conversation flow template
+  app.get("/api/conversation-flow-templates/:id", async (req, res) => {
+    try {
+      const templateId = req.params.id;
+      
+      // For now, return basic templates - in production this would load from JSON file
+      const templates: any = {
+        'lead-qualification': {
+          nodes: [
+            {
+              id: 'start-1',
+              type: 'start',
+              position: { x: 100, y: 50 },
+              data: { label: 'Start Conversation' }
+            },
+            {
+              id: 'welcome-1',
+              type: 'message',
+              position: { x: 100, y: 150 },
+              data: {
+                label: 'Welcome Message',
+                message: 'Hello! Welcome to our business. I\'m here to help you find exactly what you need. May I start by getting your name?'
+              }
+            },
+            {
+              id: 'name-check-1',
+              type: 'condition',
+              position: { x: 100, y: 280 },
+              data: {
+                label: 'Has Name?',
+                condition: 'user_input length > 2'
+              }
+            },
+            {
+              id: 'collect-email-1',
+              type: 'message',
+              position: { x: 300, y: 380 },
+              data: {
+                label: 'Collect Email',
+                message: 'Great to meet you! Could you please share your email address so we can send you more information?'
+              }
+            },
+            {
+              id: 'save-lead-1',
+              type: 'action',
+              position: { x: 300, y: 510 },
+              data: {
+                label: 'Save Lead Info',
+                action: 'save_lead_info'
+              }
+            }
+          ],
+          edges: [
+            { id: 'e1', source: 'start-1', target: 'welcome-1' },
+            { id: 'e2', source: 'welcome-1', target: 'name-check-1' },
+            { id: 'e3', source: 'name-check-1', target: 'collect-email-1', label: 'Yes' },
+            { id: 'e4', source: 'collect-email-1', target: 'save-lead-1' }
+          ]
+        },
+        'customer-support': {
+          nodes: [
+            {
+              id: 'start-2',
+              type: 'start',
+              position: { x: 100, y: 50 },
+              data: { label: 'Support Start' }
+            },
+            {
+              id: 'support-greeting-2',
+              type: 'message',
+              position: { x: 100, y: 150 },
+              data: {
+                label: 'Support Greeting',
+                message: 'Hi! I\'m here to help you with any questions or issues. Please describe what you need assistance with.'
+              }
+            },
+            {
+              id: 'issue-type-2',
+              type: 'condition',
+              position: { x: 100, y: 280 },
+              data: {
+                label: 'Issue Type Check',
+                condition: 'user_input contains "billing" or "payment" or "refund"'
+              }
+            },
+            {
+              id: 'billing-support-2',
+              type: 'message',
+              position: { x: 300, y: 380 },
+              data: {
+                label: 'Billing Support',
+                message: 'I understand you have a billing-related question. Let me connect you with our billing specialist.'
+              }
+            },
+            {
+              id: 'general-support-2',
+              type: 'message',
+              position: { x: -100, y: 380 },
+              data: {
+                label: 'General Support',
+                message: 'Thank you for reaching out. I\'ll make sure your inquiry gets to the right person.'
+              }
+            }
+          ],
+          edges: [
+            { id: 'e1', source: 'start-2', target: 'support-greeting-2' },
+            { id: 'e2', source: 'support-greeting-2', target: 'issue-type-2' },
+            { id: 'e3', source: 'issue-type-2', target: 'billing-support-2', label: 'Billing' },
+            { id: 'e4', source: 'issue-type-2', target: 'general-support-2', label: 'Other' }
+          ]
+        }
+      };
+
+      const template = templates[templateId];
+      if (!template) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      res.json(template);
+    } catch (error) {
+      console.error('Error fetching template:', error);
+      res.status(500).json({ error: 'Failed to fetch template' });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);
