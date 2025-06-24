@@ -9,6 +9,10 @@ import { createSecureWidgetConfig } from "./encryption";
 import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";
 import { voiceCallingService } from "./services/voice-calling";
 import { logger } from "./services/logging";
+import { telegramService } from "./services/telegram";
+import { facebookMessengerService } from "./services/facebook-messenger";
+import { instagramService } from "./services/instagram";
+import { discordService } from "./services/discord";
 
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
