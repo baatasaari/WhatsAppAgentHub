@@ -21,6 +21,7 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import BusinessTemplates from "@/pages/business-templates";
 import VoiceCalling from "@/pages/voice-calling";
+import ConversationFlow from "@/pages/conversation-flow";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -66,6 +67,7 @@ function Router() {
             <Route path="/preview" component={WidgetPreview} />
             <Route path="/model-config" component={ModelConfig} />
             <Route path="/whatsapp-config" component={WhatsAppConfig} />
+            <Route path="/conversation-flow/:id" component={ConversationFlow} />
             <Route path="/settings" component={Settings} />
             <Route path="/system-logs" component={SystemLogs} />
 

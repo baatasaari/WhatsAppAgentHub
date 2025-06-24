@@ -2,15 +2,18 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Edit, Pause, Play, Trash2 } from "lucide-react";
+import { Bot, Edit, Pause, Play, Trash2, GitBranch, MoreHorizontal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Agents() {
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: agents, isLoading } = useQuery({
     queryKey: ["/api/agents"],
