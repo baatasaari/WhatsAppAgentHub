@@ -1,10 +1,11 @@
 import { useLocation, Link } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2, FileText } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2, FileText, Clipboard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const getNavigationForRole = (userRole: string) => {
   const baseNavigation = [
     { name: "Dashboard", href: "/", icon: Home },
+    { name: "Business Onboarding", href: "/business-onboarding", icon: Clipboard },
     { name: "Business Templates", href: "/business-templates", icon: MessageSquare },
     { name: "My Agents", href: "/agents", icon: Bot },
     { name: "Agent Wizard", href: "/wizard", icon: Wand2 },
