@@ -2203,6 +2203,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Platform-specific training recommendations
+  app.get("/api/agents/:id/platform-recommendations/:platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const platform = req.params.platform;
+
+      const { PlatformAIIntegration } = await import('./services/platform-ai-integration');
+      const recommendations = await PlatformAIIntegration.getPlatformTrainingRecommendations(platform, agentId);
+
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error getting platform recommendations:", error);
+      res.status(500).json({ error: "Failed to get platform recommendations" });
+    }
+  });
+
+  // Platform conversation analysis
+  app.get("/api/agents/:id/platform-analysis/:platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const platform = req.params.platform;
+
+      const { PlatformAIIntegration } = await import('./services/platform-ai-integration');
+      const analysis = await PlatformAIIntegration.analyzeplatformConversations(agentId, platform);
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing platform conversations:", error);
+      res.status(500).json({ error: "Failed to analyze platform conversations" });
+    }
+  });
+
   app.post("/api/agents/:id/test-platform", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
       const agentId = parseInt(req.params.id);

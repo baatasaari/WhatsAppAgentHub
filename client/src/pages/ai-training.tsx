@@ -16,7 +16,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Plus, Upload, Download, BookOpen, Zap, Target, MessageSquare, Trash2, Edit, Play, Check, AlertCircle, FileText, Bot } from "lucide-react";
+import { Brain, Plus, Upload, Download, BookOpen, Zap, Target, MessageSquare, Trash2, Edit, Play, Check, AlertCircle, FileText, Bot, Smartphone } from "lucide-react";
+import { PlatformTrainingGuide } from "@/components/platform-training-guide";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -261,10 +262,11 @@ export default function AITraining() {
 
       {selectedAgent && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="training">Training Examples</TabsTrigger>
             <TabsTrigger value="voice">Brand Voice</TabsTrigger>
+            <TabsTrigger value="platforms">Platform Guide</TabsTrigger>
             <TabsTrigger value="sessions">Training Sessions</TabsTrigger>
           </TabsList>
 
@@ -834,6 +836,92 @@ export default function AITraining() {
                 </Button>
               </div>
             )}
+          </TabsContent>
+
+          {/* Platform Training Guide Tab */}
+          <TabsContent value="platforms" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Platform-Specific Training</h3>
+              <p className="text-sm text-gray-600">Optimize your agent for each messaging platform's unique features and user expectations</p>
+            </div>
+
+            {agentDetails && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="h-5 w-5" />
+                    Selected Platform: {agentDetails.platformType}
+                  </CardTitle>
+                  <CardDescription>
+                    Training recommendations and analytics for your agent's primary platform
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PlatformTrainingGuide 
+                    agentId={selectedAgent} 
+                    selectedPlatform={agentDetails.platformType} 
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Multi-Platform Training Tips</CardTitle>
+                <CardDescription>
+                  How AI training adapts across different messaging platforms
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">WhatsApp Business</h5>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Interactive buttons for quick responses</li>
+                      <li>• Rich media support with images/documents</li>
+                      <li>• Business profile integration</li>
+                      <li>• Customer service focus</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Telegram Bot</h5>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Inline keyboards and commands</li>
+                      <li>• Group chat management</li>
+                      <li>• File sharing capabilities</li>
+                      <li>• Technical community support</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Discord Bot</h5>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Embed messages with rich content</li>
+                      <li>• Server-specific customization</li>
+                      <li>• Gaming community integration</li>
+                      <li>• Voice channel announcements</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Facebook Messenger</h5>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Generic templates for showcases</li>
+                      <li>• Quick replies for navigation</li>
+                      <li>• Social media integration</li>
+                      <li>• Lead generation focus</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <Alert>
+                  <Brain className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Custom Training Adaptation:</strong> Your agent automatically adapts its responses 
+                    based on the platform. The same training data produces different response formats optimized 
+                    for each platform's capabilities and user expectations.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Training Sessions Tab */}
