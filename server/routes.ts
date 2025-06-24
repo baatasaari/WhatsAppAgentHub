@@ -1,7 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertAgentSchema, insertConversationSchema, insertUserSchema, loginSchema } from "@shared/schema";
+import { db } from "./db";
+import { insertAgentSchema, insertConversationSchema, insertUserSchema, loginSchema, businessTemplates } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { generateChatResponse, qualifyLead } from "./services/llm-providers";
 import { authenticate, requireAdmin, requireApproved, requireSystemAdmin, requireBusinessManager, AuthenticatedRequest, AuthService } from "./auth";
 import { nanoid } from "nanoid";
@@ -575,13 +577,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/business-templates", async (req, res) => {
     try {
       const category = req.query.category as string;
-      let query = db.select().from(businessTemplates).where(eq(businessTemplates.isActive, true));
+      let queryBuilder = db.select({
+        id: businessTemplates.id,
+        name: businessTemplates.name,
+        description: businessTemplates.description,
+        category: businessTemplates.category,
+        systemPrompt: businessTemplates.systemPrompt,
+        welcomeMessage: businessTemplates.welcomeMessage,
+        sampleFaqs: businessTemplates.sampleFaqs,
+        sampleProducts: businessTemplates.sampleProducts,
+        customizations: businessTemplates.customizations,
+        isActive: businessTemplates.isActive,
+        createdAt: businessTemplates.createdAt
+      }).from(businessTemplates).where(eq(businessTemplates.isActive, true));
       
       if (category) {
-        query = query.where(eq(businessTemplates.category, category));
+        queryBuilder = queryBuilder.where(eq(businessTemplates.category, category));
       }
       
-      const templates = await query;
+      const templates = await queryBuilder;
       res.json(templates);
     } catch (error: any) {
       console.error('Error loading business templates:', error);
