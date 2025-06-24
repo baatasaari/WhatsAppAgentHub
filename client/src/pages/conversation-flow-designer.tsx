@@ -126,11 +126,30 @@ export default function ConversationFlowDesigner() {
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    <Button size="sm" variant="outline" className="flex-1">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        toast({
+                          title: `${template.name} Preview`,
+                          description: template.description,
+                        });
+                      }}
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       Preview
                     </Button>
-                    <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      size="sm" 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      onClick={() => {
+                        toast({
+                          title: "Template Selected",
+                          description: `${template.name} template is ready to use. Create an agent first to apply this template.`,
+                        });
+                      }}
+                    >
                       <Plus className="w-4 h-4 mr-1" />
                       Use Template
                     </Button>

@@ -310,12 +310,9 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
       <CardContent className="space-y-3">
         <div className="grid gap-2">
           {templates.map((template) => (
-            <Button
+            <div
               key={template.id}
-              size="sm"
-              variant="outline"
-              className="w-full p-3 h-auto text-left justify-start hover:bg-gray-50"
-              onClick={() => loadTemplateFlow(template.id)}
+              className="w-full p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
             >
               <div className="flex items-start space-x-3 w-full">
                 <div className={`p-1.5 rounded ${template.color}`}>
@@ -331,7 +328,35 @@ const FlowTemplates = ({ onLoadTemplate, onClearFlow }: {
                   </div>
                 </div>
               </div>
-            </Button>
+              <div className="mt-2 flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toast({
+                      title: `${template.name} Preview`,
+                      description: template.description,
+                    });
+                  }}
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  Preview
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    loadTemplateFlow(template.id);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Use Template
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
         
