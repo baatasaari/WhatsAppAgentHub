@@ -518,21 +518,34 @@ export class DatabaseStorage implements IStorage {
     averageConversionRate: number;
   }> {
     try {
-      // Select only specific columns to avoid custom_training column issue
-      const allAgents = await db.select({
-        id: agents.id,
-        status: agents.status
-      }).from(agents);
+      // Use SQL directly to avoid Drizzle schema issues
+      const agentStats = await db.execute(sql`
+        SELECT 
+          COUNT(*) as total_agents,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) as active_agents
+        FROM agents
+      `);
       
-      const totalAgents = allAgents.length;
-      const activeAgents = allAgents.filter(agent => agent.status === 'active').length;
+      const conversationStats = await db.execute(sql`
+        SELECT COUNT(*) as total_conversations FROM conversations
+      `);
       
-      const allConversations = await db.select().from(conversations);
-      const totalConversations = allConversations.length;
+      const analyticsStats = await db.execute(sql`
+        SELECT 
+          COALESCE(SUM(conversions), 0) as total_conversions,
+          COALESCE(SUM(total_conversations), 0) as total_convs
+        FROM analytics
+      `);
       
-      const allAnalytics = await db.select().from(analytics);
-      const totalConversions = allAnalytics.reduce((sum, a) => sum + (a.conversions || 0), 0);
-      const totalConvs = allAnalytics.reduce((sum, a) => sum + (a.totalConversations || 0), 0);
+      const agentData = agentStats.rows[0] as any;
+      const conversationData = conversationStats.rows[0] as any;
+      const analyticsData = analyticsStats.rows[0] as any;
+      
+      const totalAgents = parseInt(agentData.total_agents) || 0;
+      const activeAgents = parseInt(agentData.active_agents) || 0;
+      const totalConversations = parseInt(conversationData.total_conversations) || 0;
+      const totalConversions = parseInt(analyticsData.total_conversions) || 0;
+      const totalConvs = parseInt(analyticsData.total_convs) || 0;
       const averageConversionRate = totalConvs > 0 ? Math.round((totalConversions / totalConvs) * 100) : 0;
 
       return {
