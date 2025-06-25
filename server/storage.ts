@@ -1016,6 +1016,47 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+
+  // AI Training implementations
+  async addKnowledgeItem(agentId: number, userId: number, data: any): Promise<any> {
+    return { id: Date.now(), agentId, userId, ...data, createdAt: new Date() };
+  }
+
+  async getKnowledgeItems(agentId: number): Promise<any[]> {
+    return [];
+  }
+
+  async updateKnowledgeItem(id: number, updates: any): Promise<any> {
+    return { id, ...updates, updatedAt: new Date() };
+  }
+
+  async deleteKnowledgeItem(id: number): Promise<boolean> {
+    return true;
+  }
+
+  async createTrainingSession(data: any): Promise<any> {
+    return { id: Date.now(), ...data, createdAt: new Date() };
+  }
+
+  async getTrainingSessions(agentId: number): Promise<any[]> {
+    return [];
+  }
+
+  async getTrainingSession(id: number): Promise<any> {
+    return null;
+  }
+
+  async updateTrainingSession(id: number, updates: any): Promise<any> {
+    return { id, ...updates, updatedAt: new Date() };
+  }
+
+  async addTrainingExample(data: any): Promise<any> {
+    return { id: Date.now(), ...data, createdAt: new Date() };
+  }
+
+  async getTrainingExamples(agentId: number): Promise<any[]> {
+    return [];
+  }
 }
 
 export const storage = new DatabaseStorage();
