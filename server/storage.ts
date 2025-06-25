@@ -254,34 +254,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAllAgents(userId?: number): Promise<Agent[]> {
     try {
-      // Select specific columns to avoid custom_training column issue during transition
-      const query = db.select({
-        id: agents.id,
-        userId: agents.userId,
-        name: agents.name,
-        description: agents.description,
-        model: agents.model,
-        llmProvider: agents.llmProvider,
-        systemPrompt: agents.systemPrompt,
-        welcomeMessage: agents.welcomeMessage,
-        widgetColor: agents.widgetColor,
-        widgetPosition: agents.widgetPosition,
-        platformType: agents.platformType,
-        apiKey: agents.apiKey,
-        status: agents.status,
-        isActive: agents.isActive,
-        businessType: agents.businessType,
-        faqData: agents.faqData,
-        productCatalog: agents.productCatalog,
-        contactInfo: agents.contactInfo,
-        customBranding: agents.customBranding,
-        autoResponseTemplates: agents.autoResponseTemplates,
-        integrationSettings: agents.integrationSettings,
-        advancedConfig: agents.advancedConfig,
-        knowledgeBase: agents.knowledgeBase,
-        flowEnabled: agents.flowEnabled,
-        createdAt: agents.createdAt
-      }).from(agents);
+      let query = db.select().from(agents);
       
       if (userId) {
         return await query.where(eq(agents.userId, userId));
