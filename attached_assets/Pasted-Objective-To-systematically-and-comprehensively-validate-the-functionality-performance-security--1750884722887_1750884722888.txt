@@ -1,0 +1,243 @@
+Objective: To systematically and comprehensively validate the functionality, performance, security, and reliability of the AgentFlow platform across all advertised features and architectural components, ensuring it meets enterprise-grade standards.
+1. Functional Testing (Feature-by-Feature Validation)
+This category focuses on verifying that each advertised feature works as expected.
+1.1. Multi-Platform Integration
+ * WhatsApp Business API (71 Agents)
+   * Send/Receive text messages, rich media (images, videos, audio), documents.
+   * Test interactive buttons (reply, call-to-action).
+   * Verify business profile display.
+   * Test long conversations across multiple turns.
+   * Validate session handling and context preservation.
+   * Negative Test: Send unsupported media types, malformed requests.
+ * Telegram Bot API (3 Agents)
+   * Send/Receive text messages, images, documents.
+   * Test inline keyboards and custom keyboards.
+   * Verify group management (add bot to group, bot responds).
+   * Test file sharing capabilities.
+   * Validate bot commands handling.
+   * Negative Test: Test with large file sizes, invalid chat IDs.
+ * Discord Bot API (2 Agents)
+   * Send/Receive text messages, rich embeds.
+   * Test server integration (bot joins/leaves server).
+   * Validate voice announcements (if implemented via bot).
+   * Test slash commands and interactions.
+   * Negative Test: Test with excessively long embeds, unauthorized commands.
+ * Facebook Messenger (2 Agents)
+   * Send/Receive text messages.
+   * Test generic templates and quick replies.
+   * Validate social engagement features (e.g., likes, comments if applicable).
+   * Negative Test: Test with invalid page access tokens, message size limits.
+ * Instagram Direct
+   * Send/Receive visual messages (images, videos).
+   * Test story integration (if applicable, e.g., responding to story mentions).
+   * Validate DM automation flows.
+   * Negative Test: Test with private accounts, blocked users.
+ * General Platform Integration
+   * Verify seamless conversation transfer/handoff between platforms (if supported).
+   * Test agent deployment/undeployment on each platform.
+   * Validate webhook configurations for real-time messaging across all platforms.
+1.2. Custom AI Training System
+ * Knowledge Base Management
+   * Create, Read, Update, Delete (CRUD) knowledge base items.
+   * Test semantic search with OpenAI embeddings (accuracy, relevance of results).
+   * Verify handling of large knowledge bases.
+   * Test search with synonyms and related concepts.
+   * Negative Test: Search for non-existent terms, empty queries.
+ * Training Data Collection
+   * Add, edit, delete interactive conversation examples.
+   * Verify categorization of training data.
+   * Test the impact of new training data on agent responses (before/after training).
+   * Negative Test: Add malformed training data, duplicate entries.
+ * Brand Voice Configuration
+   * Configure and save tone, personality, and communication style.
+   * Verify that agent responses reflect the configured brand voice across different conversation flows.
+   * Test with extreme configurations (e.g., very formal vs. very casual).
+ * Business Context Integration
+   * Define and integrate industry-specific context and value propositions.
+   * Verify that the agent leverages this context in its responses (e.g., understanding industry jargon).
+   * Test with different industry contexts.
+ * Real-Time Learning
+   * Simulate successful conversations and monitor if the agent's performance improves over time.
+   * Verify if new conversation patterns are automatically incorporated (if this is "automatic improvement").
+   * Track and log the learning process (if visible in analytics).
+1.3. Data Source Integrations
+ * File Imports (CSV, JSON)
+   * Import valid CSV training data and JSON knowledge bases.
+   * Verify data integrity after import.
+   * Negative Test: Import malformed CSV/JSON, very large files, files with incorrect headers.
+ * CRM Systems (Salesforce, HubSpot, Pipedrive)
+   * Configure connections to each CRM (mock or sandbox environments if possible).
+   * Test bidirectional data flow (e.g., agent creating a lead in CRM, pulling customer info from CRM).
+   * Verify error handling for connection failures.
+   * Negative Test: Invalid API keys, network issues.
+ * Help Desk Systems (Zendesk, Intercom, Freshdesk)
+   * Configure connections to each help desk system.
+   * Test creating/updating tickets based on agent conversations.
+   * Verify retrieving ticket status or knowledge articles from help desk.
+   * Negative Test: Invalid credentials, help desk system downtime.
+ * Website Scraping
+   * Configure and execute automated content extraction from various web pages (different structures, dynamic content).
+   * Verify accuracy and completeness of extracted content for knowledge base.
+   * Negative Test: Scrape large websites, sites with CAPTCHAs, sites with frequently changing content, sites that block scraping.
+ * Google Sheets
+   * Import data directly from a Google Sheet (public and private with authentication).
+   * Verify data sync and integrity.
+   * Negative Test: Invalid sheet IDs, incorrect ranges, API rate limits.
+ * API Webhooks
+   * Set up and test real-time data synchronization via webhooks for various events (e.g., new customer, order update).
+   * Verify correct data payload and processing by the agent.
+   * Negative Test: Sending malformed webhook data, high volume of webhook events.
+1.4. Enterprise Features
+ * Role-Based Access Control (RBAC)
+   * Create users for each role: System Admin, Business Manager, Business User.
+   * Login as each user and verify granular permissions (e.g., Business User cannot delete agents, System Admin can manage everything).
+   * Attempt unauthorized actions and verify rejection.
+ * Multi-Tenant Architecture
+   * Create multiple organizations/tenants.
+   * Verify strict data isolation: users from one organization cannot access data/agents from another.
+   * Test agent configurations, conversations, and analytics are isolated per tenant.
+ * Comprehensive Analytics
+   * Verify accuracy of performance metrics (response times, conversation volume, agent usage).
+   * Track and verify cost tracking per LLM provider.
+   * Verify conversion analysis (e.g., lead qualification rates).
+   * Test filtering and reporting capabilities for analytics data.
+   * Validate the 17 active conversations are accurately tracked with message history.
+ * Voice Calling Integration (ElevenLabs)
+   * Simulate or actually make AI-powered phone calls for "failed conversations."
+   * Verify audio quality and naturalness of ElevenLabs voice.
+   * Test conversation flow over voice.
+   * Verify the integration correctly identifies "failed" conversations and triggers calls.
+ * Business Onboarding
+   * Execute the guided 5-step setup workflow for new organizations.
+   * Verify each step is clear, functional, and leads to a properly configured initial setup.
+   * Test edge cases during onboarding (e.g., skipping steps, invalid inputs).
+ * System Monitoring
+   * Verify health checks (/api/health, /api/health/ready, /api/health/live) return accurate status.
+   * Review audit logging for all user actions (who did what, when).
+   * Monitor performance metrics (CPU, memory, database connections) and ensure they are within acceptable limits.
+   * Verify alerts are triggered for thresholds (e.g., memory usage > 90%).
+1.5. Intelligent Conversation Flow Designer
+ * Visual Flow Builder (ReactFlow)
+   * Create complex conversation flows using drag-and-drop.
+   * Test all visual elements (nodes, edges, connectors) and their functionality.
+   * Verify saving, loading, and duplicating flows.
+   * Test responsiveness of the UI for complex flows.
+ * Pre-built Templates
+   * Utilize and customize lead qualification, customer support, and appointment booking templates.
+   * Verify that templates are functional and adaptable.
+ * Conditional Logic
+   * Design flows with dynamic paths based on user responses (e.g., IF user says X, THEN go to Y).
+   * Test all branches of conditional logic.
+   * Negative Test: Design contradictory or impossible conditional logic.
+ * Variable Management
+   * Verify context preservation across conversation steps using variables.
+   * Test setting, retrieving, and updating variables within a flow.
+   * Ensure variables are correctly passed to LLMs or external integrations.
+ * Multi-Platform Execution
+   * Create a flow and deploy it to multiple platforms (e.g., WhatsApp and Telegram).
+   * Verify platform-specific flow adaptations (e.g., buttons on WhatsApp, inline keyboards on Telegram) work correctly.
+2. Performance Testing
+This category focuses on the system's responsiveness, stability, and scalability under various loads.
+ * Response Time Benchmarking
+   * Measure average response times for AI-powered conversations across all integrated platforms, especially under peak load, aiming for <200ms.
+   * Benchmark API endpoints (e.g., /api/agents/:id/enhanced-response, /api/auth/login).
+ * Concurrency Testing
+   * Simulate 5+ simultaneous login requests and verify successful authentication without errors.
+   * Simulate 50+ concurrent operations (e.g., multiple agents handling conversations, data imports, flow designs) and monitor system stability.
+ * Load Testing
+   * Gradually increase the number of active conversations and active agents beyond current metrics (e.g., 100, 200, 500 agents) to identify breakpoints and performance bottlenecks.
+   * Monitor CPU, memory, database connections, and network I/O under increasing load.
+   * Test data ingestion (e.g., large CSV imports, frequent webhook updates) under load.
+ * Stress Testing
+   * Push the system beyond its expected limits (e.g., extremely high concurrent users, massive data imports) to determine maximum capacity and identify failure points.
+   * Observe how the system recovers after stress.
+ * Scalability Testing
+   * Evaluate if the system can scale horizontally (e.g., adding more Express server instances) to handle increased load.
+   * Test database performance with a larger dataset than current (e.g., 1 million conversations).
+ * Rate Limiting
+   * Verify that enterprise-grade rate limiting correctly throttles excessive API requests without impacting legitimate users.
+   * Test different rate limit scenarios (e.g., per user, per IP, per endpoint).
+3. Security Testing
+This category verifies the protection of the platform and its data against vulnerabilities and unauthorized access.
+ * Authentication & Authorization
+   * Session Management: Test JWT token expiration, renewal, and invalidation upon logout. Verify database persistence of sessions.
+   * Brute-Force Protection: Test login attempts with incorrect credentials to verify lockout mechanisms or rate limiting.
+   * Role-Based Access Control (RBAC): (Covered in Functional, but re-emphasize security aspect) Attempt to access/modify resources using unauthorized roles.
+ * Data Protection
+   * Encryption: Verify that sensitive data (e.g., widget configurations, API keys) are stored encrypted.
+   * Secure API Key Storage: Confirm API keys are not exposed in logs or client-side.
+   * Database Security: Test for SQL Injection vulnerabilities (Drizzle ORM helps, but verify its implementation). Verify SSL for database connections.
+   * CORS Protection: Ensure proper CORS headers are set to prevent cross-origin attacks.
+   * Security Headers: Check for X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, etc.
+   * Audit Logging: Verify that all critical user actions (login, agent creation, data deletion) are logged with sufficient detail for auditing.
+ * Input Validation & Sanitization
+   * Test all user inputs (forms, API requests) for injection vulnerabilities (XSS, SQLi, command injection).
+   * Attempt to bypass client-side validation.
+ * API Security
+   * Test for Broken Authentication and Broken Access Control on all API endpoints (/api/auth, /api/agents, /api/training, etc.).
+   * Verify that sensitive information is not leaked in API responses.
+ * Environment Variable Validation: Ensure the system correctly validates and handles missing or malformed environment variables during startup.
+ * Dependency Security Scanning: Run vulnerability scans on all third-party dependencies (npm audit, Snyk, etc.).
+4. Usability & User Experience (UX) Testing
+This category focuses on how easy and intuitive the platform is to use for its target audience.
+ * Onboarding Workflow: Test the 5-step onboarding process for clarity, ease of use, and guidance for new users.
+ * Agent Creation Wizard: Evaluate the usability of the agent creation wizard.
+ * Visual Flow Builder:
+   * Intuition and ease of drag-and-drop.
+   * Clarity of nodes, connectors, and settings.
+   * Responsiveness and performance for large flows.
+ * Navigation & Information Architecture: Assess if the platform's navigation is logical and if information is easy to find.
+ * Error Messages: Verify that error messages are clear, concise, and helpful (e.g., "Invalid API Key" instead of a generic "Error 500").
+ * Accessibility: (Optional, but recommended for enterprise-grade) Test for WCAG compliance for users with disabilities.
+ * Brand Voice Configuration: Is the interface for configuring brand voice intuitive and effective?
+ * Analytics Dashboard: Is the analytics data presented clearly and comprehensively? Are filters and drill-downs easy to use?
+5. Compatibility Testing
+This category ensures the platform functions correctly across different environments.
+ * Browser Compatibility: Test the React frontend on major browsers (Chrome, Firefox, Edge, Safari) and different versions.
+ * Operating System Compatibility: Test the application deployment on common server OS (Linux distributions, Windows Server).
+ * Database Compatibility: Verify compatibility with different PostgreSQL versions.
+ * LLM Provider Compatibility: Ensure seamless switching and functionality between OpenAI, Anthropic, and Google Gemini. Test their specific features (e.g., Anthropic's context window).
+ * Messaging Platform API Version Compatibility: Ensure the platform remains compatible with updates to WhatsApp, Telegram, Discord, Facebook, and Instagram APIs.
+6. Reliability & Disaster Recovery Testing
+This category focuses on the system's ability to operate continuously and recover from failures.
+ * High Availability: (If deployed in a cluster) Test failover mechanisms for server instances and database.
+ * Data Backup & Restore: Verify that database backups can be successfully created and restored to a working state.
+ * Error Handling & Recovery:
+   * Simulate various failure scenarios (e.g., external API downtime, database connection loss, invalid input from users, LLM API rate limits).
+   * Verify that the system handles these gracefully, logs errors, and recovers without data corruption.
+   * Test the Voice Calling Integration for failed conversations.
+ * System Uptime: Monitor uptime over an extended period.
+ * Resource Monitoring: Continuously monitor memory, CPU, disk, and network usage. Verify alerts are triggered when thresholds are exceeded.
+ * Audit Logging: Verify the integrity and completeness of audit logs even during system failures.
+7. Deployment Testing
+This category ensures the installation, setup, and deployment processes are robust.
+ * Prerequisites Validation: Test installation on a clean environment to ensure all prerequisites (Node.js 20+, PostgreSQL) are correctly identified and handled.
+ * Environment Variable Configuration: Test setting up .env file with all required variables. Test scenarios with missing or incorrect variables.
+ * Quick Start Guide: Follow the "Quick Start" steps precisely on a fresh environment and verify the application runs successfully.
+ * Initial Setup Steps: Validate the "Initial Setup" steps (Admin User creation, LLM config, Agent creation, Training Data, Widget Deployment).
+ * Production Deployment:
+   * Execute the production deployment steps (Node env, build, database migration, start).
+   * Verify all production-specific configurations (SSL/TLS, secure secrets) are correctly applied.
+   * Test Docker deployment: build the image, run the container, verify functionality.
+ * Database Migration (npm run db:push): Test migrations on existing data to ensure no data loss or corruption. Test fresh migrations.
+8. Documentation & Support Testing
+This category verifies the quality and accuracy of the provided documentation and support channels.
+ * API Documentation: Verify all API endpoints listed in "API Documentation" work as described. Check request/response formats.
+ * Usage Guide: Follow the "Usage Guide" (Creating an AI Agent, Multi-Platform Deployment) step-by-step and verify accuracy.
+ * Support Channels:
+   * Verify GitHub Issues and Discussions links are active.
+   * Verify Discord Community link.
+   * Send a test email to enterprise@agentflow.com (if appropriate for a test).
+ * Prerequisites & Setup: Ensure documentation for these sections is clear and complete.
+9. Regression Testing
+ * After any code changes, bug fixes, or new feature implementations, run a subset or full suite of the above tests to ensure existing functionality remains intact and no new bugs are introduced. Automate this as much as possible.
+Tools and Strategies for Execution:
+ * Test Management Tool: Use a tool like TestRail, Jira with Xray, or Azure DevOps Test Plans to organize test cases, track execution, and report results.
+ * Automation:
+   * Unit Tests: Already mentioned (npm test) – ensure comprehensive coverage for individual components.
+   * Integration Tests: Automate testing of API endpoints (e.g., using Postman, Newman, Cypress for API).
+   * End-to-End (E2E) Tests: Use tools like Playwright or Cypress to simulate user interactions on the UI and verify conversation flows across platforms.
+   * Performance Testing Tools: JMeter, k6, or Locust for load, stress, and concurrency testing.
+ * Mocking/Stubbing: For external APIs (LLMs, CRMs, Help Desks), use mocking frameworks to isolate AgentFlow's logic and simulate different responses (e.g., success, error, latency).
+ * Test Data Management: Prepare realistic and diverse test data sets for various scenarios.
+ * Reporting: Generate comprehensive reports that detail test coverage, passed/failed tests, identified bugs, and performance metrics.
