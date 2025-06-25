@@ -254,12 +254,10 @@ export class DatabaseStorage implements IStorage {
 
   async getAllAgents(userId?: number): Promise<Agent[]> {
     try {
-      let query = db.select().from(agents);
-      
       if (userId) {
-        return await query.where(eq(agents.userId, userId));
+        return await db.select().from(agents).where(eq(agents.userId, userId));
       }
-      return await query;
+      return await db.select().from(agents);
     } catch (error) {
       console.error('Error getting all agents:', error);
       return [];
