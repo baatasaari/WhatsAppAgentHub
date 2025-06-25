@@ -521,8 +521,7 @@ export class DatabaseStorage implements IStorage {
       // Select only specific columns to avoid custom_training column issue
       const allAgents = await db.select({
         id: agents.id,
-        status: agents.status,
-        isActive: agents.isActive
+        status: agents.status
       }).from(agents);
       
       const totalAgents = allAgents.length;
