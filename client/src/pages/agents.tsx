@@ -473,6 +473,156 @@ export default function Agents() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Agent Details View Modal */}
+      <Dialog open={!!viewingAgent} onOpenChange={() => setViewingAgent(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Agent Details</DialogTitle>
+          </DialogHeader>
+          
+          {viewingAgent && (
+            <div className="space-y-6 py-4">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Agent Name</Label>
+                    <p className="text-lg font-semibold">{viewingAgent.name}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Status</Label>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={viewingAgent.status === 'active' ? 'default' : 'secondary'}>
+                        {viewingAgent.status}
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleToggleStatus(viewingAgent)}
+                      >
+                        {viewingAgent.status === 'active' ? 'Disable' : 'Enable'}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Business Category</Label>
+                    <p className="text-sm">{viewingAgent.businessCategory || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Platform Type</Label>
+                    <p className="text-sm capitalize">{viewingAgent.platformType}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">LLM Provider</Label>
+                    <p className="text-sm">{viewingAgent.llmProvider}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Widget Color</Label>
+                    <div className="flex items-center space-x-2">
+                      <div 
+                        className="w-6 h-6 rounded border"
+                        style={{ backgroundColor: viewingAgent.widgetColor }}
+                      />
+                      <p className="text-sm">{viewingAgent.widgetColor}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Created</Label>
+                    <p className="text-sm">{new Date(viewingAgent.createdAt).toLocaleString()}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">API Token</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input 
+                        type="password" 
+                        value={viewingAgent.apiKey || '••••••••••••••••'} 
+                        readOnly 
+                        className="font-mono text-xs"
+                      />
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleClearToken(viewingAgent.id)}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        Reset
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Welcome Message</Label>
+                <p className="text-sm bg-gray-50 p-3 rounded border">
+                  {viewingAgent.welcomeMessage || 'No welcome message set'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">System Prompt</Label>
+                <div className="bg-gray-50 p-4 rounded border max-h-40 overflow-y-auto">
+                  <p className="text-sm whitespace-pre-wrap">
+                    {viewingAgent.systemPrompt || 'No system prompt configured'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center pt-4">
+                <div className="flex space-x-2">
+                  {canEditAgent(viewingAgent) && (
+                    <Button onClick={() => {
+                      setViewingAgent(null);
+                      handleEdit(viewingAgent);
+                    }}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Agent
+                    </Button>
+                  )}
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleClearToken(viewingAgent.id)}
+                  >
+                    <Key className="w-4 h-4 mr-2" />
+                    Clear Token
+                  </Button>
+                </div>
+                
+                <div className="flex space-x-2">
+                  {canDeleteAgent(viewingAgent) && (
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => {
+                        setViewingAgent(null);
+                        handleDelete(viewingAgent.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Agent
+                    </Button>
+                  )}
+                  
+                  <Button variant="outline" onClick={() => setViewingAgent(null)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

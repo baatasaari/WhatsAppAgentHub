@@ -961,6 +961,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/agents/:id/clear-token", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Check ownership unless admin
+      const existingAgent = await storage.getAgent(id);
+      if (!existingAgent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      
+      if (req.user!.role !== 'system_admin' && req.user!.role !== 'business_manager' && existingAgent.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Generate new API key
+      const newApiKey = require('crypto').randomBytes(32).toString('hex');
+      
+      const updatedAgent = await storage.updateAgent(id, { apiKey: newApiKey });
+      res.json({ message: "Token cleared successfully", agent: updatedAgent });
+    } catch (error) {
+      console.error('Clear token error:', error);
+      res.status(500).json({ message: "Failed to clear agent token" });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
