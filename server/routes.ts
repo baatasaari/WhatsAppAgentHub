@@ -246,7 +246,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/me', authenticate, async (req: AuthenticatedRequest, res) => {
-    res.json({ user: req.user });
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+      
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        companyName: user.companyName,
+        role: user.role,
+        status: user.status,
+        user: user // Keep user object for backward compatibility
+      });
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      res.status(500).json({ message: 'Failed to fetch user info' });
+    }
   });
 
   // User profile management endpoints
@@ -2749,6 +2768,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Platform test error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
+  });
+
+  // 404 handler for unmatched API routes
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
   });
 
   const httpServer = createServer(app);
