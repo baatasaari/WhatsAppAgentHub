@@ -302,12 +302,12 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        {/* Action Buttons - Always Visible */}
+                        {/* ADMIN ACTIONS - VISIBLE NOW */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewAgent(agent)}
-                          className="h-8 px-3 text-xs"
+                          className="h-8 px-3 text-xs bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           View
@@ -318,10 +318,10 @@ export default function Agents() {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="h-8 w-8 p-0 border border-gray-300 hover:bg-gray-50 focus:bg-gray-50 data-[state=open]:bg-gray-50 shadow-sm"
+                              className="h-8 w-8 p-0 bg-red-50 border-red-200 hover:bg-red-100 focus:bg-red-100 data-[state=open]:bg-red-100 shadow-md"
                             >
                               <span className="sr-only">More actions</span>
-                              <MoreHorizontal className="h-4 w-4 text-gray-700" />
+                              <MoreHorizontal className="h-4 w-4 text-red-700" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48 z-50 bg-white border border-gray-200 shadow-lg">
