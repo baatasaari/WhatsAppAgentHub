@@ -26,7 +26,13 @@ import {
   Phone,
   ArrowRight,
   Shield,
-  Zap
+  Zap,
+  Brain,
+  BookOpen,
+  Target,
+  Lightbulb,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
