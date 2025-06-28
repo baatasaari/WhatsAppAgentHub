@@ -73,21 +73,45 @@ export default function AgentDashboard() {
 
   const { data: agents, isLoading: agentsLoading } = useQuery({
     queryKey: ["/api/agents"],
+    queryFn: () => 
+      fetch('/api/agents', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch agents');
+        return res.json();
+      }),
   });
 
   const { data: performance, isLoading: performanceLoading } = useQuery({
     queryKey: ["/api/agents/performance", selectedAgent, timeRange],
     queryFn: () => 
-      fetch(`/api/agents/performance?agentId=${selectedAgent}&timeRange=${timeRange}`)
-        .then(res => res.json()),
+      fetch(`/api/agents/performance?agentId=${selectedAgent}&timeRange=${timeRange}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch performance data');
+        return res.json();
+      }),
     enabled: !!selectedAgent,
   });
 
   const { data: overallStats } = useQuery({
     queryKey: ["/api/analytics/summary", timeRange],
     queryFn: () => 
-      fetch(`/api/analytics/summary?timeRange=${timeRange}`)
-        .then(res => res.json()),
+      fetch(`/api/analytics/summary?timeRange=${timeRange}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch analytics');
+        return res.json();
+      }),
     enabled: Array.isArray(agents) && agents.length > 0,
   });
 
@@ -101,6 +125,11 @@ export default function AgentDashboard() {
       </div>
     );
   }
+
+  // Debug: Log agents data
+  console.log('Agents data:', agents);
+  console.log('Is array:', Array.isArray(agents));
+  console.log('Length:', agents?.length);
 
   const selectedAgentData = performance as AgentPerformance;
 
