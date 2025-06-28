@@ -73,46 +73,16 @@ export default function AgentDashboard() {
 
   const { data: agents, isLoading: agentsLoading } = useQuery({
     queryKey: ["/api/agents"],
-    queryFn: () => 
-      fetch('/api/agents', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        }
-      }).then(res => {
-        if (!res.ok) throw new Error('Failed to fetch agents');
-        return res.json();
-      }),
   });
 
   const { data: performance, isLoading: performanceLoading } = useQuery({
-    queryKey: ["/api/agents/performance", selectedAgent, timeRange],
-    queryFn: () => 
-      fetch(`/api/agents/performance?agentId=${selectedAgent}&timeRange=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        }
-      }).then(res => {
-        if (!res.ok) throw new Error('Failed to fetch performance data');
-        return res.json();
-      }),
+    queryKey: [`/api/agents/performance?agentId=${selectedAgent}&timeRange=${timeRange}`],
     enabled: !!selectedAgent,
   });
 
   const { data: overallStats } = useQuery({
-    queryKey: ["/api/analytics/summary", timeRange],
-    queryFn: () => 
-      fetch(`/api/analytics/summary?timeRange=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        }
-      }).then(res => {
-        if (!res.ok) throw new Error('Failed to fetch analytics');
-        return res.json();
-      }),
-    enabled: Array.isArray(agents) && agents.length > 0,
+    queryKey: [`/api/analytics/summary?timeRange=${timeRange}`],
+    enabled: agentsList.length > 0,
   });
 
   if (agentsLoading) {
@@ -126,10 +96,10 @@ export default function AgentDashboard() {
     );
   }
 
-  // Debug: Log agents data
-  console.log('Agents data:', agents);
-  console.log('Is array:', Array.isArray(agents));
-  console.log('Length:', agents?.length);
+  // Handle empty or undefined agents data
+  const agentsList = Array.isArray(agents) ? agents : [];
+  
+  console.log('Agents data:', agentsList, 'Count:', agentsList.length);
 
   const selectedAgentData = performance as AgentPerformance;
 
@@ -143,7 +113,7 @@ export default function AgentDashboard() {
               <SelectValue placeholder="Select agent..." />
             </SelectTrigger>
             <SelectContent>
-              {Array.isArray(agents) && agents.map((agent: any) => (
+              {agentsList.map((agent: any) => (
                 <SelectItem key={agent.id} value={agent.id.toString()}>
                   {agent.name}
                 </SelectItem>
