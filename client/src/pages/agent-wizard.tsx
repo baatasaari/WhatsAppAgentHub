@@ -183,9 +183,11 @@ export default function AgentWizard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
+    console.log('Edit mode check:', { editId, urlParams: window.location.search });
     if (editId) {
       setEditingAgentId(editId);
       setIsEditMode(true);
+      console.log('Edit mode activated for agent ID:', editId);
     }
   }, []);
   
@@ -243,10 +245,20 @@ export default function AgentWizard() {
   });
 
   // Fetch existing agent data when in edit mode
-  const { data: existingAgent, isLoading: agentLoading } = useQuery({
+  const { data: existingAgent, isLoading: agentLoading, error: agentError } = useQuery({
     queryKey: ["/api/agents", editingAgentId],
     enabled: isAuthenticated && isEditMode && !!editingAgentId,
   });
+
+  // Debug agent data fetch
+  useEffect(() => {
+    if (existingAgent) {
+      console.log('Fetched existing agent data:', existingAgent);
+    }
+    if (agentError) {
+      console.error('Error fetching agent data:', agentError);
+    }
+  }, [existingAgent, agentError]);
 
   // Fallback industry verticals if API fails
   const fallbackIndustries = [
@@ -320,8 +332,10 @@ export default function AgentWizard() {
 
   // Populate form with existing agent data when in edit mode
   useEffect(() => {
+    console.log('Form population effect triggered:', { existingAgent, isEditMode, editingAgentId });
     if (existingAgent && isEditMode && typeof existingAgent === 'object') {
       const agent = existingAgent as Record<string, any>;
+      console.log('Populating form with agent data:', agent);
       
       // Update form with existing agent data
       form.reset({
