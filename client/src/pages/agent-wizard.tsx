@@ -176,6 +176,25 @@ export default function AgentWizard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  
+  // Knowledge Base state
+  const [knowledgeData, setKnowledgeData] = useState({
+    websiteUrls: '',
+    cloudStorage: '',
+    databaseConnection: '',
+    apiEndpoints: '',
+    businessInfo: ''
+  });
+  
+  // Training Examples state
+  const [trainingExamples, setTrainingExamples] = useState({
+    customerQuestions: '',
+    supportScenarios: '',
+    salesConversations: '',
+    brandVoiceTone: 'professional',
+    personality: 'helpful',
+    communicationStyle: 'technical'
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -684,29 +703,60 @@ export default function AgentWizard() {
                     <h3 className="font-semibold text-gray-900">Knowledge Base</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-4">
-                    Add information about your business, products, and services
+                    Connect data sources for your agent to reference
                   </p>
-                  <div className="space-y-3">
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Business Info</span>
-                        <Badge variant="outline">Optional</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Company details, history, values</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Website URLs</label>
+                      <Textarea 
+                        placeholder="https://yourwebsite.com/about&#10;https://yourwebsite.com/products&#10;https://yourwebsite.com/support"
+                        className="min-h-[80px]"
+                        value={knowledgeData.websiteUrls}
+                        onChange={(e) => setKnowledgeData(prev => ({ ...prev, websiteUrls: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">One URL per line - pages to crawl for information</p>
                     </div>
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Products/Services</span>
-                        <Badge variant="outline">Optional</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Catalog, features, pricing</p>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Cloud Storage</label>
+                      <Input 
+                        placeholder="gs://bucket-name/folder or s3://bucket-name/folder"
+                        value={knowledgeData.cloudStorage}
+                        onChange={(e) => setKnowledgeData(prev => ({ ...prev, cloudStorage: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Google Cloud Storage, AWS S3, or Azure Blob URLs</p>
                     </div>
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">FAQs</span>
-                        <Badge variant="outline">Recommended</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Common questions and answers</p>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Database Connection</label>
+                      <Input 
+                        placeholder="bigquery://project.dataset.table or postgresql://connection-string"
+                        value={knowledgeData.databaseConnection}
+                        onChange={(e) => setKnowledgeData(prev => ({ ...prev, databaseConnection: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">BigQuery, PostgreSQL, MySQL, or other database connections</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">API Endpoints</label>
+                      <Textarea 
+                        placeholder="https://api.yourservice.com/knowledge&#10;https://api.yourservice.com/faq"
+                        className="min-h-[60px]"
+                        value={knowledgeData.apiEndpoints}
+                        onChange={(e) => setKnowledgeData(prev => ({ ...prev, apiEndpoints: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">REST API endpoints that return knowledge data</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Information</label>
+                      <Textarea 
+                        placeholder="Company overview, history, mission, values, team information..."
+                        className="min-h-[100px]"
+                        value={knowledgeData.businessInfo}
+                        onChange={(e) => setKnowledgeData(prev => ({ ...prev, businessInfo: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Direct text about your company and services</p>
                     </div>
                   </div>
                 </CardContent>
@@ -720,29 +770,40 @@ export default function AgentWizard() {
                     <h3 className="font-semibold text-gray-900">Training Examples</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-4">
-                    Provide example conversations to improve responses
+                    Add example conversations to train your agent
                   </p>
-                  <div className="space-y-3">
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Customer Questions</span>
-                        <Badge variant="outline">Optional</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Common customer inquiries</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Customer Questions & Answers</label>
+                      <Textarea 
+                        placeholder="Q: What are your business hours?&#10;A: We're open Monday-Friday 9AM-6PM EST.&#10;&#10;Q: Do you offer refunds?&#10;A: Yes, we offer full refunds within 30 days of purchase."
+                        className="min-h-[100px]"
+                        value={trainingExamples.customerQuestions}
+                        onChange={(e) => setTrainingExamples(prev => ({ ...prev, customerQuestions: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Format: Q: question A: answer, one pair per section</p>
                     </div>
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Support Scenarios</span>
-                        <Badge variant="outline">Optional</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Problem resolution examples</p>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Support Scenarios</label>
+                      <Textarea 
+                        placeholder="Customer: I'm having trouble with my order&#10;Agent: I'd be happy to help you with that. Can you provide your order number?&#10;Customer: It's #12345&#10;Agent: Thank you. I can see your order and will resolve this immediately."
+                        className="min-h-[80px]"
+                        value={trainingExamples.supportScenarios}
+                        onChange={(e) => setTrainingExamples(prev => ({ ...prev, supportScenarios: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Example support conversations showing problem resolution</p>
                     </div>
-                    <div className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Sales Conversations</span>
-                        <Badge variant="outline">Optional</Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Lead qualification dialogues</p>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sales Conversations</label>
+                      <Textarea 
+                        placeholder="Customer: I'm interested in your premium package&#10;Agent: Great choice! Our premium package includes X, Y, and Z. Would you like me to explain the benefits?&#10;Customer: Yes please&#10;Agent: The key benefits are..."
+                        className="min-h-[80px]"
+                        value={trainingExamples.salesConversations}
+                        onChange={(e) => setTrainingExamples(prev => ({ ...prev, salesConversations: e.target.value }))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Example sales and lead qualification dialogues</p>
                     </div>
                   </div>
                 </CardContent>
@@ -759,7 +820,7 @@ export default function AgentWizard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tone</label>
-                    <Select defaultValue="professional">
+                    <Select value={trainingExamples.brandVoiceTone} onValueChange={(value) => setTrainingExamples(prev => ({ ...prev, brandVoiceTone: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -774,7 +835,7 @@ export default function AgentWizard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Personality</label>
-                    <Select defaultValue="helpful">
+                    <Select value={trainingExamples.personality} onValueChange={(value) => setTrainingExamples(prev => ({ ...prev, personality: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -789,7 +850,7 @@ export default function AgentWizard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
-                    <Select defaultValue="concise">
+                    <Select value={trainingExamples.communicationStyle} onValueChange={(value) => setTrainingExamples(prev => ({ ...prev, communicationStyle: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
