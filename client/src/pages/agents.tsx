@@ -63,9 +63,9 @@ export default function Agents() {
     }
   };
 
-  const filteredAgents = agents?.filter((agent: any) => 
+  const filteredAgents = Array.isArray(agents) ? agents.filter((agent: any) => 
     statusFilter === "all" || agent.status === statusFilter
-  ) || [];
+  ) : [];
 
   // Show error state for authentication issues
   if (error && error.message.includes('401')) {
