@@ -2,22 +2,25 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Edit, Pause, Play, Trash2, GitBranch, MoreHorizontal, Plus } from "lucide-react";
+import { Bot, Edit, Pause, Play, Trash2, GitBranch, MoreHorizontal, Plus, Eye, Key, Power, PowerOff, Settings, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 export default function Agents() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [viewingAgent, setViewingAgent] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     systemPrompt: "",
@@ -65,6 +68,19 @@ export default function Agents() {
     },
     onError: () => {
       toast({ title: "Failed to delete agent", variant: "destructive" });
+    },
+  });
+
+  const clearTokenMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("POST", `/api/agents/${id}/clear-token`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
+      toast({ title: "Agent token cleared successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to clear agent token", variant: "destructive" });
     },
   });
 
@@ -117,6 +133,24 @@ export default function Agents() {
     if (user?.role === 'system_admin') return true;
     if (user?.role === 'business_manager' && agent.userId === user.id) return true;
     return false;
+  };
+
+  const handleViewAgent = (agent: any) => {
+    setViewingAgent(agent);
+  };
+
+  const handleClearToken = (id: number) => {
+    if (confirm("Are you sure you want to clear this agent's token? This will generate a new API key.")) {
+      clearTokenMutation.mutate(id);
+    }
+  };
+
+  const handleToggleStatus = (agent: any) => {
+    const newStatus = agent.status === 'active' ? 'paused' : 'active';
+    updateAgentMutation.mutate({ 
+      id: agent.id, 
+      updates: { status: newStatus } 
+    });
   };
 
   const filteredAgents = Array.isArray(agents) ? agents.filter((agent: any) => 
@@ -267,46 +301,58 @@ export default function Agents() {
                       {new Date(agent.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        {canEditAgent(agent) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(agent)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            <Edit className="w-4 h-4" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleStatusToggle(agent)}
-                          className={
-                            agent.status === 'active' 
-                              ? "text-yellow-600 hover:text-yellow-900"
-                              : "text-green-600 hover:text-green-900"
-                          }
-                          disabled={updateAgentMutation.isPending}
-                        >
-                          {agent.status === 'active' ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewAgent(agent)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          
+                          {canEditAgent(agent) && (
+                            <DropdownMenuItem onClick={() => handleEdit(agent)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Agent
+                            </DropdownMenuItem>
                           )}
-                        </Button>
-                        {canDeleteAgent(agent) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(agent.id)}
-                            className="text-red-600 hover:text-red-900"
-                            disabled={deleteAgentMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                          
+                          <DropdownMenuItem onClick={() => handleToggleStatus(agent)}>
+                            {agent.status === 'active' ? (
+                              <>
+                                <PowerOff className="mr-2 h-4 w-4" />
+                                Disable Agent
+                              </>
+                            ) : (
+                              <>
+                                <Power className="mr-2 h-4 w-4" />
+                                Enable Agent
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem onClick={() => handleClearToken(agent.id)}>
+                            <Key className="mr-2 h-4 w-4" />
+                            Clear Token
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuSeparator />
+                          
+                          {canDeleteAgent(agent) && (
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(agent.id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Agent
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
