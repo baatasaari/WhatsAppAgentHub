@@ -80,6 +80,9 @@ export default function AgentDashboard() {
     enabled: !!selectedAgent,
   });
 
+  // Handle empty or undefined agents data
+  const agentsList = Array.isArray(agents) ? agents : [];
+  
   const { data: overallStats } = useQuery({
     queryKey: [`/api/analytics/summary?timeRange=${timeRange}`],
     enabled: agentsList.length > 0,
@@ -95,13 +98,11 @@ export default function AgentDashboard() {
       </div>
     );
   }
-
-  // Handle empty or undefined agents data
-  const agentsList = Array.isArray(agents) ? agents : [];
   
   console.log('Agents data:', agentsList, 'Count:', agentsList.length);
 
   const selectedAgentData = performance as AgentPerformance;
+  const statsData = overallStats as any;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -113,11 +114,17 @@ export default function AgentDashboard() {
               <SelectValue placeholder="Select agent..." />
             </SelectTrigger>
             <SelectContent>
-              {agentsList.map((agent: any) => (
-                <SelectItem key={agent.id} value={agent.id.toString()}>
-                  {agent.name}
+              {agentsList.length > 0 ? (
+                agentsList.map((agent: any) => (
+                  <SelectItem key={agent.id} value={agent.id.toString()}>
+                    {agent.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-agents" disabled>
+                  No agents available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -135,7 +142,7 @@ export default function AgentDashboard() {
       </div>
 
       {/* Overall Stats Cards */}
-      {overallStats && (
+      {!selectedAgent && agentsList.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -143,9 +150,9 @@ export default function AgentDashboard() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overallStats.totalAgents}</div>
+              <div className="text-2xl font-bold">{agentsList.length}</div>
               <p className="text-xs text-muted-foreground">
-                {overallStats.activeAgents} active
+                {agentsList.filter((a: any) => a.status === 'active').length} active
               </p>
             </CardContent>
           </Card>
@@ -155,9 +162,9 @@ export default function AgentDashboard() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overallStats.totalConversations}</div>
+              <div className="text-2xl font-bold">{(overallStats as any)?.totalConversations || 0}</div>
               <p className="text-xs text-muted-foreground">
-                +{overallStats.conversationGrowth}% from last period
+                +{(overallStats as any)?.conversationGrowth || 0}% from last period
               </p>
             </CardContent>
           </Card>
@@ -167,9 +174,9 @@ export default function AgentDashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overallStats.avgResponseTime}s</div>
+              <div className="text-2xl font-bold">{(overallStats as any)?.avgResponseTime || 0}s</div>
               <p className="text-xs text-muted-foreground">
-                {overallStats.responseTimeChange > 0 ? '+' : ''}{overallStats.responseTimeChange}% change
+                {((overallStats as any)?.responseTimeChange || 0) > 0 ? '+' : ''}{(overallStats as any)?.responseTimeChange || 0}% change
               </p>
             </CardContent>
           </Card>
@@ -179,9 +186,9 @@ export default function AgentDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${overallStats.totalCost}</div>
+              <div className="text-2xl font-bold">${(overallStats as any)?.totalCost || 0}</div>
               <p className="text-xs text-muted-foreground">
-                ${overallStats.costPerConversation} per conversation
+                ${(overallStats as any)?.costPerConversation || 0} per conversation
               </p>
             </CardContent>
           </Card>
