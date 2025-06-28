@@ -302,21 +302,32 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
+                        {/* Action Buttons - Always Visible */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewAgent(agent)}
+                          className="h-8 px-3 text-xs"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                        
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button 
-                              variant="ghost" 
+                              variant="outline" 
                               size="sm" 
-                              className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
+                              className="h-8 w-8 p-0 border border-gray-300 hover:bg-gray-50 focus:bg-gray-50 data-[state=open]:bg-gray-50 shadow-sm"
                             >
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4 text-gray-600" />
+                              <span className="sr-only">More actions</span>
+                              <MoreHorizontal className="h-4 w-4 text-gray-700" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 z-50">
+                          <DropdownMenuContent align="end" className="w-48 z-50 bg-white border border-gray-200 shadow-lg">
                             <DropdownMenuItem 
                               onClick={() => handleViewAgent(agent)}
-                              className="cursor-pointer"
+                              className="cursor-pointer hover:bg-gray-50"
                             >
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
