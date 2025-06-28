@@ -178,8 +178,8 @@ export default function Agents() {
 
   const handleEditAgent = (agent: any) => {
     try {
-      // Navigate to agent wizard for editing
-      setLocation('/wizard');
+      // Navigate to agent wizard for editing with agent ID
+      setLocation(`/wizard?edit=${agent.id}`);
     } catch (error) {
       console.error('Error navigating to edit agent:', error);
       toast({

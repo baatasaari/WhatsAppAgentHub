@@ -173,9 +173,21 @@ export default function AgentWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+
+  // Check for edit mode from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      setEditingAgentId(editId);
+      setIsEditMode(true);
+    }
+  }, []);
   
   // Knowledge Base state
   const [knowledgeData, setKnowledgeData] = useState({
@@ -228,6 +240,12 @@ export default function AgentWizard() {
       }
       return failureCount < 3;
     },
+  });
+
+  // Fetch existing agent data when in edit mode
+  const { data: existingAgent, isLoading: agentLoading } = useQuery({
+    queryKey: ["/api/agents", editingAgentId],
+    enabled: isAuthenticated && isEditMode && !!editingAgentId,
   });
 
   // Fallback industry verticals if API fails
@@ -300,6 +318,45 @@ export default function AgentWizard() {
     },
   });
 
+  // Populate form with existing agent data when in edit mode
+  useEffect(() => {
+    if (existingAgent && isEditMode) {
+      // Update form with existing agent data
+      form.reset({
+        name: existingAgent.name || "",
+        businessCategory: existingAgent.businessCategory || "",
+        description: existingAgent.description || "",
+        llmProvider: existingAgent.llmProvider || "",
+        systemPrompt: existingAgent.systemPrompt || "",
+        widgetColor: existingAgent.widgetColor || "#25D366",
+        welcomeMessage: existingAgent.welcomeMessage || "Hi! How can I help you today?",
+        operatingHours: existingAgent.operatingHours || "24/7",
+        // Platform credentials
+        whatsappNumber: existingAgent.whatsappNumber || "",
+        whatsappApiKey: existingAgent.whatsappApiKey || "",
+        whatsappWebhook: existingAgent.whatsappWebhook || "",
+        facebookPageId: existingAgent.facebookPageId || "",
+        facebookAccessToken: existingAgent.facebookAccessToken || "",
+        facebookWebhook: existingAgent.facebookWebhook || "",
+        instagramBusinessId: existingAgent.instagramBusinessId || "",
+        instagramAccessToken: existingAgent.instagramAccessToken || "",
+        lineChannelId: existingAgent.lineChannelId || "",
+        lineChannelSecret: existingAgent.lineChannelSecret || "",
+        lineChannelToken: existingAgent.lineChannelToken || "",
+        telegramBotToken: existingAgent.telegramBotToken || "",
+        telegramUsername: existingAgent.telegramUsername || "",
+        discordBotToken: existingAgent.discordBotToken || "",
+        discordGuildId: existingAgent.discordGuildId || "",
+        discordChannelId: existingAgent.discordChannelId || "",
+      });
+
+      // Set platform selection based on existing agent
+      if (existingAgent.platformType) {
+        setLocalSelectedPlatforms([existingAgent.platformType]);
+      }
+    }
+  }, [existingAgent, isEditMode, form]);
+
   // Use local state for platform selection
   const [localSelectedPlatforms, setLocalSelectedPlatforms] = useState<string[]>([]);
   
@@ -321,22 +378,16 @@ export default function AgentWizard() {
     mutationFn: async (data: WizardFormData) => {
       setIsCreating(true);
       
-      const createdAgents = [];
-      for (const platformId of localSelectedPlatforms) {
-        const platform = platformTypes.find(p => p.id === platformId);
-        if (!platform) continue;
-
+      if (isEditMode && editingAgentId) {
+        // Edit existing agent
         const agentData = {
-          name: `${data.name} - ${platform.name}`,
+          name: data.name,
           businessCategory: data.businessCategory,
           llmProvider: data.llmProvider,
           systemPrompt: data.systemPrompt,
-          platformTypes: [platformId], // Send as array to match backend expectation
-          widgetPosition: "bottom-right",
           widgetColor: data.widgetColor,
           welcomeMessage: data.welcomeMessage,
           operatingHours: data.operatingHours,
-          status: "active",
           // Platform-specific fields
           whatsappNumber: data.whatsappNumber,
           whatsappApiKey: data.whatsappApiKey,
@@ -356,21 +407,69 @@ export default function AgentWizard() {
           discordChannelId: data.discordChannelId,
         };
 
-        const response = await apiRequest("POST", "/api/agents", agentData);
+        const response = await apiRequest("PUT", `/api/agents/${editingAgentId}`, agentData);
         const agent = await response.json();
-        createdAgents.push(agent);
+        return [agent];
+      } else {
+        // Create new agents
+        const createdAgents = [];
+        for (const platformId of localSelectedPlatforms) {
+          const platform = platformTypes.find(p => p.id === platformId);
+          if (!platform) continue;
+
+          const agentData = {
+            name: `${data.name} - ${platform.name}`,
+            businessCategory: data.businessCategory,
+            llmProvider: data.llmProvider,
+            systemPrompt: data.systemPrompt,
+            platformTypes: [platformId], // Send as array to match backend expectation
+            widgetPosition: "bottom-right",
+            widgetColor: data.widgetColor,
+            welcomeMessage: data.welcomeMessage,
+            operatingHours: data.operatingHours,
+            status: "active",
+            // Platform-specific fields
+            whatsappNumber: data.whatsappNumber,
+            whatsappApiKey: data.whatsappApiKey,
+            whatsappWebhook: data.whatsappWebhook,
+            facebookPageId: data.facebookPageId,
+            facebookAccessToken: data.facebookAccessToken,
+            facebookWebhook: data.facebookWebhook,
+            instagramBusinessId: data.instagramBusinessId,
+            instagramAccessToken: data.instagramAccessToken,
+            lineChannelId: data.lineChannelId,
+            lineChannelSecret: data.lineChannelSecret,
+            lineChannelToken: data.lineChannelToken,
+            telegramBotToken: data.telegramBotToken,
+            telegramUsername: data.telegramUsername,
+            discordBotToken: data.discordBotToken,
+            discordGuildId: data.discordGuildId,
+            discordChannelId: data.discordChannelId,
+          };
+
+          const response = await apiRequest("POST", "/api/agents", agentData);
+          const agent = await response.json();
+          createdAgents.push(agent);
+        }
+        
+        return createdAgents;
       }
-      
-      return createdAgents;
     },
     onSuccess: (agents) => {
       setIsCreating(false);
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
       
-      toast({
-        title: "Agents Created Successfully!",
-        description: `Created ${agents.length} agent${agents.length > 1 ? 's' : ''} across ${localSelectedPlatforms.length} platform${localSelectedPlatforms.length > 1 ? 's' : ''}`,
-      });
+      if (isEditMode) {
+        toast({
+          title: "Agent Updated Successfully!",
+          description: "Your agent has been updated with the new configuration.",
+        });
+      } else {
+        toast({
+          title: "Agents Created Successfully!",
+          description: `Created ${agents.length} agent${agents.length > 1 ? 's' : ''} across ${localSelectedPlatforms.length} platform${localSelectedPlatforms.length > 1 ? 's' : ''}`,
+        });
+      }
       
       setLocation("/agents");
     },
