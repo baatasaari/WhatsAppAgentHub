@@ -801,6 +801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
+      console.log('Agent creation request body:', JSON.stringify(req.body, null, 2));
       const { name, llmProvider, model, systemPrompt, platformType, widgetColor } = req.body;
       
       // Enhanced validation
