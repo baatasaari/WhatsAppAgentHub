@@ -246,7 +246,7 @@ export default function AgentWizard() {
 
   // Fetch existing agent data when in edit mode
   const { data: existingAgent, isLoading: agentLoading, error: agentError } = useQuery({
-    queryKey: ["/api/agents", editingAgentId],
+    queryKey: [`/api/agents/${editingAgentId}`],
     enabled: isAuthenticated && isEditMode && !!editingAgentId,
   });
 
@@ -333,7 +333,7 @@ export default function AgentWizard() {
   // Populate form with existing agent data when in edit mode
   useEffect(() => {
     console.log('Form population effect triggered:', { existingAgent, isEditMode, editingAgentId });
-    if (existingAgent && isEditMode && typeof existingAgent === 'object') {
+    if (existingAgent && isEditMode && typeof existingAgent === 'object' && !Array.isArray(existingAgent)) {
       const agent = existingAgent as Record<string, any>;
       console.log('Populating form with agent data:', agent);
       
