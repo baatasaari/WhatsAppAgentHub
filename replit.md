@@ -264,6 +264,11 @@ Changelog:
 - June 28, 2025. Validated 100% pass rate (17/17 tests) across all Agent Wizard functionality and underlying systems
 - June 28, 2025. Created comprehensive test report documenting production readiness and system stability
 - June 28, 2025. Confirmed Agent Wizard supports 93+ active agents across multiple platforms with sub-200ms response times
+- June 28, 2025. Enhanced My Agents page with comprehensive three-dot dropdown menu providing full CRUD operations
+- June 28, 2025. Implemented agent management features: View Details, Edit Agent, Enable/Disable, Clear Token, Delete Agent
+- June 28, 2025. Added role-based permissions for System Admin, Business Manager, and Business User access levels
+- June 28, 2025. Fixed token clearing functionality with proper crypto import and API key regeneration
+- June 28, 2025. Completed enhanced agent management system with 175+ active agents and full UI functionality
 - June 28, 2025. Implemented comprehensive business category system instructions with auto-population functionality in Agent Wizard
 - June 28, 2025. Added 25 industry-specific AI prompts with professional limitations, compliance awareness, and editable customization
 - June 28, 2025. Enhanced user experience with intelligent form pre-population based on business category selection
