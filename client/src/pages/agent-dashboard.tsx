@@ -85,6 +85,10 @@ export default function AgentDashboard() {
 
   const { data: overallStats } = useQuery({
     queryKey: ["/api/analytics/summary", timeRange],
+    queryFn: () => 
+      fetch(`/api/analytics/summary?timeRange=${timeRange}`)
+        .then(res => res.json()),
+    enabled: Array.isArray(agents) && agents.length > 0,
   });
 
   if (agentsLoading) {
@@ -110,7 +114,7 @@ export default function AgentDashboard() {
               <SelectValue placeholder="Select agent..." />
             </SelectTrigger>
             <SelectContent>
-              {agents?.map((agent: any) => (
+              {Array.isArray(agents) && agents.map((agent: any) => (
                 <SelectItem key={agent.id} value={agent.id.toString()}>
                   {agent.name}
                 </SelectItem>
