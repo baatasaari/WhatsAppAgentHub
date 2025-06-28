@@ -37,6 +37,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 // Platform definitions
 const platformTypes = [
@@ -174,16 +175,58 @@ export default function AgentWizard() {
   const [isCreating, setIsCreating] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the Agent Wizard.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        setLocation("/login");
+      }, 1000);
+      return;
+    }
+  }, [authLoading, isAuthenticated, setLocation, toast]);
 
   // Fetch available LLM models
   const { data: availableModels, isLoading: modelsLoading } = useQuery({
     queryKey: ["/api/models"],
+    enabled: isAuthenticated,
   });
 
-  // Fetch industry verticals
-  const { data: industryVerticals, isLoading: industriesLoading } = useQuery({
+  // Fetch industry verticals - only fetch when authenticated
+  const { data: industryVerticals, isLoading: industriesLoading, error: industriesError } = useQuery({
     queryKey: ["/api/industry-verticals"],
+    enabled: isAuthenticated,
+    retry: (failureCount, error) => {
+      // Don't retry on authentication errors
+      if (error.message.includes('401')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  // Handle authentication loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (redirect will happen)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const form = useForm<WizardFormData>({
     resolver: zodResolver(wizardSchema),
