@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2, FileText, Clipboard, Brain, GitBranch } from "lucide-react";
+import { Bot, Home, Plus, BarChart3, Code, User, Eye, Settings, Smartphone, TestTube, MessageSquare, Phone, Wand2, FileText, Clipboard, Brain, GitBranch, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const getNavigationForRole = (userRole: string) => {
@@ -15,6 +15,7 @@ const getNavigationForRole = (userRole: string) => {
     { name: "Widget Preview", href: "/preview", icon: Eye },
     { name: "Embed Code", href: "/embed-code", icon: Code },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Agent Dashboard", href: "/agent-dashboard", icon: TrendingUp },
     { name: "Platform Test", href: "/test", icon: TestTube },
   ];
 

@@ -77,6 +77,9 @@ export default function AgentDashboard() {
 
   const { data: performance, isLoading: performanceLoading } = useQuery({
     queryKey: ["/api/agents/performance", selectedAgent, timeRange],
+    queryFn: () => 
+      fetch(`/api/agents/performance?agentId=${selectedAgent}&timeRange=${timeRange}`)
+        .then(res => res.json()),
     enabled: !!selectedAgent,
   });
 
