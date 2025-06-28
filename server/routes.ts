@@ -8,6 +8,7 @@ import { generateChatResponse, qualifyLead } from "./services/llm-providers";
 import { authenticate, requireAdmin, requireApproved, requireSystemAdmin, requireBusinessManager, AuthenticatedRequest, AuthService } from "./auth";
 import { nanoid } from "nanoid";
 import { createSecureWidgetConfig } from "./encryption";
+import { randomBytes } from "crypto";
 import { whatsappService, type WhatsAppWebhookPayload } from "./services/whatsapp-business";
 import { voiceCallingService } from "./services/voice-calling";
 import { logger } from "./services/logging";
@@ -976,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate new API key
-      const newApiKey = require('crypto').randomBytes(32).toString('hex');
+      const newApiKey = randomBytes(32).toString('hex');
       
       const updatedAgent = await storage.updateAgent(id, { apiKey: newApiKey });
       res.json({ message: "Token cleared successfully", agent: updatedAgent });

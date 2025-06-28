@@ -301,58 +301,76 @@ export default function Agents() {
                       {new Date(agent.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => handleViewAgent(agent)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          
-                          {canEditAgent(agent) && (
-                            <DropdownMenuItem onClick={() => handleEdit(agent)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Agent
-                            </DropdownMenuItem>
-                          )}
-                          
-                          <DropdownMenuItem onClick={() => handleToggleStatus(agent)}>
-                            {agent.status === 'active' ? (
-                              <>
-                                <PowerOff className="mr-2 h-4 w-4" />
-                                Disable Agent
-                              </>
-                            ) : (
-                              <>
-                                <Power className="mr-2 h-4 w-4" />
-                                Enable Agent
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem onClick={() => handleClearToken(agent.id)}>
-                            <Key className="mr-2 h-4 w-4" />
-                            Clear Token
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuSeparator />
-                          
-                          {canDeleteAgent(agent) && (
-                            <DropdownMenuItem 
-                              onClick={() => handleDelete(agent.id)}
-                              className="text-red-600 focus:text-red-600"
+                      <div className="flex items-center justify-end space-x-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete Agent
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4 text-gray-600" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 z-50">
+                            <DropdownMenuItem 
+                              onClick={() => handleViewAgent(agent)}
+                              className="cursor-pointer"
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
                             </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            
+                            {canEditAgent(agent) && (
+                              <DropdownMenuItem 
+                                onClick={() => handleEdit(agent)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Agent
+                              </DropdownMenuItem>
+                            )}
+                            
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleStatus(agent)}
+                              className="cursor-pointer"
+                            >
+                              {agent.status === 'active' ? (
+                                <>
+                                  <PowerOff className="mr-2 h-4 w-4" />
+                                  Disable Agent
+                                </>
+                              ) : (
+                                <>
+                                  <Power className="mr-2 h-4 w-4" />
+                                  Enable Agent
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem 
+                              onClick={() => handleClearToken(agent.id)}
+                              className="cursor-pointer"
+                            >
+                              <Key className="mr-2 h-4 w-4" />
+                              Clear Token
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {canDeleteAgent(agent) && (
+                              <DropdownMenuItem 
+                                onClick={() => handleDelete(agent.id)}
+                                className="text-red-600 focus:text-red-600 cursor-pointer"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Agent
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </td>
                   </tr>
                 ))}
