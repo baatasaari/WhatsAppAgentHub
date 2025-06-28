@@ -85,8 +85,22 @@ export default function Header() {
   
   const currentPage = pageData[location as keyof typeof pageData] || pageData["/"];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Call backend logout endpoint
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+    } catch (error) {
+      console.log('Logout API call failed, proceeding with local logout');
+    }
+    
+    // Always clear local state
     logout();
+    window.location.href = '/login';
   };
 
   return (

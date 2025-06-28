@@ -269,6 +269,8 @@ Changelog:
 - June 28, 2025. Added role-based permissions for System Admin, Business Manager, and Business User access levels
 - June 28, 2025. Fixed token clearing functionality with proper crypto import and API key regeneration
 - June 28, 2025. Completed enhanced agent management system with 175+ active agents and full UI functionality
+- June 28, 2025. Fixed user logout functionality with proper header dropdown menu and complete session invalidation
+- June 28, 2025. Added user profile dropdown in header with logout option, backend session cleanup, and login redirect
 - June 28, 2025. Implemented comprehensive business category system instructions with auto-population functionality in Agent Wizard
 - June 28, 2025. Added 25 industry-specific AI prompts with professional limitations, compliance awareness, and editable customization
 - June 28, 2025. Enhanced user experience with intelligent form pre-population based on business category selection
