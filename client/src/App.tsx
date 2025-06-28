@@ -9,6 +9,7 @@ import Agents from "@/pages/agents";
 import CreateAgent from "@/pages/create-agent";
 import AgentWizard from "@/pages/agent-wizard";
 import Analytics from "@/pages/analytics";
+import AgentDashboard from "@/pages/agent-dashboard";
 import EmbedCode from "@/pages/embed-code";
 import WidgetPreview from "@/pages/widget-preview";
 import ModelConfig from "@/pages/model-config";
@@ -68,6 +69,7 @@ function Router() {
             <Route path="/ai-training" component={AITraining} />
             <Route path="/voice-calling" component={VoiceCalling} />
             <Route path="/analytics" component={Analytics} />
+            <Route path="/agent-dashboard" component={AgentDashboard} />
             <Route path="/embed-code" component={EmbedCode} />
             <Route path="/preview" component={WidgetPreview} />
             <Route path="/model-config" component={ModelConfig} />
