@@ -1387,7 +1387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   agentId: agent.id,
                   conversationId: conversation.id,
                   whatsappMessageId: message.id,
-                  fromPhoneNumber: message.from,
+                  fromNumber: message.from,
                   toPhoneNumber: change.value.metadata.phone_number_id,
                   messageType: message.type,
                   content: message.text?.body || `[${message.type} message]`,
