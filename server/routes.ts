@@ -890,6 +890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: name.trim(),
         llmProvider: actualProvider,
         model: actualModel,
+        llmModel: actualModel, // Also store in llmModel field for compatibility
         systemPrompt: systemPrompt.trim(),
         platformType: mappedPlatformType,
         widgetColor: widgetColor || '#25D366',
