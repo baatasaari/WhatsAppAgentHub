@@ -948,7 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Agent not found" });
       }
       
-      if (req.user!.role !== 'admin' && existingAgent.userId !== req.user!.id) {
+      if (!['system_admin', 'business_manager'].includes(req.user!.role) && existingAgent.userId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
       

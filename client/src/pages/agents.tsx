@@ -56,8 +56,8 @@ export default function Agents() {
 
   const deleteAgentMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      const response = await apiRequest("DELETE", `/api/agents/${agentId}`);
-      return response.json();
+      await apiRequest("DELETE", `/api/agents/${agentId}`);
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });

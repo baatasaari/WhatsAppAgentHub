@@ -1,0 +1,59 @@
+queryClient.ts:33 
+            
+            
+           DELETE https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/api/agents/136 404 (Not Found)
+apiRequest @ queryClient.ts:33
+mutationFn @ agents.tsx:59
+fn @ @tanstack_react-query.js?v=7e3be2bc:1189
+run @ @tanstack_react-query.js?v=7e3be2bc:494
+start @ @tanstack_react-query.js?v=7e3be2bc:536
+execute @ @tanstack_react-query.js?v=7e3be2bc:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=7e3be2bc:2630
+(anonymous) @ @tanstack_react-query.js?v=7e3be2bc:3295
+handleDeleteAgent @ agents.tsx:225
+onClick @ agents.tsx:463
+handleEvent @ chunk-3HUNQZAP.js?v=7e3be2bc:11
+callCallback2 @ chunk-WERSD76P.js?v=7e3be2bc:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=7e3be2bc:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=7e3be2bc:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=7e3be2bc:3736
+executeDispatch @ chunk-WERSD76P.js?v=7e3be2bc:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=7e3be2bc:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=7e3be2bc:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=7e3be2bc:7051
+(anonymous) @ chunk-WERSD76P.js?v=7e3be2bc:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=7e3be2bc:18913
+batchedUpdates @ chunk-WERSD76P.js?v=7e3be2bc:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=7e3be2bc:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=7e3be2bc:5478
+dispatchEvent @ chunk-WERSD76P.js?v=7e3be2bc:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=7e3be2bc:5449Understand this error
+19:54:01.676 queryClient.ts:33 Fetch failed loading: DELETE "https://a841b4ae-f400-425e-accd-ce83fa9c44b2-00-3s7lr8vmsyxw7.picard.replit.dev/api/agents/136".
+apiRequest @ queryClient.ts:33
+mutationFn @ agents.tsx:59
+fn @ @tanstack_react-query.js?v=7e3be2bc:1189
+run @ @tanstack_react-query.js?v=7e3be2bc:494
+start @ @tanstack_react-query.js?v=7e3be2bc:536
+execute @ @tanstack_react-query.js?v=7e3be2bc:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=7e3be2bc:2630
+(anonymous) @ @tanstack_react-query.js?v=7e3be2bc:3295
+handleDeleteAgent @ agents.tsx:225
+onClick @ agents.tsx:463
+handleEvent @ chunk-3HUNQZAP.js?v=7e3be2bc:11
+callCallback2 @ chunk-WERSD76P.js?v=7e3be2bc:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=7e3be2bc:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=7e3be2bc:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=7e3be2bc:3736
+executeDispatch @ chunk-WERSD76P.js?v=7e3be2bc:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=7e3be2bc:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=7e3be2bc:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=7e3be2bc:7051
+(anonymous) @ chunk-WERSD76P.js?v=7e3be2bc:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=7e3be2bc:18913
+batchedUpdates @ chunk-WERSD76P.js?v=7e3be2bc:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=7e3be2bc:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=7e3be2bc:5478
+dispatchEvent @ chunk-WERSD76P.js?v=7e3be2bc:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=7e3be2bc:5449
