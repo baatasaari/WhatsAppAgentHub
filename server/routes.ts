@@ -831,10 +831,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid LLM provider. Must be one of: " + validProviders.join(', ') });
       }
       
-      // Platform type validation
-      const validPlatforms = ['whatsapp', 'telegram', 'discord', 'facebook', 'instagram'];
-      if (platformType && !validPlatforms.includes(platformType)) {
-        return res.status(400).json({ message: "Invalid platform type. Must be one of: " + validPlatforms.join(', ') });
+      // Platform type validation - map frontend platform IDs to backend platform types
+      const platformMapping = {
+        'whatsapp-business-api': 'whatsapp',
+        'facebook-messenger': 'facebook',
+        'instagram-direct': 'instagram',
+        'telegram': 'telegram',
+        'discord': 'discord',
+        'line-messaging': 'line',
+        'wechat-work': 'wechat',
+        // Also accept backend platform types directly
+        'whatsapp': 'whatsapp',
+        'facebook': 'facebook',
+        'instagram': 'instagram'
+      };
+      
+      const mappedPlatformType = platformType ? (platformMapping[platformType as keyof typeof platformMapping] || platformType) : 'whatsapp';
+      const validPlatforms = ['whatsapp', 'telegram', 'discord', 'facebook', 'instagram', 'line', 'wechat'];
+      
+      if (mappedPlatformType && !validPlatforms.includes(mappedPlatformType)) {
+        return res.status(400).json({ message: "Invalid platform type. Must be one of: " + Object.keys(platformMapping).join(', ') });
       }
       
       // Color validation (basic hex color check)
@@ -854,7 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         llmProvider,
         model: model || 'gpt-4o',
         systemPrompt: systemPrompt.trim(),
-        platformType: platformType || 'whatsapp',
+        platformType: mappedPlatformType,
         widgetColor: widgetColor || '#25D366',
         userId: req.user!.id, 
         apiKey,
