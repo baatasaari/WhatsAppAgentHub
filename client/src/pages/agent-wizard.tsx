@@ -198,7 +198,7 @@ export default function AgentWizard() {
     enabled: isAuthenticated,
   });
 
-  // Fetch industry verticals - only fetch when authenticated
+  // Fetch industry verticals - with fallback data
   const { data: industryVerticals, isLoading: industriesLoading, error: industriesError } = useQuery({
     queryKey: ["/api/industry-verticals"],
     enabled: isAuthenticated,
@@ -210,6 +210,28 @@ export default function AgentWizard() {
       return failureCount < 3;
     },
   });
+
+  // Fallback industry verticals if API fails
+  const fallbackIndustries = [
+    { name: "E-Commerce & Retail", description: "Online and offline selling of goods, retail management", systemInstruction: "You are a professional customer service assistant for an e-commerce and retail business. Your primary role is to help customers with product inquiries, order management, shipping information, returns and exchanges, and general shopping assistance." },
+    { name: "Healthcare & Medical", description: "Medical services, healthcare providers, patient care", systemInstruction: "You are a healthcare customer service assistant designed to help patients with appointment scheduling, general health information, and administrative inquiries. IMPORTANT: You cannot provide medical advice, diagnose conditions, or replace professional medical consultation." },
+    { name: "Financial Services", description: "Banking, insurance, investment, fintech", systemInstruction: "You are a financial services customer support assistant specializing in account inquiries, transaction support, and general financial service information. IMPORTANT: You cannot provide financial advice, access sensitive account details, or handle monetary transactions." },
+    { name: "Education & Training", description: "Schools, universities, online learning", systemInstruction: "You are an educational support assistant helping students, parents, and learners with course information, enrollment processes, academic resources, and learning support." },
+    { name: "Technology & Software", description: "Software development, IT services, tech support", systemInstruction: "You are a technical support assistant for technology and software services. Help users with software troubleshooting, feature explanations, account management, and technical inquiries." },
+    { name: "Real Estate", description: "Property sales, rentals, property management", systemInstruction: "You are a real estate customer service assistant helping clients with property inquiries, viewing appointments, rental information, and real estate services." },
+    { name: "Hospitality & Travel", description: "Hotels, restaurants, travel agencies, tourism", systemInstruction: "You are a hospitality and travel customer service assistant focused on creating exceptional guest experiences. Help customers with reservations, travel planning, accommodation inquiries." },
+    { name: "Automotive", description: "Car dealerships, auto repair, automotive services", systemInstruction: "You are an automotive customer service assistant helping customers with vehicle inquiries, service appointments, parts information, and automotive services." },
+    { name: "Legal Services", description: "Law firms, legal consulting, compliance", systemInstruction: "You are a legal services administrative assistant helping clients with appointment scheduling, document requests, and general legal service information. IMPORTANT: You cannot provide legal advice or legal interpretation." },
+    { name: "Manufacturing", description: "Production, industrial services, supply chain", systemInstruction: "You are a manufacturing customer service assistant helping clients with product specifications, order status, delivery information, and manufacturing services." },
+    { name: "Non-Profit", description: "Charitable organizations, community services", systemInstruction: "You are a non-profit organization assistant helping supporters with donation information, volunteer opportunities, program details, and community service inquiries." },
+    { name: "Government", description: "Public services, municipal services, government agencies", systemInstruction: "You are a government services assistant helping citizens with public service information, application processes, requirements, and directing them to appropriate departments." },
+    { name: "Entertainment & Media", description: "Broadcasting, publishing, entertainment", systemInstruction: "You are an entertainment and media customer service assistant helping audiences with content information, subscription services, event details, and media-related inquiries." },
+    { name: "Food & Beverage", description: "Restaurants, food service, catering", systemInstruction: "You are a food and beverage service assistant helping customers with menu information, reservations, catering services, dietary accommodations, and food service inquiries." },
+    { name: "Construction", description: "Building services, contracting, architecture", systemInstruction: "You are a construction services assistant helping clients with project inquiries, service estimates, scheduling, and construction-related information." }
+  ];
+
+  // Use API data if available, fallback otherwise
+  const availableIndustries = industryVerticals || fallbackIndustries;
 
   // Handle authentication loading
   if (authLoading) {
@@ -417,8 +439,8 @@ export default function AgentWizard() {
                       onValueChange={(value) => {
                         field.onChange(value);
                         // Auto-populate system prompt based on business category
-                        if (Array.isArray(industryVerticals)) {
-                          const selectedVertical = industryVerticals.find((v: any) => v.name === value);
+                        if (Array.isArray(availableIndustries)) {
+                          const selectedVertical = availableIndustries.find((v: any) => v.name === value);
                           if (selectedVertical?.systemInstruction) {
                             form.setValue("systemPrompt", selectedVertical.systemInstruction);
                           }
@@ -431,7 +453,7 @@ export default function AgentWizard() {
                         <SelectValue placeholder={industriesLoading ? "Loading..." : "Select your business category"} />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
-                        {Array.isArray(industryVerticals) ? industryVerticals.map((industry: any) => (
+                        {Array.isArray(availableIndustries) ? availableIndustries.map((industry: any) => (
                           <SelectItem key={industry.name} value={industry.name}>
                             {industry.name}
                           </SelectItem>
