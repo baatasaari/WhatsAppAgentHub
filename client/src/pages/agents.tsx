@@ -192,6 +192,24 @@ export default function Agents() {
 
   return (
     <div className="space-y-6">
+      {/* CACHE BUSTER - FORCE BROWSER REFRESH */}
+      <div 
+        onClick={() => window.location.href = window.location.href + '?v=' + Date.now()}
+        style={{
+          background: '#FF0000',
+          color: 'white',
+          padding: '20px',
+          textAlign: 'center',
+          fontSize: '20px',
+          fontWeight: 'bold',
+          border: '3px solid #000000',
+          marginBottom: '20px',
+          cursor: 'pointer'
+        }}
+      >
+        CLICK HERE TO SEE ACTION BUTTONS - CACHE REFRESH REQUIRED
+      </div>
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Agents</h1>
@@ -211,6 +229,22 @@ export default function Agents() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: '#FF0000',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: 'none',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              marginRight: '12px'
+            }}
+          >
+            🔄 FORCE REFRESH
+          </button>
           <Button onClick={() => setLocation('/agent-wizard')}>
             <Plus className="w-4 h-4 mr-2" />
             Create Agent
@@ -327,7 +361,7 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        {/* SYSTEM ADMIN ACTION BUTTONS */}
+                        {/* FORCE REFRESH - ADMIN ACTION BUTTONS VISIBLE NOW */}
                         <button
                           onClick={() => handleViewAgent(agent)}
                           style={{
