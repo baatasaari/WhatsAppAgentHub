@@ -2,18 +2,34 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Edit, Pause, Play, Trash2, GitBranch, MoreHorizontal } from "lucide-react";
+import { Bot, Edit, Pause, Play, Trash2, GitBranch, MoreHorizontal, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Agents() {
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    systemPrompt: "",
+    businessCategory: "",
+    llmProvider: "",
+    widgetColor: "",
+    welcomeMessage: "",
+    operatingHours: ""
+  });
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   const { data: agents, isLoading, error } = useQuery({
     queryKey: ["/api/agents"],
@@ -63,6 +79,46 @@ export default function Agents() {
     }
   };
 
+  const handleEdit = (agent: any) => {
+    setEditingAgent(agent);
+    setEditForm({
+      name: agent.name || "",
+      systemPrompt: agent.systemPrompt || "",
+      businessCategory: agent.businessCategory || "",
+      llmProvider: agent.llmProvider || "",
+      widgetColor: agent.widgetColor || "#25D366",
+      welcomeMessage: agent.welcomeMessage || "",
+      operatingHours: agent.operatingHours || "24/7"
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingAgent) return;
+    
+    updateAgentMutation.mutate({
+      id: editingAgent.id,
+      updates: editForm
+    });
+    setEditingAgent(null);
+  };
+
+  const canEditAgent = (agent: any) => {
+    // System admins can edit all agents
+    if (user?.role === 'system_admin') return true;
+    // Business managers can edit agents they own
+    if (user?.role === 'business_manager' && agent.userId === user.id) return true;
+    // Business users can only edit their own agents
+    if (user?.role === 'business_user' && agent.userId === user.id) return true;
+    return false;
+  };
+
+  const canDeleteAgent = (agent: any) => {
+    // Only system admins and business managers can delete agents
+    if (user?.role === 'system_admin') return true;
+    if (user?.role === 'business_manager' && agent.userId === user.id) return true;
+    return false;
+  };
+
   const filteredAgents = Array.isArray(agents) ? agents.filter((agent: any) => 
     statusFilter === "all" || agent.status === statusFilter
   ) : [];
@@ -110,6 +166,13 @@ export default function Agents() {
                   <SelectItem value="draft">Draft</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {(user?.role === 'system_admin' || user?.role === 'business_manager') && (
+                <Button onClick={() => setLocation("/wizard")} className="flex items-center space-x-2">
+                  <Plus className="w-4 h-4" />
+                  <span>Create Agent</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -205,13 +268,16 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
+                        {canEditAgent(agent) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(agent)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -229,15 +295,17 @@ export default function Agents() {
                             <Play className="w-4 h-4" />
                           )}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(agent.id)}
-                          className="text-red-600 hover:text-red-900"
-                          disabled={deleteAgentMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {canDeleteAgent(agent) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(agent.id)}
+                            className="text-red-600 hover:text-red-900"
+                            disabled={deleteAgentMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -247,6 +315,118 @@ export default function Agents() {
           </div>
         )}
       </Card>
+
+      {/* Edit Agent Modal */}
+      <Dialog open={!!editingAgent} onOpenChange={() => setEditingAgent(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Agent</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Agent Name</Label>
+                <Input
+                  id="name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  placeholder="Enter agent name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="businessCategory">Business Category</Label>
+                <Input
+                  id="businessCategory"
+                  value={editForm.businessCategory}
+                  onChange={(e) => setEditForm({ ...editForm, businessCategory: e.target.value })}
+                  placeholder="e.g., E-Commerce, Healthcare"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="llmProvider">LLM Model</Label>
+                <Select
+                  value={editForm.llmProvider}
+                  onValueChange={(value) => setEditForm({ ...editForm, llmProvider: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select LLM model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-4o">OpenAI GPT-4o</SelectItem>
+                    <SelectItem value="gpt-3.5-turbo">OpenAI GPT-3.5 Turbo</SelectItem>
+                    <SelectItem value="claude-sonnet-4-20250514">Anthropic Claude Sonnet 4</SelectItem>
+                    <SelectItem value="claude-3-7-sonnet-20250219">Anthropic Claude 3.7 Sonnet</SelectItem>
+                    <SelectItem value="gemini-1.5-pro">Google Gemini 1.5 Pro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="widgetColor">Widget Color</Label>
+                <Input
+                  id="widgetColor"
+                  type="color"
+                  value={editForm.widgetColor}
+                  onChange={(e) => setEditForm({ ...editForm, widgetColor: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="welcomeMessage">Welcome Message</Label>
+              <Input
+                id="welcomeMessage"
+                value={editForm.welcomeMessage}
+                onChange={(e) => setEditForm({ ...editForm, welcomeMessage: e.target.value })}
+                placeholder="e.g., Hi! How can I help you today?"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="operatingHours">Operating Hours</Label>
+              <Input
+                id="operatingHours"
+                value={editForm.operatingHours}
+                onChange={(e) => setEditForm({ ...editForm, operatingHours: e.target.value })}
+                placeholder="e.g., 24/7, Mon-Fri 9AM-5PM"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="systemPrompt">System Prompt</Label>
+              <Textarea
+                id="systemPrompt"
+                value={editForm.systemPrompt}
+                onChange={(e) => setEditForm({ ...editForm, systemPrompt: e.target.value })}
+                placeholder="Enter the AI system prompt and instructions"
+                rows={6}
+                className="resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setEditingAgent(null)}
+              disabled={updateAgentMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              disabled={updateAgentMutation.isPending}
+            >
+              {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
