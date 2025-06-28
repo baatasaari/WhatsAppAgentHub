@@ -162,9 +162,9 @@ export default function AgentDashboard() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{(overallStats as any)?.totalConversations || 0}</div>
+              <div className="text-2xl font-bold">{statsData?.totalConversations || 0}</div>
               <p className="text-xs text-muted-foreground">
-                +{(overallStats as any)?.conversationGrowth || 0}% from last period
+                +{statsData?.conversationGrowth || 0}% from last period
               </p>
             </CardContent>
           </Card>
@@ -174,9 +174,9 @@ export default function AgentDashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{(overallStats as any)?.avgResponseTime || 0}s</div>
+              <div className="text-2xl font-bold">{statsData?.avgResponseTime || 0}s</div>
               <p className="text-xs text-muted-foreground">
-                {((overallStats as any)?.responseTimeChange || 0) > 0 ? '+' : ''}{(overallStats as any)?.responseTimeChange || 0}% change
+                {(statsData?.responseTimeChange || 0) > 0 ? '+' : ''}{statsData?.responseTimeChange || 0}% change
               </p>
             </CardContent>
           </Card>
@@ -186,9 +186,9 @@ export default function AgentDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(overallStats as any)?.totalCost || 0}</div>
+              <div className="text-2xl font-bold">${statsData?.totalCost || 0}</div>
               <p className="text-xs text-muted-foreground">
-                ${(overallStats as any)?.costPerConversation || 0} per conversation
+                ${statsData?.costPerConversation || 0} per conversation
               </p>
             </CardContent>
           </Card>
