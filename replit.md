@@ -248,6 +248,10 @@ Changelog:
 - June 25, 2025. Identified and resolved critical security authorization issue with invalid token handling enhancement
 - June 25, 2025. Validated production readiness across authentication, agent management, widget deployment, multi-platform integration, and business workflows
 - June 25, 2025. Confirmed platform capability to handle 91 active agents with sub-200ms response times and enterprise-grade security features
+- June 28, 2025. Integrated AI Training functionality as step 4 in Agent Wizard with knowledge base management, training examples, and brand voice configuration
+- June 28, 2025. Fixed AI Training database schema and API endpoints, resolved non-working functionality in knowledge items and training sessions
+- June 28, 2025. Enhanced Agent Wizard with dedicated AI Training step featuring knowledge management, example-based training, and brand voice customization
+- June 28, 2025. Completed AI Training integration with proper database tables, storage methods, and API endpoints for full functionality
 - June 24, 2025. Implemented comprehensive business onboarding state management system with multi-step progress saving and restoration
 - June 24, 2025. Created 5-step business onboarding flow covering business info, contact details, target audience, platform selection, and AI configuration
 - June 24, 2025. Added database schema for onboarding progress tracking with step data persistence and completion status

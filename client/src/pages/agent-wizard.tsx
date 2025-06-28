@@ -162,9 +162,10 @@ const steps = [
   { id: 1, title: "Basic Information", icon: Settings },
   { id: 2, title: "Select Platforms", icon: Globe },
   { id: 3, title: "AI Configuration", icon: Bot },
-  { id: 4, title: "Platform Setup", icon: Shield },
-  { id: 5, title: "Customization", icon: Wand2 },
-  { id: 6, title: "Review & Deploy", icon: Zap }
+  { id: 4, title: "AI Training", icon: Brain },
+  { id: 5, title: "Platform Setup", icon: Shield },
+  { id: 6, title: "Customization", icon: Wand2 },
+  { id: 7, title: "Review & Deploy", icon: Zap }
 ];
 
 export default function AgentWizard() {
@@ -586,6 +587,160 @@ export default function AgentWizard() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Training & Knowledge</h2>
+              <p className="text-gray-600">Train your agent with custom knowledge and examples</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Knowledge Base Section */}
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-semibold text-gray-900">Knowledge Base</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Add information about your business, products, and services
+                  </p>
+                  <div className="space-y-3">
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Business Info</span>
+                        <Badge variant="outline">Optional</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Company details, history, values</p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Products/Services</span>
+                        <Badge variant="outline">Optional</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Catalog, features, pricing</p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">FAQs</span>
+                        <Badge variant="outline">Recommended</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Common questions and answers</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Training Examples Section */}
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Target className="w-5 h-5 text-green-600" />
+                    <h3 className="font-semibold text-gray-900">Training Examples</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Provide example conversations to improve responses
+                  </p>
+                  <div className="space-y-3">
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Customer Questions</span>
+                        <Badge variant="outline">Optional</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Common customer inquiries</p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Support Scenarios</span>
+                        <Badge variant="outline">Optional</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Problem resolution examples</p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Sales Conversations</span>
+                        <Badge variant="outline">Optional</Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Lead qualification dialogues</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Brand Voice Configuration */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Lightbulb className="w-5 h-5 text-yellow-600" />
+                  <h3 className="font-semibold text-gray-900">Brand Voice & Style</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tone</label>
+                    <Select defaultValue="professional">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="formal">Formal</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Personality</label>
+                    <Select defaultValue="helpful">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="helpful">Helpful</SelectItem>
+                        <SelectItem value="expert">Expert</SelectItem>
+                        <SelectItem value="empathetic">Empathetic</SelectItem>
+                        <SelectItem value="efficient">Efficient</SelectItem>
+                        <SelectItem value="consultative">Consultative</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
+                    <Select defaultValue="concise">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="concise">Concise</SelectItem>
+                        <SelectItem value="detailed">Detailed</SelectItem>
+                        <SelectItem value="conversational">Conversational</SelectItem>
+                        <SelectItem value="technical">Technical</SelectItem>
+                        <SelectItem value="simple">Simple</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <Brain className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-blue-900">AI Training Benefits</h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Custom training helps your agent provide more accurate, brand-consistent responses. 
+                    You can always add more training data after deployment.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Platform credentials</h2>
               <p className="text-gray-600">Configure your platform integrations</p>
             </div>
@@ -736,7 +891,7 @@ export default function AgentWizard() {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
@@ -814,7 +969,7 @@ export default function AgentWizard() {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
