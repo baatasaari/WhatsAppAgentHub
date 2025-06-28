@@ -38,7 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function Agents() {
+export default function AgentsNew() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -53,7 +53,9 @@ export default function Agents() {
 
   const deleteAgentMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      await apiRequest(`/api/agents/${agentId}`, "DELETE");
+      await apiRequest(`/api/agents/${agentId}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -73,7 +75,10 @@ export default function Agents() {
 
   const toggleAgentMutation = useMutation({
     mutationFn: async ({ agentId, newStatus }: { agentId: number; newStatus: string }) => {
-      await apiRequest(`/api/agents/${agentId}`, "PUT", { status: newStatus });
+      await apiRequest(`/api/agents/${agentId}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: newStatus }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -93,7 +98,9 @@ export default function Agents() {
 
   const clearTokenMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      await apiRequest(`/api/agents/${agentId}/clear-token`, "POST");
+      await apiRequest(`/api/agents/${agentId}/clear-token`, {
+        method: "POST",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
