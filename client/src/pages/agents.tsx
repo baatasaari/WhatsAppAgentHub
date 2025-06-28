@@ -192,7 +192,9 @@ export default function Agents() {
 
   return (
     <div className="space-y-6">
-
+      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        UI Update {Date.now()} - Action buttons now using shadcn Button components
+      </div>
       
       <div className="flex items-center justify-between">
         <div>
@@ -344,44 +346,51 @@ export default function Agents() {
                       {new Date(agent.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-1">
-                        <button
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
+                      <div className="flex items-center justify-end gap-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
                           onClick={() => handleViewAgent(agent)}
                         >
                           View
-                        </button>
+                        </Button>
                         
                         {canEditAgent(agent) && (
-                          <button
-                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"
+                          <Button 
+                            size="sm" 
+                            variant="outline"
                             onClick={() => handleEdit(agent)}
                           >
                             Edit
-                          </button>
+                          </Button>
                         )}
                         
-                        <button
-                          className={`${agent.status === 'active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-2 py-1 rounded text-xs`}
+                        <Button 
+                          size="sm" 
+                          variant={agent.status === 'active' ? 'destructive' : 'default'}
                           onClick={() => handleToggleStatus(agent)}
                         >
                           {agent.status === 'active' ? 'Pause' : 'Start'}
-                        </button>
+                        </Button>
                         
-                        <button
-                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
-                          onClick={() => handleClearToken(agent.id)}
-                        >
-                          Token
-                        </button>
+                        {canEditAgent(agent) && (
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleClearToken(agent.id)}
+                          >
+                            Token
+                          </Button>
+                        )}
                         
                         {canDeleteAgent(agent) && (
-                          <button
-                            className="bg-red-800 hover:bg-red-900 text-white px-2 py-1 rounded text-xs"
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
                             onClick={() => handleDelete(agent.id)}
                           >
                             Delete
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </td>
