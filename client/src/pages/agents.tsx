@@ -131,10 +131,10 @@ export default function Agents() {
     );
   }
 
-  const filteredAgents = agents?.filter((agent: any) => {
+  const filteredAgents = Array.isArray(agents) ? agents.filter((agent: any) => {
     if (statusFilter === "all") return true;
     return agent.status === statusFilter;
-  }) || [];
+  }) : [];
 
   const handleEdit = (agent: any) => {
     setEditingAgent(agent);
@@ -346,51 +346,50 @@ export default function Agents() {
                       {new Date(agent.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
                           onClick={() => handleViewAgent(agent)}
                         >
                           View
-                        </Button>
+                        </button>
                         
                         {canEditAgent(agent) && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
+                          <button 
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
                             onClick={() => handleEdit(agent)}
                           >
                             Edit
-                          </Button>
+                          </button>
                         )}
                         
-                        <Button 
-                          size="sm" 
-                          variant={agent.status === 'active' ? 'destructive' : 'default'}
+                        <button 
+                          className={`px-3 py-1 text-white rounded text-xs ${
+                            agent.status === 'active' 
+                              ? 'bg-orange-500 hover:bg-orange-600' 
+                              : 'bg-green-500 hover:bg-green-600'
+                          }`}
                           onClick={() => handleToggleStatus(agent)}
                         >
                           {agent.status === 'active' ? 'Pause' : 'Start'}
-                        </Button>
+                        </button>
                         
                         {canEditAgent(agent) && (
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
+                          <button 
+                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
                             onClick={() => handleClearToken(agent.id)}
                           >
                             Token
-                          </Button>
+                          </button>
                         )}
                         
                         {canDeleteAgent(agent) && (
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
+                          <button 
+                            className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-xs"
                             onClick={() => handleDelete(agent.id)}
                           >
                             Delete
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </td>
