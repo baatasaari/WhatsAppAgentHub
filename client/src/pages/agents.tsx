@@ -52,10 +52,15 @@ export default function Agents() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
       toast({ title: "Agent updated successfully" });
+      setEditingAgent(null);
     },
-    onError: () => {
-      toast({ title: "Failed to update agent", variant: "destructive" });
-    },
+    onError: (error) => {
+      toast({ 
+        title: "Error updating agent", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
   const deleteAgentMutation = useMutation({
@@ -66,9 +71,30 @@ export default function Agents() {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
       toast({ title: "Agent deleted successfully" });
     },
-    onError: () => {
-      toast({ title: "Failed to delete agent", variant: "destructive" });
+    onError: (error) => {
+      toast({ 
+        title: "Error deleting agent", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      return await apiRequest("PUT", `/api/agents/${id}`, { status });
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
+      toast({ title: "Agent status updated successfully" });
+    },
+    onError: (error) => {
+      toast({ 
+        title: "Error updating agent status", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
   const clearTokenMutation = useMutation({
@@ -79,21 +105,36 @@ export default function Agents() {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
       toast({ title: "Agent token cleared successfully" });
     },
-    onError: () => {
-      toast({ title: "Failed to clear agent token", variant: "destructive" });
-    },
+    onError: (error) => {
+      toast({ 
+        title: "Error clearing token", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
-  const handleStatusToggle = (agent: any) => {
-    const newStatus = agent.status === 'active' ? 'paused' : 'active';
-    updateAgentMutation.mutate({ id: agent.id, updates: { status: newStatus } });
-  };
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-900">Unable to load agents</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            {error.message || "There was an error loading your agents"}
+          </p>
+        </div>
+        <Button onClick={() => window.location.reload()} variant="outline">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this agent? This action cannot be undone.")) {
-      deleteAgentMutation.mutate(id);
-    }
-  };
+  const filteredAgents = agents?.filter((agent: any) => {
+    if (statusFilter === "all") return true;
+    return agent.status === statusFilter;
+  }) || [];
 
   const handleEdit = (agent: any) => {
     setEditingAgent(agent);
@@ -102,131 +143,115 @@ export default function Agents() {
       systemPrompt: agent.systemPrompt || "",
       businessCategory: agent.businessCategory || "",
       llmProvider: agent.llmProvider || "",
-      widgetColor: agent.widgetColor || "#25D366",
+      widgetColor: agent.widgetColor || "#0ea5e9",
       welcomeMessage: agent.welcomeMessage || "",
-      operatingHours: agent.operatingHours || "24/7"
+      operatingHours: agent.operatingHours || ""
     });
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingAgent) return;
     
-    updateAgentMutation.mutate({
+    await updateAgentMutation.mutateAsync({
       id: editingAgent.id,
       updates: editForm
     });
-    setEditingAgent(null);
-  };
-
-  const canEditAgent = (agent: any) => {
-    // System admins can edit all agents
-    if (user?.role === 'system_admin') return true;
-    // Business managers can edit agents they own
-    if (user?.role === 'business_manager' && agent.userId === user.id) return true;
-    // Business users can only edit their own agents
-    if (user?.role === 'business_user' && agent.userId === user.id) return true;
-    return false;
-  };
-
-  const canDeleteAgent = (agent: any) => {
-    // Only system admins and business managers can delete agents
-    if (user?.role === 'system_admin') return true;
-    if (user?.role === 'business_manager' && agent.userId === user.id) return true;
-    return false;
   };
 
   const handleViewAgent = (agent: any) => {
     setViewingAgent(agent);
   };
 
-  const handleClearToken = (id: number) => {
-    if (confirm("Are you sure you want to clear this agent's token? This will generate a new API key.")) {
-      clearTokenMutation.mutate(id);
-    }
-  };
-
-  const handleToggleStatus = (agent: any) => {
+  const handleToggleStatus = async (agent: any) => {
     const newStatus = agent.status === 'active' ? 'paused' : 'active';
-    updateAgentMutation.mutate({ 
-      id: agent.id, 
-      updates: { status: newStatus } 
+    await toggleStatusMutation.mutateAsync({
+      id: agent.id,
+      status: newStatus
     });
   };
 
-  const filteredAgents = Array.isArray(agents) ? agents.filter((agent: any) => 
-    statusFilter === "all" || agent.status === statusFilter
-  ) : [];
+  const handleClearToken = async (agentId: number) => {
+    await clearTokenMutation.mutateAsync(agentId);
+  };
 
-  // Show error state for authentication issues
-  if (error && error.message.includes('401')) {
-    return (
-      <div className="p-12 text-center">
-        <Bot className="w-16 h-16 mx-auto mb-4 text-red-300" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Authentication Required</h3>
-        <p className="text-gray-500 mb-6">Please log in to view your agents.</p>
-        <Button onClick={() => window.location.href = "/login"}>
-          Log In
-        </Button>
-      </div>
-    );
-  }
+  const handleDelete = async (agentId: number) => {
+    if (window.confirm('Are you sure you want to delete this agent? This action cannot be undone.')) {
+      await deleteAgentMutation.mutateAsync(agentId);
+    }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full" />
-        ))}
-      </div>
-    );
-  }
+  const canEditAgent = (agent: any) => {
+    return user?.role === 'system_admin' || 
+           user?.role === 'business_manager' || 
+           (user?.role === 'business_user' && agent.userId === user.id);
+  };
+
+  const canDeleteAgent = (agent: any) => {
+    return user?.role === 'system_admin' || user?.role === 'business_manager';
+  };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Agent Management</h3>
-            <div className="flex items-center space-x-3">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Agents</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {(user?.role === 'system_admin' || user?.role === 'business_manager') && (
-                <Button onClick={() => setLocation("/wizard")} className="flex items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Create Agent</span>
-                </Button>
-              )}
-            </div>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">My Agents</h1>
+          <p className="text-muted-foreground">
+            Manage your AI conversational agents
+          </p>
         </div>
-        
-        {filteredAgents.length === 0 ? (
+        <div className="flex items-center space-x-3">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => setLocation('/agent-wizard')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Agent
+          </Button>
+        </div>
+      </div>
+
+      <Card>
+        {isLoading ? (
+          <div className="p-6 space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center space-x-4">
+                <Skeleton className="h-10 w-10 rounded-lg" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-3 w-[150px]" />
+                </div>
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ))}
+          </div>
+        ) : filteredAgents.length === 0 ? (
           <div className="p-12 text-center">
-            <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No agents found</h3>
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Bot className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No agents found</h3>
             <p className="text-gray-500 mb-6">
               {statusFilter === "all" 
-                ? "You haven't created any agents yet." 
-                : `No ${statusFilter} agents found.`}
+                ? "Get started by creating your first AI agent"
+                : `No ${statusFilter} agents found. Try changing the filter.`
+              }
             </p>
-            <Button onClick={() => setLocation("/wizard")}>
+            <Button onClick={() => setLocation('/agent-wizard')}>
+              <Plus className="w-4 h-4 mr-2" />
               Create Your First Agent
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -236,7 +261,7 @@ export default function Agents() {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    LLM
+                    LLM Provider
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Category
@@ -244,7 +269,7 @@ export default function Agents() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -302,85 +327,105 @@ export default function Agents() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        {/* ADMIN ACTIONS - VISIBLE NOW */}
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        {/* SYSTEM ADMIN ACTION BUTTONS */}
+                        <button
                           onClick={() => handleViewAgent(agent)}
-                          className="h-8 px-3 text-xs bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                          style={{
+                            background: '#3B82F6',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
                         >
-                          <Eye className="w-3 h-3 mr-1" />
-                          View
-                        </Button>
+                          👁️ View
+                        </button>
                         
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 bg-red-50 border-red-200 hover:bg-red-100 focus:bg-red-100 data-[state=open]:bg-red-100 shadow-md"
-                            >
-                              <span className="sr-only">More actions</span>
-                              <MoreHorizontal className="h-4 w-4 text-red-700" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 z-50 bg-white border border-gray-200 shadow-lg">
-                            <DropdownMenuItem 
-                              onClick={() => handleViewAgent(agent)}
-                              className="cursor-pointer hover:bg-gray-50"
-                            >
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
-                            
-                            {canEditAgent(agent) && (
-                              <DropdownMenuItem 
-                                onClick={() => handleEdit(agent)}
-                                className="cursor-pointer"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Agent
-                              </DropdownMenuItem>
-                            )}
-                            
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleStatus(agent)}
-                              className="cursor-pointer"
-                            >
-                              {agent.status === 'active' ? (
-                                <>
-                                  <PowerOff className="mr-2 h-4 w-4" />
-                                  Disable Agent
-                                </>
-                              ) : (
-                                <>
-                                  <Power className="mr-2 h-4 w-4" />
-                                  Enable Agent
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuItem 
-                              onClick={() => handleClearToken(agent.id)}
-                              className="cursor-pointer"
-                            >
-                              <Key className="mr-2 h-4 w-4" />
-                              Clear Token
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {canDeleteAgent(agent) && (
-                              <DropdownMenuItem 
-                                onClick={() => handleDelete(agent.id)}
-                                className="text-red-600 focus:text-red-600 cursor-pointer"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Agent
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        {canEditAgent(agent) && (
+                          <button
+                            onClick={() => handleEdit(agent)}
+                            style={{
+                              background: '#10B981',
+                              color: 'white',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => handleToggleStatus(agent)}
+                          style={{
+                            background: agent.status === 'active' ? '#F59E0B' : '#10B981',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {agent.status === 'active' ? '⏸️ Pause' : '▶️ Activate'}
+                        </button>
+                        
+                        <button
+                          onClick={() => handleClearToken(agent.id)}
+                          style={{
+                            background: '#EF4444',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          🔑 Token
+                        </button>
+                        
+                        {canDeleteAgent(agent) && (
+                          <button
+                            onClick={() => handleDelete(agent.id)}
+                            style={{
+                              background: '#7C2D12',
+                              color: 'white',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -397,39 +442,33 @@ export default function Agents() {
           <DialogHeader>
             <DialogTitle>Edit Agent</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Agent Name</Label>
-                <Input
-                  id="name"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  placeholder="Enter agent name"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="businessCategory">Business Category</Label>
-                <Input
-                  id="businessCategory"
-                  value={editForm.businessCategory}
-                  onChange={(e) => setEditForm({ ...editForm, businessCategory: e.target.value })}
-                  placeholder="e.g., E-Commerce, Healthcare"
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Agent Name</Label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                placeholder="Enter agent name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="businessCategory">Business Category</Label>
+              <Input
+                id="businessCategory"
+                value={editForm.businessCategory}
+                onChange={(e) => setEditForm({ ...editForm, businessCategory: e.target.value })}
+                placeholder="e.g., E-commerce, Healthcare, Education"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="llmProvider">LLM Model</Label>
-                <Select
-                  value={editForm.llmProvider}
-                  onValueChange={(value) => setEditForm({ ...editForm, llmProvider: value })}
-                >
+                <Label htmlFor="llmProvider">LLM Provider</Label>
+                <Select value={editForm.llmProvider} onValueChange={(value) => setEditForm({ ...editForm, llmProvider: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select LLM model" />
+                    <SelectValue placeholder="Select LLM Provider" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gpt-4o">OpenAI GPT-4o</SelectItem>
@@ -485,154 +524,130 @@ export default function Agents() {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setEditingAgent(null)}
-              disabled={updateAgentMutation.isPending}
-            >
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="outline" onClick={() => setEditingAgent(null)}>
               Cancel
             </Button>
-            <Button
+            <Button 
               onClick={handleSaveEdit}
               disabled={updateAgentMutation.isPending}
             >
-              {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
+              {updateAgentMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Agent Details View Modal */}
+      {/* View Agent Modal */}
       <Dialog open={!!viewingAgent} onOpenChange={() => setViewingAgent(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Agent Details</DialogTitle>
+            <DialogTitle className="flex items-center space-x-3">
+              <Bot className="w-6 h-6 text-blue-600" />
+              <span>{viewingAgent?.name}</span>
+              <Badge variant={viewingAgent?.status === 'active' ? 'default' : 'secondary'}>
+                {viewingAgent?.status}
+              </Badge>
+            </DialogTitle>
           </DialogHeader>
           
           {viewingAgent && (
-            <div className="space-y-6 py-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Agent Name</Label>
-                    <p className="text-lg font-semibold">{viewingAgent.name}</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Status</Label>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={viewingAgent.status === 'active' ? 'default' : 'secondary'}>
-                        {viewingAgent.status}
-                      </Badge>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => handleToggleStatus(viewingAgent)}
-                      >
-                        {viewingAgent.status === 'active' ? 'Disable' : 'Enable'}
-                      </Button>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Agent Information</h3>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">Name:</span> {viewingAgent.name}</p>
+                      <p><span className="font-medium">Category:</span> {viewingAgent.businessCategory || 'General'}</p>
+                      <p><span className="font-medium">API Key:</span> {viewingAgent.apiKey}</p>
+                      <p><span className="font-medium">Created:</span> {new Date(viewingAgent.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Business Category</Label>
-                    <p className="text-sm">{viewingAgent.businessCategory || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Platform Type</Label>
-                    <p className="text-sm capitalize">{viewingAgent.platformType}</p>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Configuration</h3>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">LLM Provider:</span> {viewingAgent.llmProvider}</p>
+                      <p><span className="font-medium">Widget Color:</span> 
+                        <span 
+                          className="inline-block w-4 h-4 rounded ml-2 border" 
+                          style={{ backgroundColor: viewingAgent.widgetColor }}
+                        ></span>
+                      </p>
+                      <p><span className="font-medium">Operating Hours:</span> {viewingAgent.operatingHours || 'Not specified'}</p>
+                    </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">LLM Provider</Label>
-                    <p className="text-sm">{viewingAgent.llmProvider}</p>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Welcome Message</h3>
+                    <p className="text-sm bg-gray-50 p-3 rounded-md">
+                      {viewingAgent.welcomeMessage || 'No welcome message set'}
+                    </p>
                   </div>
-                  
+
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Widget Color</Label>
-                    <div className="flex items-center space-x-2">
-                      <div 
-                        className="w-6 h-6 rounded border"
-                        style={{ backgroundColor: viewingAgent.widgetColor }}
-                      />
-                      <p className="text-sm">{viewingAgent.widgetColor}</p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Created</Label>
-                    <p className="text-sm">{new Date(viewingAgent.createdAt).toLocaleString()}</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">API Token</Label>
-                    <div className="flex items-center space-x-2">
-                      <Input 
-                        type="password" 
-                        value={viewingAgent.apiKey || '••••••••••••••••'} 
-                        readOnly 
-                        className="font-mono text-xs"
-                      />
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => handleClearToken(viewingAgent.id)}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Reset
-                      </Button>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">System Prompt</h3>
+                    <div className="text-sm bg-gray-50 p-3 rounded-md max-h-40 overflow-y-auto">
+                      {viewingAgent.systemPrompt || 'No system prompt set'}
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <Separator />
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-500">Welcome Message</Label>
-                <p className="text-sm bg-gray-50 p-3 rounded border">
-                  {viewingAgent.welcomeMessage || 'No welcome message set'}
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-500">System Prompt</Label>
-                <div className="bg-gray-50 p-4 rounded border max-h-40 overflow-y-auto">
-                  <p className="text-sm whitespace-pre-wrap">
-                    {viewingAgent.systemPrompt || 'No system prompt configured'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center pt-4">
-                <div className="flex space-x-2">
-                  {canEditAgent(viewingAgent) && (
-                    <Button onClick={() => {
-                      setViewingAgent(null);
-                      handleEdit(viewingAgent);
-                    }}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Agent
-                    </Button>
-                  )}
-                  
-                  <Button 
-                    variant="outline" 
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleToggleStatus(viewingAgent)}
+                    disabled={toggleStatusMutation.isPending}
+                  >
+                    {viewingAgent.status === 'active' ? (
+                      <>
+                        <PowerOff className="w-4 h-4 mr-2" />
+                        Pause Agent
+                      </>
+                    ) : (
+                      <>
+                        <Power className="w-4 h-4 mr-2" />
+                        Activate Agent
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleClearToken(viewingAgent.id)}
+                    disabled={clearTokenMutation.isPending}
                   >
                     <Key className="w-4 h-4 mr-2" />
                     Clear Token
                   </Button>
                 </div>
-                
-                <div className="flex space-x-2">
+
+                <div className="space-x-2">
+                  {canEditAgent(viewingAgent) && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setViewingAgent(null);
+                        handleEdit(viewingAgent);
+                      }}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Agent
+                    </Button>
+                  )}
+
                   {canDeleteAgent(viewingAgent) && (
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       onClick={() => {
                         setViewingAgent(null);
                         handleDelete(viewingAgent.id);
@@ -642,11 +657,13 @@ export default function Agents() {
                       Delete Agent
                     </Button>
                   )}
-                  
-                  <Button variant="outline" onClick={() => setViewingAgent(null)}>
-                    Close
-                  </Button>
                 </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={() => setViewingAgent(null)}>
+                  Close
+                </Button>
               </div>
             </div>
           )}
