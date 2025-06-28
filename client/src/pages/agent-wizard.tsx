@@ -369,11 +369,24 @@ export default function AgentWizard() {
                 <FormItem>
                   <FormLabel>Business Category</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange} disabled={industriesLoading}>
+                    <Select 
+                      value={field.value} 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Auto-populate system prompt based on business category
+                        const selectedVertical = industryVerticals?.find((v: any) => 
+                          v.name === value
+                        );
+                        if (selectedVertical?.systemInstruction) {
+                          form.setValue("systemPrompt", selectedVertical.systemInstruction);
+                        }
+                      }}
+                      disabled={industriesLoading}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={industriesLoading ? "Loading..." : "Select your business category"} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60">
                         {Array.isArray(industryVerticals) ? industryVerticals.map((industry: any) => (
                           <SelectItem key={industry.name} value={industry.name}>
                             {industry.name}
@@ -383,6 +396,9 @@ export default function AgentWizard() {
                       </SelectContent>
                     </Select>
                   </FormControl>
+                  <FormDescription>
+                    Choose the category that best describes your business. This will auto-populate the AI instructions below.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -571,12 +587,12 @@ export default function AgentWizard() {
                   <FormControl>
                     <Textarea 
                       placeholder="You are a helpful customer service assistant. Your goal is to..."
-                      className="min-h-[120px]"
+                      className="min-h-[200px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Define how your AI should behave and respond to customers
+                    Define how your AI should behave and respond to customers. Instructions are auto-populated based on your business category but can be fully customized to match your specific needs.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
