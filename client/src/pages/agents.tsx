@@ -15,8 +15,15 @@ export default function Agents() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const { data: agents, isLoading } = useQuery({
+  const { data: agents, isLoading, error } = useQuery({
     queryKey: ["/api/agents"],
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication errors
+      if (error?.message?.includes('401')) {
+        return false;
+      }
+      return failureCount < 3;
+    }
   });
 
   const updateAgentMutation = useMutation({
@@ -60,6 +67,20 @@ export default function Agents() {
     statusFilter === "all" || agent.status === statusFilter
   ) || [];
 
+  // Show error state for authentication issues
+  if (error && error.message.includes('401')) {
+    return (
+      <div className="p-12 text-center">
+        <Bot className="w-16 h-16 mx-auto mb-4 text-red-300" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Authentication Required</h3>
+        <p className="text-gray-500 mb-6">Please log in to view your agents.</p>
+        <Button onClick={() => window.location.href = "/login"}>
+          Log In
+        </Button>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -102,7 +123,7 @@ export default function Agents() {
                 ? "You haven't created any agents yet." 
                 : `No ${statusFilter} agents found.`}
             </p>
-            <Button onClick={() => window.location.href = "/wizard"}>
+            <Button onClick={() => setLocation("/wizard")}>
               Create Your First Agent
             </Button>
           </div>

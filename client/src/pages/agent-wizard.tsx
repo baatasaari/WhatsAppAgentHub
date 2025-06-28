@@ -247,7 +247,8 @@ export default function AgentWizard() {
           businessCategory: data.businessCategory,
           llmProvider: data.llmProvider,
           systemPrompt: data.systemPrompt,
-          platformType: platformId,
+          platformTypes: [platformId], // Send as array to match backend expectation
+          widgetPosition: "bottom-right",
           widgetColor: data.widgetColor,
           welcomeMessage: data.welcomeMessage,
           operatingHours: data.operatingHours,
@@ -271,7 +272,8 @@ export default function AgentWizard() {
           discordChannelId: data.discordChannelId,
         };
 
-        const agent = await apiRequest("POST", "/api/agents", agentData);
+        const response = await apiRequest("POST", "/api/agents", agentData);
+        const agent = await response.json();
         createdAgents.push(agent);
       }
       
