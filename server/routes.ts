@@ -782,6 +782,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/agents", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
     try {
+      const { name, llmProvider, model, systemPrompt, platformType, widgetColor } = req.body;
+      
+      // Enhanced validation
+      if (!name || name.trim().length === 0) {
+        return res.status(400).json({ message: "Agent name is required and cannot be empty" });
+      }
+      
+      if (name.length > 100) {
+        return res.status(400).json({ message: "Agent name cannot exceed 100 characters" });
+      }
+      
+      // XSS protection
+      if (/<script|javascript:|on\w+=/i.test(name)) {
+        return res.status(400).json({ message: "Agent name contains invalid characters" });
+      }
+      
+      if (!systemPrompt || systemPrompt.trim().length === 0) {
+        return res.status(400).json({ message: "System prompt is required and cannot be empty" });
+      }
+      
+      if (systemPrompt.length > 5000) {
+        return res.status(400).json({ message: "System prompt cannot exceed 5000 characters" });
+      }
+      
+      // LLM provider validation
+      const validProviders = ['openai', 'anthropic', 'google'];
+      if (!validProviders.includes(llmProvider)) {
+        return res.status(400).json({ message: "Invalid LLM provider. Must be one of: " + validProviders.join(', ') });
+      }
+      
+      // Platform type validation
+      const validPlatforms = ['whatsapp', 'telegram', 'discord', 'facebook', 'instagram'];
+      if (platformType && !validPlatforms.includes(platformType)) {
+        return res.status(400).json({ message: "Invalid platform type. Must be one of: " + validPlatforms.join(', ') });
+      }
+      
+      // Color validation (basic hex color check)
+      if (widgetColor && !/^#[0-9A-F]{6}$/i.test(widgetColor)) {
+        return res.status(400).json({ message: "Widget color must be a valid hex color (e.g., #FF0000)" });
+      }
+      
       // Generate API key for the agent
       const apiKey = randomBytes(32).toString('hex');
       
