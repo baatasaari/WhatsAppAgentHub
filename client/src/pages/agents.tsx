@@ -192,23 +192,7 @@ export default function Agents() {
 
   return (
     <div className="space-y-6">
-      {/* CACHE BUSTER - FORCE BROWSER REFRESH */}
-      <div 
-        onClick={() => window.location.href = window.location.href + '?v=' + Date.now()}
-        style={{
-          background: '#FF0000',
-          color: 'white',
-          padding: '20px',
-          textAlign: 'center',
-          fontSize: '20px',
-          fontWeight: 'bold',
-          border: '3px solid #000000',
-          marginBottom: '20px',
-          cursor: 'pointer'
-        }}
-      >
-        CLICK HERE TO SEE ACTION BUTTONS - CACHE REFRESH REQUIRED
-      </div>
+
       
       <div className="flex items-center justify-between">
         <div>
@@ -360,104 +344,43 @@ export default function Agents() {
                       {new Date(agent.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        {/* FORCE REFRESH - ADMIN ACTION BUTTONS VISIBLE NOW */}
+                      <div className="flex items-center justify-end space-x-1">
                         <button
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
                           onClick={() => handleViewAgent(agent)}
-                          style={{
-                            background: '#3B82F6',
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
                         >
-                          👁️ View
+                          View
                         </button>
                         
                         {canEditAgent(agent) && (
                           <button
+                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"
                             onClick={() => handleEdit(agent)}
-                            style={{
-                              background: '#10B981',
-                              color: 'white',
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              border: 'none',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
                           >
-                            ✏️ Edit
+                            Edit
                           </button>
                         )}
                         
                         <button
+                          className={`${agent.status === 'active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-2 py-1 rounded text-xs`}
                           onClick={() => handleToggleStatus(agent)}
-                          style={{
-                            background: agent.status === 'active' ? '#F59E0B' : '#10B981',
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
                         >
-                          {agent.status === 'active' ? '⏸️ Pause' : '▶️ Activate'}
+                          {agent.status === 'active' ? 'Pause' : 'Start'}
                         </button>
                         
                         <button
+                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
                           onClick={() => handleClearToken(agent.id)}
-                          style={{
-                            background: '#EF4444',
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
                         >
-                          🔑 Token
+                          Token
                         </button>
                         
                         {canDeleteAgent(agent) && (
                           <button
+                            className="bg-red-800 hover:bg-red-900 text-white px-2 py-1 rounded text-xs"
                             onClick={() => handleDelete(agent.id)}
-                            style={{
-                              background: '#7C2D12',
-                              color: 'white',
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              border: 'none',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         )}
                       </div>
