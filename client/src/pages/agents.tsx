@@ -53,7 +53,8 @@ export default function Agents() {
 
   const deleteAgentMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      await apiRequest(`/api/agents/${agentId}`, "DELETE");
+      const response = await apiRequest("DELETE", `/api/agents/${agentId}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -73,7 +74,8 @@ export default function Agents() {
 
   const toggleAgentMutation = useMutation({
     mutationFn: async ({ agentId, newStatus }: { agentId: number; newStatus: string }) => {
-      await apiRequest(`/api/agents/${agentId}`, "PUT", { status: newStatus });
+      const response = await apiRequest("PUT", `/api/agents/${agentId}`, { status: newStatus });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -93,7 +95,8 @@ export default function Agents() {
 
   const clearTokenMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      await apiRequest(`/api/agents/${agentId}/clear-token`, "POST");
+      const response = await apiRequest("POST", `/api/agents/${agentId}/clear-token`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -158,25 +161,73 @@ export default function Agents() {
   }) : [];
 
   const handleViewAgent = (agent: any) => {
-    setViewingAgent(agent);
+    try {
+      setViewingAgent(agent);
+    } catch (error) {
+      console.error('Error viewing agent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to view agent details",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditAgent = (agent: any) => {
-    setLocation(`/agent-wizard?edit=${agent.id}`);
+    try {
+      // Navigate to agent wizard for editing
+      setLocation('/agent-wizard');
+    } catch (error) {
+      console.error('Error navigating to edit agent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open agent editor",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleToggleStatus = (agent: any) => {
-    const newStatus = agent.status === 'active' ? 'paused' : 'active';
-    toggleAgentMutation.mutate({ agentId: agent.id, newStatus });
+    try {
+      const newStatus = agent.status === 'active' ? 'paused' : 'active';
+      toggleAgentMutation.mutate({ agentId: agent.id, newStatus });
+    } catch (error) {
+      console.error('Error toggling agent status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update agent status",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearToken = (agent: any) => {
-    clearTokenMutation.mutate(agent.id);
+    try {
+      if (window.confirm(`Are you sure you want to clear the API token for "${agent.name}"?`)) {
+        clearTokenMutation.mutate(agent.id);
+      }
+    } catch (error) {
+      console.error('Error clearing token:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear agent token",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteAgent = (agent: any) => {
-    if (window.confirm(`Are you sure you want to delete "${agent.name}"? This action cannot be undone.`)) {
-      deleteAgentMutation.mutate(agent.id);
+    try {
+      if (window.confirm(`Are you sure you want to delete "${agent.name}"? This action cannot be undone.`)) {
+        deleteAgentMutation.mutate(agent.id);
+      }
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete agent",
+        variant: "destructive",
+      });
     }
   };
 
