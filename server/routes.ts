@@ -560,15 +560,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Industry verticals endpoint
-  app.get("/api/industry-verticals", async (req, res) => {
+  // Industry verticals endpoint with system instructions
+  app.get("/api/industry-verticals", authenticate, async (req: AuthenticatedRequest, res) => {
     try {
-      const configPath = path.join(process.cwd(), 'models', 'industry_verticals.yaml');
-      const fileContents = fs.readFileSync(configPath, 'utf8');
-      const config = yaml.load(fileContents) as any;
-      res.json(config.industry_verticals);
+      const yamlPath = path.join(process.cwd(), 'server', 'config', 'industry-verticals.yaml');
+      
+      // Check if new YAML file exists, otherwise use fallback
+      if (fs.existsSync(yamlPath)) {
+        const yamlContent = fs.readFileSync(yamlPath, 'utf8');
+        const verticals = yaml.load(yamlContent) as any;
+        console.log(`Loaded ${Array.isArray(verticals) ? verticals.length : 0} industry verticals with system instructions`);
+        res.json(verticals);
+      } else {
+        // Fallback to old path if new one doesn't exist
+        const oldConfigPath = path.join(process.cwd(), 'models', 'industry_verticals.yaml');
+        if (fs.existsSync(oldConfigPath)) {
+          const fileContents = fs.readFileSync(oldConfigPath, 'utf8');
+          const config = yaml.load(fileContents) as any;
+          res.json(config.industry_verticals);
+        } else {
+          // Final fallback to basic data
+          console.log('No industry verticals YAML files found, using basic fallback');
+          const fallbackVerticals = [
+            { name: "E-Commerce & Retail", description: "Online and offline selling of goods and services", systemInstruction: "You are a professional customer service assistant for an e-commerce business." },
+            { name: "Healthcare & Medical", description: "Medical services, healthcare providers, patient care", systemInstruction: "You are a healthcare customer service assistant. IMPORTANT: You cannot provide medical advice." },
+            { name: "Technology & Software", description: "Software development, IT services, tech support", systemInstruction: "You are a technical support assistant for technology services." }
+          ];
+          res.json(fallbackVerticals);
+        }
+      }
     } catch (error: any) {
-      console.error('Error loading industry verticals config:', error);
+      console.error('Error loading industry verticals:', error);
       res.status(500).json({ message: "Failed to load industry verticals configuration" });
     }
   });

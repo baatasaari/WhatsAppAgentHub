@@ -374,12 +374,13 @@ export default function AgentWizard() {
                       onValueChange={(value) => {
                         field.onChange(value);
                         // Auto-populate system prompt based on business category
-                        const selectedVertical = Array.isArray(industryVerticals) 
-                          ? industryVerticals.find((v: any) => v.name === value)
-                          : null;
-                        if (selectedVertical?.systemInstruction) {
-                          form.setValue("systemPrompt", selectedVertical.systemInstruction);
+                        if (Array.isArray(industryVerticals)) {
+                          const selectedVertical = industryVerticals.find((v: any) => v.name === value);
+                          if (selectedVertical?.systemInstruction) {
+                            form.setValue("systemPrompt", selectedVertical.systemInstruction);
+                          }
                         }
+
                       }}
                       disabled={industriesLoading}
                     >
