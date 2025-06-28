@@ -199,65 +199,6 @@ export const agents = pgTable("agents", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// AI Training tables
-export const knowledgeItems = pgTable("knowledge_items", {
-  id: serial("id").primaryKey(),
-  agentId: integer("agent_id").references(() => agents.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  category: text("category"),
-  tags: jsonb("tags").$type<string[]>().default([]),
-  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const trainingSessions = pgTable("training_sessions", {
-  id: serial("id").primaryKey(),
-  agentId: integer("agent_id").references(() => agents.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  sessionName: text("session_name").notNull(),
-  trainingData: jsonb("training_data").$type<Array<{
-    id: string;
-    input: string;
-    expectedOutput: string;
-    category: string;
-    weight: number;
-  }>>().default([]),
-  brandVoiceConfig: jsonb("brand_voice_config").$type<{
-    tone: string;
-    personality: string;
-    communicationStyle: string;
-    dosList: string[];
-    dontsList: string[];
-  }>(),
-  businessContextConfig: jsonb("business_context_config").$type<{
-    industry: string;
-    companySize: string;
-    targetAudience: string;
-    keyProducts: string[];
-    valueProposition: string;
-  }>(),
-  status: text("status").default("pending"), // pending, processing, completed, failed
-  progressPercentage: integer("progress_percentage").default(0),
-  resultsSummary: text("results_summary"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const trainingExamples = pgTable("training_examples", {
-  id: serial("id").primaryKey(),
-  agentId: integer("agent_id").references(() => agents.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  sessionId: integer("session_id").references(() => trainingSessions.id),
-  inputText: text("input_text").notNull(),
-  expectedOutput: text("expected_output").notNull(),
-  category: text("category").notNull(),
-  weight: integer("weight").default(1),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   agentId: integer("agent_id").references(() => agents.id).notNull(),
