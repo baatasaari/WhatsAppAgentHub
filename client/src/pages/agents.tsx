@@ -30,7 +30,10 @@ import {
   Bot,
   Filter,
   Grid3X3,
-  List
+  List,
+  Clock,
+  Globe,
+  Phone
 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -176,7 +179,7 @@ export default function Agents() {
   const handleEditAgent = (agent: any) => {
     try {
       // Navigate to agent wizard for editing
-      setLocation('/agent-wizard');
+      setLocation('/wizard');
     } catch (error) {
       console.error('Error navigating to edit agent:', error);
       toast({
@@ -387,6 +390,27 @@ export default function Agents() {
                     <CardDescription className="mt-1">
                       {agent.businessCategory || 'General'}
                     </CardDescription>
+                    {/* Client Details */}
+                    <div className="mt-2 space-y-1">
+                      {agent.businessWebsite && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Globe className="w-3 h-3 mr-1" />
+                          <span className="truncate">{agent.businessWebsite}</span>
+                        </div>
+                      )}
+                      {agent.whatsappNumber && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Phone className="w-3 h-3 mr-1" />
+                          <span>{agent.whatsappNumber}</span>
+                        </div>
+                      )}
+                      {agent.operatingHours && agent.operatingHours !== '24/7' && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3 mr-1" />
+                          <span>{agent.operatingHours}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <DropdownMenu>
