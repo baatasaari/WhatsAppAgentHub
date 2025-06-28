@@ -320,39 +320,41 @@ export default function AgentWizard() {
 
   // Populate form with existing agent data when in edit mode
   useEffect(() => {
-    if (existingAgent && isEditMode) {
+    if (existingAgent && isEditMode && typeof existingAgent === 'object') {
+      const agent = existingAgent as Record<string, any>;
+      
       // Update form with existing agent data
       form.reset({
-        name: existingAgent.name || "",
-        businessCategory: existingAgent.businessCategory || "",
-        description: existingAgent.description || "",
-        llmProvider: existingAgent.llmProvider || "",
-        systemPrompt: existingAgent.systemPrompt || "",
-        widgetColor: existingAgent.widgetColor || "#25D366",
-        welcomeMessage: existingAgent.welcomeMessage || "Hi! How can I help you today?",
-        operatingHours: existingAgent.operatingHours || "24/7",
+        name: agent?.name || "",
+        businessCategory: agent?.businessCategory || "",
+        description: agent?.description || "",
+        llmProvider: agent?.llmProvider || "",
+        systemPrompt: agent?.systemPrompt || "",
+        widgetColor: agent?.widgetColor || "#25D366",
+        welcomeMessage: agent?.welcomeMessage || "Hi! How can I help you today?",
+        operatingHours: agent?.operatingHours || "24/7",
         // Platform credentials
-        whatsappNumber: existingAgent.whatsappNumber || "",
-        whatsappApiKey: existingAgent.whatsappApiKey || "",
-        whatsappWebhook: existingAgent.whatsappWebhook || "",
-        facebookPageId: existingAgent.facebookPageId || "",
-        facebookAccessToken: existingAgent.facebookAccessToken || "",
-        facebookWebhook: existingAgent.facebookWebhook || "",
-        instagramBusinessId: existingAgent.instagramBusinessId || "",
-        instagramAccessToken: existingAgent.instagramAccessToken || "",
-        lineChannelId: existingAgent.lineChannelId || "",
-        lineChannelSecret: existingAgent.lineChannelSecret || "",
-        lineChannelToken: existingAgent.lineChannelToken || "",
-        telegramBotToken: existingAgent.telegramBotToken || "",
-        telegramUsername: existingAgent.telegramUsername || "",
-        discordBotToken: existingAgent.discordBotToken || "",
-        discordGuildId: existingAgent.discordGuildId || "",
-        discordChannelId: existingAgent.discordChannelId || "",
+        whatsappNumber: agent?.whatsappNumber || "",
+        whatsappApiKey: agent?.whatsappApiKey || "",
+        whatsappWebhook: agent?.whatsappWebhook || "",
+        facebookPageId: agent?.facebookPageId || "",
+        facebookAccessToken: agent?.facebookAccessToken || "",
+        facebookWebhook: agent?.facebookWebhook || "",
+        instagramBusinessId: agent?.instagramBusinessId || "",
+        instagramAccessToken: agent?.instagramAccessToken || "",
+        lineChannelId: agent?.lineChannelId || "",
+        lineChannelSecret: agent?.lineChannelSecret || "",
+        lineChannelToken: agent?.lineChannelToken || "",
+        telegramBotToken: agent?.telegramBotToken || "",
+        telegramUsername: agent?.telegramUsername || "",
+        discordBotToken: agent?.discordBotToken || "",
+        discordGuildId: agent?.discordGuildId || "",
+        discordChannelId: agent?.discordChannelId || "",
       });
 
       // Set platform selection based on existing agent
-      if (existingAgent.platformType) {
-        setLocalSelectedPlatforms([existingAgent.platformType]);
+      if (agent?.platformType) {
+        setLocalSelectedPlatforms([agent.platformType]);
       }
     }
   }, [existingAgent, isEditMode, form]);
@@ -1274,7 +1276,7 @@ export default function AgentWizard() {
                 size="lg"
                 className="min-w-[200px]"
               >
-                {isCreating ? "Creating Agents..." : `Create ${localSelectedPlatforms.length} Agent${localSelectedPlatforms.length > 1 ? 's' : ''}`}
+                {isCreating ? (isEditMode ? "Updating Agent..." : "Creating Agents...") : (isEditMode ? "Update Agent" : `Create ${localSelectedPlatforms.length} Agent${localSelectedPlatforms.length > 1 ? 's' : ''}`)}
               </Button>
             </div>
           </div>
@@ -1292,7 +1294,9 @@ export default function AgentWizard() {
       {/* Progress Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Agent Configuration Wizard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditMode ? "Edit Agent" : "Agent Configuration Wizard"}
+          </h1>
           <Badge variant="outline">
             Step {currentStep} of {steps.length}
           </Badge>
