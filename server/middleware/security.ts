@@ -42,8 +42,8 @@ export const corsMiddleware = cors({
 
 // Rate limiting for API endpoints
 export const apiRateLimit = rateLimit({
-  windowMs: config.security.rateLimit.windowMs,
-  max: config.security.rateLimit.maxRequests,
+  windowMs: process.env.NODE_ENV === 'development' ? 60000 : config.security.rateLimit.windowMs, // 1 minute for dev
+  max: process.env.NODE_ENV === 'development' ? 1000 : config.security.rateLimit.maxRequests, // Higher limit for dev/testing
   message: {
     error: 'Too many requests from this IP, please try again later.',
     retryAfter: Math.ceil(config.security.rateLimit.windowMs / 1000),

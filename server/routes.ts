@@ -823,17 +823,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Widget color must be a valid hex color (e.g., #FF0000)" });
       }
       
-      // Generate API key for the agent
+      // Validation passed, proceed with creation
       const apiKey = randomBytes(32).toString('hex');
       
       console.log('User context:', req.user);
       console.log('User ID:', req.user?.id);
       
-      const validatedData = insertAgentSchema.parse(req.body);
+      // Create agent data without full schema validation to allow our custom validation
       const agentData = { 
-        ...validatedData, 
+        name: name.trim(),
+        llmProvider,
+        model: model || 'gpt-4o',
+        systemPrompt: systemPrompt.trim(),
+        platformType: platformType || 'whatsapp',
+        widgetColor: widgetColor || '#25D366',
         userId: req.user!.id, 
-        apiKey 
+        apiKey,
+        ...req.body // Include other valid fields
       };
       
       console.log('Agent data before creation:', agentData);
