@@ -37,16 +37,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
+        
+        // Validate token by making a request to /api/auth/me
+        fetch("/api/auth/me", {
+          headers: {
+            "Authorization": `Bearer ${storedToken}`
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Token invalid");
+          }
+        })
+        .then(userData => {
+          setToken(storedToken);
+          setUser(userData);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          // Token invalid, clear storage
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user");
+          setToken(null);
+          setUser(null);
+          setIsLoading(false);
+        });
       } catch (error) {
         // Invalid stored data, clear it
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user");
+        setIsLoading(false);
       }
+    } else {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   }, []);
 
   const login = (newToken: string, newUser: User) => {

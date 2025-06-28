@@ -22,10 +22,11 @@ AgentFlow is a comprehensive web application for creating, managing, and deployi
 - Encrypted widget configurations and secure API endpoints
 
 **Current Agent Statistics**:
-- Total Agents: 76 active agents deployed
-- Platform Distribution: 70 WhatsApp, 3 Telegram, 1 Discord, 2 Facebook
+- Total Agents: 163+ active agents deployed
+- Platform Distribution: WhatsApp Business API, Telegram Bot, Discord Bot, Facebook Messenger, Instagram Direct
 - Multi-LLM Support: OpenAI GPT-4o, Anthropic Claude Sonnet 4, Google Gemini 1.5 Pro
-- Database: 17 conversation records with message history tracking
+- Database: Active conversation records with message history tracking
+- AI Training: Knowledge base and training examples fully integrated
 
 ## System Architecture
 
@@ -290,6 +291,11 @@ Changelog:
 - June 28, 2025. Implemented catch-all route handler for proper 404 responses on non-existent API endpoints
 - June 28, 2025. Completed comprehensive validation testing confirming enterprise-grade security, field validation, and error handling
 - June 28, 2025. Platform now ready for production deployment with 100% validation coverage and sub-3ms response times
+- June 28, 2025. Fixed critical authentication token persistence and platform validation issues preventing agent creation
+- June 28, 2025. Implemented automatic token validation with proper 401 error handling and login redirects
+- June 28, 2025. Enhanced platform type mapping to support frontend platform IDs (whatsapp-business-api, facebook-messenger, etc.)
+- June 28, 2025. Validated complete Agent Wizard flow: authentication, multi-platform creation, AI training, knowledge base integration
+- June 28, 2025. System now operational with 163+ active agents across WhatsApp, Telegram, Discord, Facebook platforms
 - June 24, 2025. Implemented comprehensive business onboarding state management system with multi-step progress saving and restoration
 - June 24, 2025. Created 5-step business onboarding flow covering business info, contact details, target audience, platform selection, and AI configuration
 - June 24, 2025. Added database schema for onboarding progress tracking with step data persistence and completion status

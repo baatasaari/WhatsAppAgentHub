@@ -826,9 +826,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "System prompt cannot exceed 5000 characters" });
       }
       
-      // LLM provider validation
+      // LLM provider validation - map model names to providers if needed
+      const modelToProviderMapping = {
+        'gpt-4o': 'openai',
+        'gpt-4': 'openai', 
+        'gpt-3.5-turbo': 'openai',
+        'claude-sonnet-4-20250514': 'anthropic',
+        'claude-3-7-sonnet-20250219': 'anthropic',
+        'claude-3-sonnet-20240229': 'anthropic',
+        'gemini-1.5-pro': 'google',
+        'gemini-pro': 'google'
+      };
+      
+      let actualProvider = llmProvider;
+      let actualModel = model || llmProvider;
+      
+      // If llmProvider is actually a model name, map it to the correct provider
+      if (modelToProviderMapping[llmProvider]) {
+        actualProvider = modelToProviderMapping[llmProvider];
+        actualModel = llmProvider;
+      }
+      
       const validProviders = ['openai', 'anthropic', 'google'];
-      if (!validProviders.includes(llmProvider)) {
+      if (!validProviders.includes(actualProvider)) {
         return res.status(400).json({ message: "Invalid LLM provider. Must be one of: " + validProviders.join(', ') });
       }
       
@@ -868,8 +888,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create agent data without full schema validation to allow our custom validation
       const agentData = { 
         name: name.trim(),
-        llmProvider,
-        model: model || 'gpt-4o',
+        llmProvider: actualProvider,
+        model: actualModel,
         systemPrompt: systemPrompt.trim(),
         platformType: mappedPlatformType,
         widgetColor: widgetColor || '#25D366',
