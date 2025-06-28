@@ -21,6 +21,36 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 
+// Helper function to generate embed code
+function generateEmbedCode(platform: string, agent: any): string {
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost'}`
+    : 'http://localhost:5000';
+    
+  const widgetUrl = `${baseUrl}/widgets/${platform}-widget.js`;
+  
+  return `
+(function() {
+  // AgentFlow ${platform.charAt(0).toUpperCase() + platform.slice(1)} Widget
+  var script = document.createElement('script');
+  script.src = '${widgetUrl}';
+  script.async = true;
+  script.onload = function() {
+    if (window.AgentFlow${platform.charAt(0).toUpperCase() + platform.slice(1)}Widget) {
+      window.AgentFlow${platform.charAt(0).toUpperCase() + platform.slice(1)}Widget.init({
+        apiKey: '${agent.apiKey}',
+        agentName: '${agent.name}',
+        welcomeMessage: '${agent.welcomeMessage || 'Hello! How can I help you today?'}',
+        position: '${agent.widgetPosition || 'bottom-right'}',
+        color: '${agent.widgetColor || '#25D366'}'
+      });
+    }
+  };
+  document.head.appendChild(script);
+})();
+`.trim();
+}
+
 // WhatsApp Business API integration
 async function sendWhatsAppMessage(phoneNumber: string, message: string, accessToken: string) {
   const url = `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
@@ -2388,6 +2418,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error enabling real-time learning:", error);
       res.status(500).json({ error: "Failed to enable real-time learning" });
+    }
+  });
+
+  // Health monitoring endpoints
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "healthy", 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: "1.0.0"
+    });
+  });
+
+  app.get("/api/health/ready", (req, res) => {
+    res.json({ 
+      status: "ready", 
+      database: "connected",
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  app.get("/api/health/live", (req, res) => {
+    res.json({ 
+      status: "live", 
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  app.get("/api/metrics", (req, res) => {
+    res.json({
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString(),
+      nodeVersion: process.version
+    });
+  });
+
+  // Analytics summary endpoint
+  app.get("/api/analytics/summary", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const agents = await storage.getUserAgents(userId);
+      const analytics = await storage.getAnalyticsSummary(userId);
+      
+      res.json({
+        totalAgents: agents.length,
+        activeAgents: agents.filter(a => a.status === 'active').length,
+        totalConversations: analytics?.totalConversations || 0,
+        totalMessages: analytics?.totalMessages || 0,
+        avgResponseTime: analytics?.avgResponseTime || 0
+      });
+    } catch (error) {
+      console.error('Error getting analytics summary:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Embed code generation endpoints
+  app.get("/api/embed/:platform/:apiKey", async (req, res) => {
+    try {
+      const { platform, apiKey } = req.params;
+      
+      // Validate platform
+      const validPlatforms = ['whatsapp', 'telegram', 'discord', 'facebook', 'instagram'];
+      if (!validPlatforms.includes(platform)) {
+        return res.status(400).json({ error: 'Invalid platform' });
+      }
+
+      // Get agent by API key
+      const agent = await storage.getAgentByApiKey(apiKey);
+      if (!agent) {
+        return res.status(404).json({ error: 'Agent not found' });
+      }
+
+      // Generate embed code based on platform
+      const embedCode = generateEmbedCode(platform, agent);
+      
+      res.setHeader('Content-Type', 'application/javascript');
+      res.send(embedCode);
+    } catch (error) {
+      console.error('Error generating embed code:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Conversation flow templates endpoint
+  app.get("/api/conversation-flow/templates", authenticate, requireApproved, async (req: AuthenticatedRequest, res) => {
+    try {
+      const templates = [
+        {
+          id: 1,
+          name: "Lead Qualification",
+          description: "Qualify leads and gather contact information",
+          category: "sales",
+          nodes: [
+            { id: "start", type: "start", data: { label: "Start" } },
+            { id: "welcome", type: "message", data: { message: "Hi! How can I help you today?" } },
+            { id: "end", type: "end", data: { label: "End" } }
+          ],
+          edges: [
+            { id: "e1", source: "start", target: "welcome" },
+            { id: "e2", source: "welcome", target: "end" }
+          ]
+        },
+        {
+          id: 2,
+          name: "Customer Support",
+          description: "Handle customer support inquiries",
+          category: "support",
+          nodes: [
+            { id: "start", type: "start", data: { label: "Start" } },
+            { id: "support", type: "message", data: { message: "I'm here to help with your support request." } },
+            { id: "end", type: "end", data: { label: "End" } }
+          ],
+          edges: [
+            { id: "e1", source: "start", target: "support" },
+            { id: "e2", source: "support", target: "end" }
+          ]
+        }
+      ];
+      
+      res.json(templates);
+    } catch (error) {
+      console.error('Error getting conversation flow templates:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

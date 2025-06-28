@@ -652,6 +652,42 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAnalyticsSummary(userId: number): Promise<any> {
+    try {
+      const userAgents = await this.getUserAgents(userId);
+      const userConversations = await db.select().from(conversations)
+        .where(eq(conversations.userId, userId));
+      
+      const userAnalytics = await db.select().from(analytics)
+        .where(eq(analytics.userId, userId));
+
+      return {
+        totalConversations: userConversations.length,
+        totalMessages: userAnalytics.reduce((sum, a) => sum + (a.messagesSent || 0), 0),
+        avgResponseTime: userAnalytics.length > 0 
+          ? userAnalytics.reduce((sum, a) => sum + (a.avgResponseTime || 0), 0) / userAnalytics.length 
+          : 0
+      };
+    } catch (error) {
+      console.error('Error getting analytics summary:', error);
+      return {
+        totalConversations: 0,
+        totalMessages: 0,
+        avgResponseTime: 0
+      };
+    }
+  }
+
+  async getAgentByApiKey(apiKey: string): Promise<any> {
+    try {
+      const [agent] = await db.select().from(agents).where(eq(agents.apiKey, apiKey));
+      return agent;
+    } catch (error) {
+      console.error('Error getting agent by API key:', error);
+      return null;
+    }
+  }
+
   async getBusinessInsights(agentId: number): Promise<any> {
     try {
       const agent = await this.getAgent(agentId);
